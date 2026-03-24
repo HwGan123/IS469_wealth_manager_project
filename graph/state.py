@@ -1,14 +1,27 @@
-from typing import TypedDict, Annotated, List, Union, Dict
+from typing import Annotated, Dict, List
 import operator
 
-class WealthManagerState(TypedDict):
-    # 'messages' stores the full conversation history for context retention
+
+class WealthManagerState(Dict):
+    # ── Conversation history ───────────────────────────────────────────────────
     messages: Annotated[list, operator.add]
-    
-    # Domain-specific state variables
-    sentiment_score: float         # From FinBERT Sentiment Agent
-    portfolio_weights: Dict        # From Portfolio Optimization Agent
-    retrieved_context: str         # Chunks from the Real RAG Pipeline
-    draft_report: str              # From Investment Analyst Agent
-    audit_score: float             # Quantitative score from Auditor Agent
-    is_hallucinating: bool         # Boolean flag for the self-correction loop
+
+    # ── Orchestrator ───────────────────────────────────────────────────────────
+    tickers: List[str]              # ticker symbols extracted from user input
+
+    # ── Sentiment agent ────────────────────────────────────────────────────────
+    news_articles:     List[dict]   # raw articles from NewsAPI (tool 1 output)
+    sentiment_results: List[dict]   # per-headline inference results (tool 2 output)
+    sentiment_summary: dict         # aggregated scores + human-readable summary
+    sentiment_score:   float        # overall scalar score (-1 bearish → +1 bullish)
+
+    # ── Portfolio agent ────────────────────────────────────────────────────────
+    portfolio_weights: Dict         # {ticker: weight}
+
+    # ── Analyst agent ─────────────────────────────────────────────────────────
+    retrieved_context: str          # RAG context chunks
+    draft_report:      str          # generated markdown report
+
+    # ── Auditor agent ─────────────────────────────────────────────────────────
+    audit_score:      float         # quantitative audit score
+    is_hallucinating: bool          # self-correction loop flag

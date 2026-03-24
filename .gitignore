@@ -1,0 +1,31 @@
+# Virtual environment
+.venv/
+
+# Environment variables (contains API keys)
+.env
+
+# Claude Code settings
+.claude/
+
+# Python cache
+__pycache__/
+*.py[cod]
+*.pyo
+
+# Jupyter
+.ipynb_checkpoints/
+*.ipynb_checkpoints
+
+# Model training outputs & adapters (large binary files)
+outputs/
+qlora_adapters/
+
+# Training data (downloaded at runtime)
+Sentences_75Agree.txt
+
+# Generated plots
+fpb_class_imbalance.png
+gold_class_distribution.png
+
+# uv lock (optional — remove this line if you want to commit it)
+# uv.lock

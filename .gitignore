@@ -3,3 +3,8 @@
 venv/
 __pycache__/
 *.pyc
+
+# RAG generated artifacts
+JJ/aapl_10k_embeddings.json
+chroma_db/
+results/

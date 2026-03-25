@@ -71,16 +71,27 @@ def save_chunks(chunks: list[dict[str, Any]]) -> None:
             handle.write(json.dumps(chunk, ensure_ascii=False) + "\n")
 
 
-def build_embeddings(chunks: list[dict[str, Any]]) -> tuple[list[list[float]], str] | tuple[None, None]:
+def load_embedding_model(model_name: str = "sentence-transformers/all-MiniLM-L6-v2"):
     try:
         from sentence_transformers import SentenceTransformer
-    except Exception:
-        return None, None
+    except Exception as error:
+        raise RuntimeError(
+            "sentence-transformers is required for embedding generation. "
+            "Install dependencies with: pip install -r requirements.txt"
+        ) from error
 
-    model_name = "sentence-transformers/all-MiniLM-L6-v2"
-    model = SentenceTransformer(model_name)
+    return SentenceTransformer(model_name), model_name
+
+
+def build_embeddings(chunks: list[dict[str, Any]], model, model_name: str) -> list[list[float]]:
     texts = [chunk["text"] for chunk in chunks]
-    vectors = model.encode(texts, normalize_embeddings=False)
+    vectors = model.encode(
+        texts,
+        batch_size=64,
+        show_progress_bar=True,
+        convert_to_numpy=True,
+        normalize_embeddings=True,
+    )
 
     embeddings = vectors.tolist() if hasattr(vectors, "tolist") else vectors
     payload = {
@@ -91,7 +102,7 @@ def build_embeddings(chunks: list[dict[str, Any]]) -> tuple[list[list[float]], s
         "embeddings": embeddings,
     }
     EMBEDDINGS_PATH.write_text(json.dumps(payload), encoding="utf-8")
-    return embeddings, model_name
+    return embeddings
 
 
 def try_build_chroma_index(chunks: list[dict[str, Any]], embeddings: list[list[float]] | None) -> bool:
@@ -130,17 +141,14 @@ def cosine_similarity(vec_a: list[float], vec_b: list[float]) -> float:
     return dot / (norm_a * norm_b)
 
 
-def sanity_check_retrieval(chunks: list[dict[str, Any]], embeddings: list[list[float]] | None, model_name: str | None) -> None:
-    if embeddings is None or model_name is None:
-        print("\n--- Retrieval sanity check skipped ---")
-        print("Install sentence-transformers to enable embedding-based retrieval checks.")
-        return
-
-    from sentence_transformers import SentenceTransformer
+def sanity_check_retrieval(chunks: list[dict[str, Any]], embeddings: list[list[float]], model) -> None:
 
     query = "What are Apple's key risk factors and growth drivers?"
-    model = SentenceTransformer(model_name)
-    query_embedding = model.encode(query, normalize_embeddings=False)
+    query_embedding = model.encode(
+        [query],
+        convert_to_numpy=True,
+        normalize_embeddings=True,
+    )[0]
     query_vector = query_embedding.tolist() if hasattr(query_embedding, "tolist") else query_embedding
 
     scored = []
@@ -159,24 +167,23 @@ def main() -> None:
     text = load_clean_text(CLEAN_TXT_PATH)
     chunks = chunk_document(text)
     save_chunks(chunks)
-    embeddings, model_name = build_embeddings(chunks)
+
+    model, model_name = load_embedding_model()
+    embeddings = build_embeddings(chunks, model, model_name)
     has_chroma = try_build_chroma_index(chunks, embeddings)
 
     print(f"Loaded text length: {len(text):,} chars")
     print(f"Created chunks: {len(chunks):,}")
     print(f"Saved chunk dataset at: {CHUNKS_PATH}")
 
-    if embeddings is not None:
-        print(f"Saved embeddings at: {EMBEDDINGS_PATH}")
-    else:
-        print("Embeddings not generated (install sentence-transformers in your Python environment).")
+    print(f"Saved embeddings at: {EMBEDDINGS_PATH}")
 
     if has_chroma:
         print(f"Persisted Chroma vector DB at: {DB_PATH}")
     else:
         print("Chroma index not created (install chromadb if you want vector DB persistence).")
 
-    sanity_check_retrieval(chunks, embeddings, model_name)
+    sanity_check_retrieval(chunks, embeddings, model)
 
 
 if __name__ == "__main__":

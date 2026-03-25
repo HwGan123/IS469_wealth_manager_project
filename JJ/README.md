@@ -28,14 +28,17 @@ This folder is a mini pipeline for preparing Apple 2025 10-K data for RAG experi
 
 ## Typical Workflow
 
-1. Download filing:
+1. Install dependencies
+  pip install -r requirements.txt
+
+2. Download filing:
    ```bash
    python JJ/data_download.py
    ```
 
-2. Ensure `aapl_10k_clean.txt` is available (from your cleaning step).
+3. Ensure `aapl_10k_clean.txt` is available (from your cleaning step).
 
-3. Build chunks / optional embeddings:
+4. Build chunks / optional embeddings:
    ```bash
    python JJ/rag.py
    ```

@@ -4,7 +4,32 @@ venv/
 __pycache__/
 *.pyc
 
+# Local secrets
+.env
+.env.*
+!.env.example
+
 # RAG generated artifacts
-JJ/aapl_10k_embeddings.json
 chroma_db/
 results/
+# apple
+JJ/aapl_10k_embeddings.json
+JJ/aapl_10k_chunks.jsonl
+JJ/aapl_10k_2025.htm
+# amazon
+JJ/amzn_10k_embeddings.json
+JJ/amzn_10k_chunks.jsonl
+JJ/amzn_10k_2025.htm
+# google
+JJ/goog_10k_embeddings.json
+JJ/goog_10k_chunks.jsonl
+JJ/goog_10k_2025.htm
+# microsoft
+JJ/msft_10k_embeddings.json
+JJ/msft_10k_chunks.jsonl
+JJ/msft_10k_2025.htm
+# nvidia
+JJ/nvda_10k_embeddings.json
+JJ/nvda_10k_chunks.jsonl
+JJ/nvda_10k_2025.htm
+

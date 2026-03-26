@@ -8,22 +8,59 @@ from typing import Any
 
 
 BASE_DIR = Path(__file__).resolve().parent
-CLEAN_TXT_PATH = BASE_DIR / "aapl_10k_clean.txt"
+CLEANED_FILES = [
+    BASE_DIR / "aapl_10k_clean.txt",
+    BASE_DIR / "amzn_10k_cleaned.txt",
+    BASE_DIR / "goog_10k_cleaned.txt",
+    BASE_DIR / "msft_10k_cleaned.txt",
+    BASE_DIR / "nvda_10k_cleaned.txt",
+]
 DB_PATH = BASE_DIR.parent / "chroma_db"
-CHUNKS_PATH = BASE_DIR / "aapl_10k_chunks.jsonl"
-EMBEDDINGS_PATH = BASE_DIR / "aapl_10k_embeddings.json"
 COLLECTION_NAME = "sec_10k"
+DEFAULT_CHUNK_SIZE = 1000
+DEFAULT_OVERLAP = 150
 
 
 def load_clean_text(path: Path) -> str:
     if not path.exists():
         raise FileNotFoundError(
-            f"Missing cleaned 10-K text: {path}. Run JJ/data_download.py and the HTML cleaner first."
+            f"Missing cleaned text: {path}. Run JJ/data_download.py and the HTML cleaner first."
         )
     return path.read_text(encoding="utf-8").strip()
 
 
-def chunk_document(text: str, chunk_size: int = 1000, overlap: int = 150) -> list[dict[str, Any]]:
+def parse_source_metadata(path: Path) -> tuple[str, str, str, str]:
+    stem = path.stem.lower()
+    ticker = stem.split("_")[0]
+    known = {
+        "aapl": ("AAPL", "Apple", "10-K", "2025"),
+        "amzn": ("AMZN", "Amazon", "10-K", "2025"),
+        "goog": ("GOOG", "Google", "10-K", "2025"),
+        "msft": ("MSFT", "Microsoft", "10-K", "2025"),
+        "nvda": ("NVDA", "Nvidia", "10-K", "2025"),
+    }
+    if ticker in known:
+        return known[ticker]
+
+    fiscal_year = "2025"
+    year_match = re.search(r"(20\d{2})", stem)
+    if year_match:
+        fiscal_year = year_match.group(1)
+
+    company = ticker.upper()
+    filing_type = "10-K" if "10k" in stem or "10-k" in stem else "unknown"
+    return (ticker.upper(), company, filing_type, fiscal_year)
+
+
+def chunk_document(
+    text: str,
+    source: str,
+    company: str,
+    filing_type: str,
+    fiscal_year: str,
+    chunk_size: int = DEFAULT_CHUNK_SIZE,
+    overlap: int = DEFAULT_OVERLAP,
+) -> list[dict[str, Any]]:
     paragraphs = [p.strip() for p in re.split(r"\n\s*\n+", text) if p.strip()]
     chunks: list[dict[str, Any]] = []
 
@@ -53,20 +90,20 @@ def chunk_document(text: str, chunk_size: int = 1000, overlap: int = 150) -> lis
         chunks.append({"text": current})
 
     for index, chunk in enumerate(chunks):
-        chunk["id"] = f"aapl-10k-2025-{index:05d}"
+        chunk["id"] = f"{source}-{fiscal_year}-{index:05d}"
         chunk["metadata"] = {
-            "source": "AAPL_10K_2025",
-            "company": "Apple",
-            "filing_type": "10-K",
-            "fiscal_year": "2025",
+            "source": f"{source}_{filing_type}_{fiscal_year}",
+            "company": company,
+            "filing_type": filing_type,
+            "fiscal_year": fiscal_year,
             "chunk_index": index,
         }
 
     return chunks
 
 
-def save_chunks(chunks: list[dict[str, Any]]) -> None:
-    with CHUNKS_PATH.open("w", encoding="utf-8") as handle:
+def save_chunks(chunks: list[dict[str, Any]], output_path: Path) -> None:
+    with output_path.open("w", encoding="utf-8") as handle:
         for chunk in chunks:
             handle.write(json.dumps(chunk, ensure_ascii=False) + "\n")
 
@@ -83,7 +120,12 @@ def load_embedding_model(model_name: str = "sentence-transformers/all-MiniLM-L6-
     return SentenceTransformer(model_name), model_name
 
 
-def build_embeddings(chunks: list[dict[str, Any]], model, model_name: str) -> list[list[float]]:
+def build_embeddings(
+    chunks: list[dict[str, Any]],
+    model,
+    model_name: str,
+    embeddings_path: Path,
+) -> list[list[float]]:
     texts = [chunk["text"] for chunk in chunks]
     vectors = model.encode(
         texts,
@@ -101,11 +143,15 @@ def build_embeddings(chunks: list[dict[str, Any]], model, model_name: str) -> li
         "metadatas": [chunk["metadata"] for chunk in chunks],
         "embeddings": embeddings,
     }
-    EMBEDDINGS_PATH.write_text(json.dumps(payload), encoding="utf-8")
+    embeddings_path.write_text(json.dumps(payload), encoding="utf-8")
     return embeddings
 
 
-def try_build_chroma_index(chunks: list[dict[str, Any]], embeddings: list[list[float]] | None) -> bool:
+def try_build_chroma_index(
+    chunks: list[dict[str, Any]],
+    embeddings: list[list[float]] | None,
+    collection_name: str = COLLECTION_NAME,
+) -> bool:
     if embeddings is None:
         return False
 
@@ -117,7 +163,7 @@ def try_build_chroma_index(chunks: list[dict[str, Any]], embeddings: list[list[f
 
     DB_PATH.mkdir(parents=True, exist_ok=True)
     client = chromadb.PersistentClient(path=str(DB_PATH), settings=Settings(anonymized_telemetry=False))
-    collection = client.get_or_create_collection(name=COLLECTION_NAME)
+    collection = client.get_or_create_collection(name=collection_name)
 
     ids = [chunk["id"] for chunk in chunks]
     documents = [chunk["text"] for chunk in chunks]
@@ -164,26 +210,36 @@ def sanity_check_retrieval(chunks: list[dict[str, Any]], embeddings: list[list[f
 
 
 def main() -> None:
-    text = load_clean_text(CLEAN_TXT_PATH)
-    chunks = chunk_document(text)
-    save_chunks(chunks)
-
     model, model_name = load_embedding_model()
-    embeddings = build_embeddings(chunks, model, model_name)
-    has_chroma = try_build_chroma_index(chunks, embeddings)
 
-    print(f"Loaded text length: {len(text):,} chars")
-    print(f"Created chunks: {len(chunks):,}")
-    print(f"Saved chunk dataset at: {CHUNKS_PATH}")
+    for clean_path in CLEANED_FILES:
+        if not clean_path.exists():
+            print(f"Warning: cleaned file missing, skipping: {clean_path}")
+            continue
 
-    print(f"Saved embeddings at: {EMBEDDINGS_PATH}")
+        source, company, filing_type, fiscal_year = parse_source_metadata(clean_path)
+        text = load_clean_text(clean_path)
 
-    if has_chroma:
-        print(f"Persisted Chroma vector DB at: {DB_PATH}")
-    else:
-        print("Chroma index not created (install chromadb if you want vector DB persistence).")
+        chunks = chunk_document(text, source, company, filing_type, fiscal_year)
 
-    sanity_check_retrieval(chunks, embeddings, model)
+        chunks_path = clean_path.with_name(f"{clean_path.stem}_chunks.jsonl")
+        save_chunks(chunks, chunks_path)
+
+        embeddings_path = clean_path.with_name(f"{clean_path.stem}_embeddings.json")
+        embeddings = build_embeddings(chunks, model, model_name, embeddings_path)
+
+        collection_name = f"{COLLECTION_NAME}_{source.lower()}"
+        has_chroma = try_build_chroma_index(chunks, embeddings, collection_name=collection_name)
+
+        print(f"\nProcessed {clean_path.name}")
+        print(f"  source: {source} company: {company} filing: {filing_type} year: {fiscal_year}")
+        print(f"  loaded text length: {len(text):,} chars")
+        print(f"  created chunks: {len(chunks):,}")
+        print(f"  saved chunks at: {chunks_path}")
+        print(f"  saved embeddings at: {embeddings_path}")
+        print(f"  chroma collection: {collection_name} (persisted: {has_chroma})")
+
+        sanity_check_retrieval(chunks, embeddings, model)
 
 
 if __name__ == "__main__":

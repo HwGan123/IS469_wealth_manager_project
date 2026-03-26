@@ -25,3 +25,6 @@ rank-bm25==0.2.2
 # Evaluation (Quantitative Metrics)
 ragas==0.1.9
 datasets==2.19.1
+
+# Dependency Fix (protobuf compatibility)
+protobuf==4.25.3

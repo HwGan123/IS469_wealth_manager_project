@@ -243,6 +243,8 @@ def run_variant(
 
     rows: list[dict[str, Any]] = []
     hit_count = 0
+    reciprocal_ranks = []
+    precision_scores = []
 
     for qa in qa_rows:
         question = qa["question"]
@@ -254,6 +256,23 @@ def run_variant(
         hit = context_hit(contexts, keywords)
         if hit:
             hit_count += 1
+        
+        # Compute MRR (Mean Reciprocal Rank)
+        keyword_set = set(kw.lower() for kw in keywords)
+        merged_context = "\n".join(contexts).lower()
+        mrr_found = False
+        for rank, context in enumerate(contexts, start=1):
+            if any(kw in context.lower() for kw in keywords):
+                reciprocal_ranks.append(1.0 / rank)
+                mrr_found = True
+                break
+        if not mrr_found:
+            reciprocal_ranks.append(0.0)
+        
+        # Compute Precision@K (fraction of top-k with keywords)
+        relevant_in_topk = sum(1 for ctx in contexts if any(kw.lower() in ctx.lower() for kw in keywords))
+        precision_at_k = relevant_in_topk / max(k, 1)
+        precision_scores.append(precision_at_k)
 
         rows.append(
             {
@@ -269,6 +288,10 @@ def run_variant(
         )
 
     recall_at_k = hit_count / max(len(qa_rows), 1)
+    precision_at_k = sum(precision_scores) / max(len(precision_scores), 1)
+    mean_reciprocal_rank = sum(reciprocal_ranks) / max(len(reciprocal_ranks), 1)
+    f1_score = 2 * (precision_at_k * recall_at_k) / max(precision_at_k + recall_at_k, 1e-6)
+    accuracy = recall_at_k  # Hit rate
     ragas_scores = run_ragas(rows, llm_model_name=llm_model, embedding_model_name="text-embedding-3-large")
 
     return {
@@ -277,7 +300,11 @@ def run_variant(
         "summary": {
             "variant": variant,
             "num_questions": len(qa_rows),
+            "precision_at_k": precision_at_k,
             "recall_at_k": recall_at_k,
+            "f1_score": f1_score,
+            "accuracy": accuracy,
+            "mrr": mean_reciprocal_rank,
             "ragas": ragas_scores,
         },
     }
@@ -302,7 +329,11 @@ def write_outputs(output_dir: Path, all_results: list[dict[str, Any]]) -> None:
             {
                 "variant": variant,
                 "num_questions": summary["num_questions"],
-                "recall_at_k": summary["recall_at_k"],
+                "precision_at_k": summary.get("precision_at_k", ""),
+                "recall_at_k": summary.get("recall_at_k", ""),
+                "f1_score": summary.get("f1_score", ""),
+                "accuracy": summary.get("accuracy", ""),
+                "mrr": summary.get("mrr", ""),
                 "faithfulness": ragas_scores.get("faithfulness", ""),
                 "context_precision": ragas_scores.get("context_precision", ""),
                 "context_recall": ragas_scores.get("context_recall", ""),
@@ -317,7 +348,11 @@ def write_outputs(output_dir: Path, all_results: list[dict[str, Any]]) -> None:
             fieldnames=[
                 "variant",
                 "num_questions",
+                "precision_at_k",
                 "recall_at_k",
+                "f1_score",
+                "accuracy",
+                "mrr",
                 "faithfulness",
                 "context_precision",
                 "context_recall",
@@ -374,13 +409,19 @@ def main() -> None:
             llm_model=args.llm_model,
         )
         all_results.append(result)
-        print(f"Recall@{args.k} [{variant}]: {result['summary']['recall_at_k']:.3f}")
+        summary = result['summary']
+        print(f"\n[{variant}] Metrics@{args.k}:")
+        print(f"  Precision: {summary.get('precision_at_k', 0):.3f}")
+        print(f"  Recall:    {summary.get('recall_at_k', 0):.3f}")
+        print(f"  F1-Score:  {summary.get('f1_score', 0):.3f}")
+        print(f"  Accuracy:  {summary.get('accuracy', 0):.3f}")
+        print(f"  MRR:       {summary.get('mrr', 0):.3f}")
 
-        ragas_scores = result["summary"].get("ragas")
+        ragas_scores = summary.get("ragas")
         if ragas_scores:
-            print(f"RAGAS [{variant}]: {ragas_scores}")
+            print(f"  RAGAS: {ragas_scores}")
         else:
-            print(f"RAGAS [{variant}]: skipped (missing package/API key)")
+            print(f"  RAGAS: skipped (missing package/API key)")
 
     write_outputs(args.output_dir, all_results)
     print(f"Saved outputs under: {args.output_dir}")

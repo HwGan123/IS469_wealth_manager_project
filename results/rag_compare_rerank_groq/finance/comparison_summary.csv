@@ -1,0 +1,2 @@
+variant,num_questions,precision_at_k,recall_at_k,f1_score,accuracy,mrr,faithfulness,context_precision,context_recall,hallucination_rate
+finance+rerank,50,0.7240000000000001,0.92,0.810316301703163,0.92,0.8266666666666667,,,,

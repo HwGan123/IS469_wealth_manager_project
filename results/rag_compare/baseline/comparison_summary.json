@@ -2,7 +2,7 @@
   {
     "variant": "baseline",
     "num_questions": 50,
-    "precision_at_k": 0.45199999999999996,
+    "precision_at_k": 0.452,
     "recall_at_k": 0.84,
     "f1_score": 0.5877399380804954,
     "accuracy": 0.84,

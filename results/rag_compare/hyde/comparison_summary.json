@@ -1,0 +1,15 @@
+[
+  {
+    "variant": "hyde",
+    "num_questions": 50,
+    "precision_at_k": 0.5066666666666666,
+    "recall_at_k": 0.82,
+    "f1_score": 0.6263316582914572,
+    "accuracy": 0.82,
+    "mrr": 0.6133333333333334,
+    "faithfulness": "",
+    "context_precision": "",
+    "context_recall": "",
+    "hallucination_rate": ""
+  }
+]

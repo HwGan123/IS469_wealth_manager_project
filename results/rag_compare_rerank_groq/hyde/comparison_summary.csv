@@ -1,0 +1,2 @@
+variant,num_questions,precision_at_k,recall_at_k,f1_score,accuracy,mrr,faithfulness,context_precision,context_recall,hallucination_rate
+hyde+rerank,50,0.452,0.84,0.5877399380804954,0.84,0.6223333333333333,,,,

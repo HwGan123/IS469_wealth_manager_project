@@ -1,0 +1,15 @@
+[
+  {
+    "variant": "finance+rerank",
+    "num_questions": 50,
+    "precision_at_k": 0.7240000000000001,
+    "recall_at_k": 0.92,
+    "f1_score": 0.810316301703163,
+    "accuracy": 0.92,
+    "mrr": 0.8266666666666667,
+    "faithfulness": "",
+    "context_precision": "",
+    "context_recall": "",
+    "hallucination_rate": ""
+  }
+]

@@ -15,7 +15,16 @@ def main():
     # In a real-world case, this would be a specific client request
     initial_input = {
         "messages": ["Analyze the impact of recent tech sector volatility on a high-growth portfolio."],
+        "tickers": ["AAPL", "NVDA", "GOOG", "MSFT"],
+        "news_articles": [],
+        "sentiment_results": [],
+        "sentiment_summary": {},
         "sentiment_score": 0.0,
+        "portfolio_weights": {},
+        "retrieved_context": "",
+        "live_data_context": "",
+        "draft_report": "",
+        "audit_score": 0.0,
         "is_hallucinating": False
     }
 

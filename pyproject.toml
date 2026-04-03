@@ -28,8 +28,6 @@ dependencies = [
     "numpy",
     "matplotlib",
     "tqdm",
-    # ── Observability ─────────────────────────────────────────────────────────
-    "langfuse",
     # ── Environment / notebook utils ──────────────────────────────────────────
     "python-dotenv",
     "ipywidgets",
@@ -43,10 +41,7 @@ dependencies = [
 
 [tool.uv]
 # Pin exact versions for reproducibility where needed
-override-dependencies = [
-    "transformers==4.56.2",
-    "trl==0.22.2",
-]
+override-dependencies = ["transformers==4.56.2", "trl==0.22.2"]
 
 [tool.hatch.build.targets.wheel]
 packages = ["agents", "graph"]

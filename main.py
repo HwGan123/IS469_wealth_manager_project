@@ -16,6 +16,7 @@ def main():
     initial_input = {
         "messages": ["Analyze the latest news and sentiment for AAPL and NVDA."],
         "tickers":            [],
+        "route_target":       "sentiment_agent",
         "news_articles":      [],
         "sentiment_results":  [],
         "sentiment_summary":  {},
@@ -23,7 +24,9 @@ def main():
         "retrieved_context":  "",
         "draft_report":       "",
         "audit_score":        0.0,
+        "audit_findings":     [],
         "is_hallucinating":   False,
+        "final_report":       "",
     }
 
     # Execute the workflow

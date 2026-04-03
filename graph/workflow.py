@@ -4,28 +4,37 @@ from agents.orchestrator import orchestrator_node
 from agents.sentiment import sentiment_node
 from agents.analyst import analyst_node
 from agents.auditor import auditor_node
+from agents.report_generator import report_generator_node
 
 
 def create_wealth_manager_graph():
     workflow = StateGraph(WealthManagerState)
 
     # ── Nodes ──────────────────────────────────────────────────────────────────
-    workflow.add_node("orchestrator",    orchestrator_node)
+    workflow.add_node("orchestrator_agent", orchestrator_node)
     workflow.add_node("sentiment_agent", sentiment_node)
-    workflow.add_node("analyst_agent",   analyst_node)
-    workflow.add_node("auditor_agent",   auditor_node)
+    workflow.add_node("investment_analyst_agent", analyst_node)
+    workflow.add_node("auditor_agent", auditor_node)
+    workflow.add_node("report_generator_agent", report_generator_node)
 
     # ── Linear flow ────────────────────────────────────────────────────────────
-    # orchestrator → sentiment → analyst → auditor
-    workflow.add_edge(START,             "orchestrator")
-    workflow.add_edge("orchestrator",    "sentiment_agent")
-    workflow.add_edge("sentiment_agent", "analyst_agent")
-    workflow.add_edge("analyst_agent",   "auditor_agent")
+    # orchestrator conditionally routes to sentiment or directly to report generator
+    workflow.add_edge(START, "orchestrator_agent")
+    workflow.add_conditional_edges(
+        "orchestrator_agent",
+        lambda state: state.get("route_target", "sentiment_agent"),
+    )
+
+    # Main analysis flow
+    workflow.add_edge("sentiment_agent", "investment_analyst_agent")
+    workflow.add_edge("investment_analyst_agent", "auditor_agent")
 
     # ── Self-correction loop ───────────────────────────────────────────────────
     workflow.add_conditional_edges(
         "auditor_agent",
-        lambda state: "analyst_agent" if state.get("is_hallucinating") else END,
+        lambda state: "investment_analyst_agent" if state.get("is_hallucinating") else "report_generator_agent",
     )
+
+    workflow.add_edge("report_generator_agent", END)
 
     return workflow.compile()

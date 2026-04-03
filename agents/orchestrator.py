@@ -105,13 +105,18 @@ def orchestrator_node(state: WealthManagerState) -> dict:
     latest = str(messages[-1]) if messages else ""
 
     tickers = extract_tickers(latest)
+    route_target = "sentiment_agent" if tickers else "report_generator_agent"
 
     if tickers:
         print(f"  Detected tickers: {tickers}")
     else:
-        print("  No tickers detected — agents will run with empty ticker list.")
+        print("  No tickers detected — routing directly to report generator.")
 
     return {
         "tickers":  tickers,
-        "messages": [f"Orchestrator: extracted tickers {tickers} from input."],
+        "route_target": route_target,
+        "messages": [
+            f"Orchestrator: extracted tickers {tickers} from input.",
+            f"Orchestrator: next route -> {route_target}",
+        ],
     }

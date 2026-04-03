@@ -1,10 +1,12 @@
 # agents/auditor.py
+import os
 import json
 from typing import List, Literal
 from pydantic import BaseModel, Field
 from langchain_groq import ChatGroq
 from langchain_core.prompts import ChatPromptTemplate
 from langchain_core.output_parsers import PydanticOutputParser
+from graph.state import WealthManagerState
 
 # 1. Define the Structured Output Schema
 class FactCheck(BaseModel):
@@ -64,3 +66,55 @@ class AuditorAgent:
                 findings=[], 
                 summary_notes=f"Audit failed due to parsing error: {str(e)}"
             )
+
+
+def _fallback_audit(draft: str, context: str) -> dict:
+    draft_text = (draft or "").lower()
+    context_text = (context or "").lower()
+
+    hallucination_hits = 0
+    for token in ["guaranteed", "certain", "risk-free"]:
+        if token in draft_text:
+            hallucination_hits += 1
+
+    has_context_overlap = bool(context_text and any(word in context_text for word in ["risk", "revenue", "guidance", "cash"]))
+    is_hallucinating = hallucination_hits > 0 or not has_context_overlap
+    score = 0.35 if is_hallucinating else 0.9
+
+    notes = (
+        "Draft includes unsupported certainty-style language or weak grounding."
+        if is_hallucinating
+        else "Draft appears reasonably grounded against available context."
+    )
+    return {
+        "audit_score": score,
+        "is_hallucinating": is_hallucinating,
+        "audit_findings": [{"summary": notes}],
+        "messages": [f"Auditor: {'REJECTED' if is_hallucinating else 'APPROVED'} (score={score:.2f})"],
+    }
+
+
+def auditor_node(state: WealthManagerState) -> dict:
+    print("--- AGENT: AUDITOR ---")
+
+    draft = state.get("draft_report", "")
+    context = state.get("retrieved_context", "")
+
+    api_key = os.getenv("GROQ_API_KEY")
+    if not api_key:
+        return _fallback_audit(draft, context)
+
+    try:
+        agent = AuditorAgent(api_key=api_key)
+        report = agent.audit_draft(draft=draft, context=context)
+        is_hallucinating = report.status != "APPROVED"
+        score = 0.35 if is_hallucinating else 0.9
+
+        return {
+            "audit_score": score,
+            "is_hallucinating": is_hallucinating,
+            "audit_findings": [f.model_dump() for f in report.findings],
+            "messages": [f"Auditor: {report.status} (score={score:.2f})"],
+        }
+    except Exception:
+        return _fallback_audit(draft, context)

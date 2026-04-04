@@ -324,7 +324,6 @@ def write_outputs(output_dir: Path, all_results: list[dict[str, Any]]) -> None:
                 handle.write(json.dumps(row, ensure_ascii=False) + "\n")
 
         summary = result["summary"]
-        ragas_scores = summary.get("ragas") or {}
         summary_rows.append(
             {
                 "variant": variant,
@@ -334,10 +333,6 @@ def write_outputs(output_dir: Path, all_results: list[dict[str, Any]]) -> None:
                 "f1_score": summary.get("f1_score", ""),
                 "accuracy": summary.get("accuracy", ""),
                 "mrr": summary.get("mrr", ""),
-                "faithfulness": ragas_scores.get("faithfulness", ""),
-                "context_precision": ragas_scores.get("context_precision", ""),
-                "context_recall": ragas_scores.get("context_recall", ""),
-                "hallucination_rate": ragas_scores.get("hallucination_rate", ""),
             }
         )
 
@@ -353,10 +348,6 @@ def write_outputs(output_dir: Path, all_results: list[dict[str, Any]]) -> None:
                 "f1_score",
                 "accuracy",
                 "mrr",
-                "faithfulness",
-                "context_precision",
-                "context_recall",
-                "hallucination_rate",
             ],
         )
         writer.writeheader()
@@ -368,8 +359,8 @@ def write_outputs(output_dir: Path, all_results: list[dict[str, Any]]) -> None:
 
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description="Compare RAG variants for investment analysis.")
-    parser.add_argument("--chunks", type=Path, default=Path("JJ/aapl_10k_chunks.jsonl"))
-    parser.add_argument("--qa", type=Path, default=Path("data/manual_qa_template.jsonl"))
+    parser.add_argument("--chunks", type=Path, default=Path("JJ/data/processed/aapl_10k_chunks.jsonl"))
+    parser.add_argument("--qa", type=Path, default=Path("JJ/data/manual_qa_template.jsonl"))
     parser.add_argument("--output-dir", type=Path, default=Path("results/rag_compare"))
     parser.add_argument("--k", type=int, default=5)
     parser.add_argument(

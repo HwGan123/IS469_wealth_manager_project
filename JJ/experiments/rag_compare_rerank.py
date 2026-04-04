@@ -150,6 +150,38 @@ def rerank_with_cohere(question: str, retrieved_indices: list[int], chunks: list
         return retrieved_indices
 
 
+def rerank_with_cross_encoder(question: str, retrieved_indices: list[int], chunks: list[dict[str, Any]], model_name: str = "cross-encoder/mmarco-mMiniLMv2-L12-H384-v1") -> list[int]:
+    """Rerank retrieved chunks using local cross-encoder model (no API required)"""
+    try:
+        from sentence_transformers import CrossEncoder
+    except ImportError:
+        print("sentence-transformers package not installed. Install with: pip install sentence-transformers")
+        return retrieved_indices
+
+    try:
+        cross_encoder = CrossEncoder(model_name)
+        
+        # Prepare documents for reranking
+        docs = [chunks[idx]["text"] for idx in retrieved_indices]
+        
+        # Create query-document pairs
+        pairs = [[question, doc] for doc in docs]
+        
+        # Score pairs
+        scores = cross_encoder.predict(pairs)
+        
+        # Sort by score and get reranked indices
+        scored_indices = list(zip(range(len(retrieved_indices)), scores))
+        scored_indices.sort(key=lambda x: x[1], reverse=True)
+        
+        reranked_indices = [retrieved_indices[i] for i, _ in scored_indices]
+        return reranked_indices
+
+    except Exception as e:
+        print(f"Cross-encoder reranking failed: {e}. Using original ranking.")
+        return retrieved_indices
+
+
 def rerank_with_groq(question: str, retrieved_indices: list[int], chunks: list[dict[str, Any]], model_name: str = "mixtral-8x7b-32768") -> list[int]:
     """Rerank retrieved chunks using Groq LLM API (uses LLM to score relevance)"""
     try:
@@ -160,44 +192,57 @@ def rerank_with_groq(question: str, retrieved_indices: list[int], chunks: list[d
 
     api_key = os.getenv("GROQ_API_KEY")
     if not api_key:
-        print("GROQ_API_KEY not set. Skipping reranking.")
+        print("GROQ_API_KEY not set. Skipping Groq reranking.")
         return retrieved_indices
 
     client = Groq(api_key=api_key)
-    docs = [chunks[idx]["text"][:500] for idx in retrieved_indices]  # Truncate for API limits
+    
+    # Use full document text for better ranking (Groq has higher token limits)
+    docs = [chunks[idx]["text"][:2000] for idx in retrieved_indices]  # Increased from 500 to 2000
     
     # Create prompt asking Groq to rank documents by relevance
-    doc_text = "\n\n".join([f"[{i}] {doc}" for i, doc in enumerate(docs)])
-    prompt = f"""You are a document ranking expert. Given a question and documents, rank them by relevance.
+    doc_text = "\n\n".join([f"[{i}] {doc[:800]}" for i, doc in enumerate(docs)])
+    prompt = f"""You are a financial document ranking expert. For the given question, rank these documents by how relevant they are to answering it.
 
 Question: {question}
 
 Documents:
 {doc_text}
 
-Return ONLY a comma-separated list of document indices in order of relevance (highest first). Example: 2,0,1,3
-Do not include explanations, just the indices."""
+Respond with ONLY a comma-separated list of indices in order of relevance (best first). Example: 2,0,1,3
+No explanations. No markdown. Just indices."""
 
     try:
         response = client.chat.completions.create(
             model=model_name,
             messages=[{"role": "user", "content": prompt}],
             temperature=0.0,
-            max_tokens=100,
+            max_tokens=50,
         )
         
         ranking_text = response.choices[0].message.content.strip()
-        ranked_positions = [int(x.strip()) for x in ranking_text.split(",") if x.strip().isdigit()]
+        print(f"Groq ranking response: {ranking_text}")  # Debug output
+        
+        # Parse indices from response
+        ranked_positions = []
+        for token in ranking_text.replace(",", " ").split():
+            try:
+                pos = int(token.strip())
+                if 0 <= pos < len(retrieved_indices):
+                    ranked_positions.append(pos)
+            except ValueError:
+                continue
         
         if ranked_positions:
-            reranked = [retrieved_indices[pos] for pos in ranked_positions if pos < len(retrieved_indices)]
-            # Add any missing indices at the end
-            for i, idx in enumerate(retrieved_indices):
+            reranked = [retrieved_indices[pos] for pos in ranked_positions]
+            # Add any missing indices at the end (shouldn't happen but safety check)
+            for idx in retrieved_indices:
                 if idx not in reranked:
                     reranked.append(idx)
             return reranked[:len(retrieved_indices)]
-        
-        return retrieved_indices
+        else:
+            print("Failed to parse Groq ranking response. Using original ranking.")
+            return retrieved_indices
 
     except Exception as e:
         print(f"Groq reranking failed: {e}. Using original ranking.")
@@ -357,6 +402,8 @@ def run_variant(
                 top_indices = rerank_with_cohere(question, top_indices, chunks, cohere_model)
             elif reranker == "groq":
                 top_indices = rerank_with_groq(question, top_indices, chunks, groq_model)
+            elif reranker == "cross-encoder":
+                top_indices = rerank_with_cross_encoder(question, top_indices, chunks)
             else:
                 print(f"Unknown reranker '{reranker}'; using original ranking.")
 
@@ -445,10 +492,6 @@ def write_outputs(output_dir: Path, all_results: list[dict[str, Any]]) -> None:
                 "f1_score": summary.get("f1_score", ""),
                 "accuracy": summary.get("accuracy", ""),
                 "mrr": summary.get("mrr", ""),
-                "faithfulness": ragas_scores.get("faithfulness", ""),
-                "context_precision": ragas_scores.get("context_precision", ""),
-                "context_recall": ragas_scores.get("context_recall", ""),
-                "hallucination_rate": ragas_scores.get("hallucination_rate", ""),
             }
         )
 
@@ -464,10 +507,6 @@ def write_outputs(output_dir: Path, all_results: list[dict[str, Any]]) -> None:
                 "f1_score",
                 "accuracy",
                 "mrr",
-                "faithfulness",
-                "context_precision",
-                "context_recall",
-                "hallucination_rate",
             ],
         )
         writer.writeheader()
@@ -479,8 +518,8 @@ def write_outputs(output_dir: Path, all_results: list[dict[str, Any]]) -> None:
 
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description="Compare RAG variants with Cohere reranking for investment analysis.")
-    parser.add_argument("--chunks", type=Path, default=Path("JJ/aapl_10k_chunks.jsonl"))
-    parser.add_argument("--qa", type=Path, default=Path("data/manual_qa_template.jsonl"))
+    parser.add_argument("--chunks", type=Path, default=Path("JJ/data/processed/aapl_10k_chunks.jsonl"))
+    parser.add_argument("--qa", type=Path, default=Path("JJ/data/manual_qa_template.jsonl"))
     parser.add_argument("--output-dir", type=Path, default=Path("results/rag_compare_rerank"))
     parser.add_argument("--k", type=int, default=5)
     parser.add_argument(
@@ -496,10 +535,10 @@ def parse_args() -> argparse.Namespace:
         default="sentence-transformers/all-mpnet-base-v2",
         help="Set this to your finance-finetuned embedding checkpoint.",
     )
-    parser.add_argument("--llm-model", type=str, default="gpt-5.4-nano")
-    parser.add_argument("--reranker", type=str, default="cohere", choices=["none", "cohere", "groq"], help="Choose reranker for +rerank variants")
-    parser.add_argument("--cohere-model", type=str, default="rerank-v3.5")
-    parser.add_argument("--groq-model", type=str, default="openai/gpt-oss-20b", help="Groq model for reranking (e.g., llama3-70b-8192, mixtral-8x7b-32768)")
+    parser.add_argument("--llm-model", type=str, default="gpt-3.5-turbo")
+    parser.add_argument("--reranker", type=str, default="cross-encoder", choices=["none", "cohere", "groq", "cross-encoder"], help="Choose reranker for +rerank variants")
+    parser.add_argument("--cohere-model", type=str, default="rerank-v4.0-pro")
+    parser.add_argument("--groq-model", type=str, default="llama-3.1-70b-versatile", help="Groq model for reranking (e.g., llama-3.1-70b-versatile, llama-3.1-405b-versatile)")
     return parser.parse_args()
 
 

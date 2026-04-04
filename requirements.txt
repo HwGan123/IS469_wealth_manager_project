@@ -12,7 +12,7 @@ numpy==1.26.4
 
 # Sentiment Analysis (FinBERT)
 transformers==4.41.0
-torch==2.3.0
+torch==2.2.2
 sentencepiece==0.2.0
 sentence-transformers==2.7.0
 

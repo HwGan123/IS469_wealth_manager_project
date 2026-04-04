@@ -8,12 +8,13 @@ from typing import Any
 
 
 BASE_DIR = Path(__file__).resolve().parent
+PROCESSED_DATA_DIR = BASE_DIR / "data" / "processed"
 CLEANED_FILES = [
-    BASE_DIR / "aapl_10k_clean.txt",
-    BASE_DIR / "amzn_10k_cleaned.txt",
-    BASE_DIR / "goog_10k_cleaned.txt",
-    BASE_DIR / "msft_10k_cleaned.txt",
-    BASE_DIR / "nvda_10k_cleaned.txt",
+    PROCESSED_DATA_DIR / "aapl_10k_clean.txt",
+    PROCESSED_DATA_DIR / "amzn_10k_cleaned.txt",
+    PROCESSED_DATA_DIR / "goog_10k_cleaned.txt",
+    PROCESSED_DATA_DIR / "msft_10k_cleaned.txt",
+    PROCESSED_DATA_DIR / "nvda_10k_cleaned.txt",
 ]
 DB_PATH = BASE_DIR.parent / "chroma_db"
 COLLECTION_NAME = "sec_10k"

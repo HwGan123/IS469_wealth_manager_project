@@ -10,7 +10,7 @@ from sentence_transformers import SentenceTransformer
 from dotenv import load_dotenv
 
 
-DEFAULT_CHUNKS_PATH = Path(__file__).resolve().parent / "aapl_10k_chunks.jsonl"
+DEFAULT_CHUNKS_PATH = Path(__file__).resolve().parent / "data" / "processed" / "aapl_10k_chunks.jsonl"
 DEFAULT_EMBED_MODEL = "sentence-transformers/all-MiniLM-L6-v2"
 DEFAULT_CROSS_ENCODER = "cross-encoder/ms-marco-MiniLM-L-6-v2"
 

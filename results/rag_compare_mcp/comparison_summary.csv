@@ -1,0 +1,3 @@
+variant,precision_at_k,recall_at_k,f1_score,accuracy,mrr
+baseline,0.452,0.84,0.5877,0.84,0.6873
+mcp,0.38,0.82,0.5193,0.82,0.3717

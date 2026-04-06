@@ -1,0 +1,18 @@
+[
+  {
+    "variant": "baseline",
+    "precision_at_k": 0.452,
+    "recall_at_k": 0.84,
+    "f1_score": 0.5877,
+    "accuracy": 0.84,
+    "mrr": 0.6873
+  },
+  {
+    "variant": "mcp",
+    "precision_at_k": 0.38,
+    "recall_at_k": 0.82,
+    "f1_score": 0.5193,
+    "accuracy": 0.82,
+    "mrr": 0.3717
+  }
+]

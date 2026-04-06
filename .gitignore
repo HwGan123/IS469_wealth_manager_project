@@ -29,3 +29,37 @@ gold_class_distribution.png
 
 # uv lock (optional — remove this line if you want to commit it)
 # uv.lock
+.venv/
+venv/
+.venv_rag/
+__pycache__/
+*.pyc
+
+# Local secrets
+.env
+.env.*
+!.env.example
+
+# RAG generated artifacts
+chroma_db/
+# apple
+JJ/aapl_10k_embeddings.json
+JJ/aapl_10k_chunks.jsonl
+JJ/aapl_10k_2025.htm
+# amazon
+JJ/amzn_10k_embeddings.json
+JJ/amzn_10k_chunks.jsonl
+JJ/amzn_10k_2025.htm
+# google
+JJ/goog_10k_embeddings.json
+JJ/goog_10k_chunks.jsonl
+JJ/goog_10k_2025.htm
+# microsoft
+JJ/msft_10k_embeddings.json
+JJ/msft_10k_chunks.jsonl
+JJ/msft_10k_2025.htm
+# nvidia
+JJ/nvda_10k_embeddings.json
+JJ/nvda_10k_chunks.jsonl
+JJ/nvda_10k_2025.htm
+

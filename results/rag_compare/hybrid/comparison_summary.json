@@ -1,0 +1,11 @@
+[
+  {
+    "variant": "hybrid",
+    "num_questions": 50,
+    "precision_at_k": 0.764,
+    "recall_at_k": 0.92,
+    "f1_score": 0.8347743467933492,
+    "accuracy": 0.92,
+    "mrr": 0.8183333333333332
+  }
+]

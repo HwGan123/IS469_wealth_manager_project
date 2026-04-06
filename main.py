@@ -14,19 +14,18 @@ def main():
     # Initial input for the system
     # In a real-world case, this would be a specific client request
     initial_input = {
-        "messages": ["Analyze the latest news and sentiment for AAPL and NVDA."],
-        "tickers":            [],
-        "route_target":       "sentiment_agent",
-        "news_articles":      [],
-        "sentiment_results":  [],
-        "sentiment_summary":  {},
-        "sentiment_score":    0.0,
-        "retrieved_context":  "",
-        "draft_report":       "",
-        "audit_score":        0.0,
-        "audit_findings":     [],
-        "is_hallucinating":   False,
-        "final_report":       "",
+        "messages": ["Analyze the impact of recent tech sector volatility on a high-growth portfolio."],
+        "tickers": ["AAPL", "NVDA", "GOOG", "MSFT"],
+        "news_articles": [],
+        "sentiment_results": [],
+        "sentiment_summary": {},
+        "sentiment_score": 0.0,
+        "portfolio_weights": {},
+        "retrieved_context": "",
+        "live_data_context": "",
+        "draft_report": "",
+        "audit_score": 0.0,
+        "is_hallucinating": False
     }
 
     # Execute the workflow

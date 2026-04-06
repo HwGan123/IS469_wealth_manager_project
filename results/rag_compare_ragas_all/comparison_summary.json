@@ -1,0 +1,54 @@
+[
+  {
+    "variant": "baseline",
+    "num_questions": 50,
+    "precision_at_k": 0.452,
+    "recall_at_k": 0.84,
+    "f1_score": 0.5877399380804954,
+    "accuracy": 0.84,
+    "mrr": 0.6223333333333333,
+    "ragas_context_recall": 0.38,
+    "ragas_faithfulness": 0.9205,
+    "ragas_factual_correctness": "",
+    "ragas_hallucination_rate": 0.0795
+  },
+  {
+    "variant": "hyde",
+    "num_questions": 50,
+    "precision_at_k": 0.504,
+    "recall_at_k": 0.86,
+    "f1_score": 0.635542521994135,
+    "accuracy": 0.86,
+    "mrr": 0.6406666666666666,
+    "ragas_context_recall": 0.4167,
+    "ragas_faithfulness": 0.9325,
+    "ragas_factual_correctness": "",
+    "ragas_hallucination_rate": 0.0675
+  },
+  {
+    "variant": "hybrid",
+    "num_questions": 50,
+    "precision_at_k": 0.764,
+    "recall_at_k": 0.92,
+    "f1_score": 0.8347743467933492,
+    "accuracy": 0.92,
+    "mrr": 0.8183333333333332,
+    "ragas_context_recall": 0.6133,
+    "ragas_faithfulness": 0.9089,
+    "ragas_factual_correctness": "",
+    "ragas_hallucination_rate": 0.0911
+  },
+  {
+    "variant": "finance",
+    "num_questions": 50,
+    "precision_at_k": 0.7240000000000001,
+    "recall_at_k": 0.92,
+    "f1_score": 0.810316301703163,
+    "accuracy": 0.92,
+    "mrr": 0.8266666666666667,
+    "ragas_context_recall": 0.4433,
+    "ragas_faithfulness": 0.9393,
+    "ragas_factual_correctness": "",
+    "ragas_hallucination_rate": 0.0607
+  }
+]

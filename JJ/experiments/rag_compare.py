@@ -9,6 +9,11 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Any
 
+from dotenv import load_dotenv
+
+# Load environment variables from .env file
+load_dotenv()
+
 
 def tokenize(text: str) -> list[str]:
     return re.findall(r"[a-zA-Z0-9]+", text.lower())
@@ -158,46 +163,70 @@ def context_hit(retrieved_contexts: list[str], keywords: list[str]) -> bool:
     return any(keyword.lower() in merged for keyword in keywords)
 
 
-def run_ragas(results: list[dict[str, Any]], llm_model_name: str, embedding_model_name: str) -> dict[str, float] | None:
+def run_ragas(results: list[dict[str, Any]], llm_model_name: str) -> dict[str, float] | None:
     try:
-        from datasets import Dataset
-        from ragas import evaluate
-        from ragas.metrics import context_precision, context_recall, faithfulness
-        from langchain_openai import ChatOpenAI, OpenAIEmbeddings
-    except Exception:
+        from ragas import evaluate, EvaluationDataset
+        from ragas.dataset_schema import SingleTurnSample
+        from ragas.llms import LangchainLLMWrapper
+        from ragas.metrics import LLMContextRecall, Faithfulness, FactualCorrectness
+        from langchain_openai import ChatOpenAI
+    except ImportError as e:
+        print(f"  [RAGAS] Skipping — missing package: {e}")
         return None
 
     if not os.getenv("OPENAI_API_KEY"):
+        print("  [RAGAS] Skipping — OPENAI_API_KEY not set")
         return None
 
-    ragas_rows = []
+    samples = []
     for row in results:
-        ragas_rows.append(
-            {
-                "question": row["question"],
-                "answer": row["answer"],
-                "contexts": row["contexts"],
-                "ground_truth": row.get("ground_truth", ""),
-            }
+        if not row.get("ground_truth") or not row.get("answer"):
+            continue
+        samples.append(
+            SingleTurnSample(
+                user_input=row["question"],
+                response=row["answer"],
+                retrieved_contexts=row["contexts"],  # must be list[str]
+                reference=row["ground_truth"],
+            )
         )
 
-    dataset = Dataset.from_list(ragas_rows)
-    ragas_llm = ChatOpenAI(model=llm_model_name, temperature=0.0)
-    ragas_embeddings = OpenAIEmbeddings(model=embedding_model_name)
+    if not samples:
+        print("  [RAGAS] Skipping — no valid samples (check ground_truth field in your QA file)")
+        return None
 
-    scores = evaluate(
-        dataset,
-        metrics=[faithfulness, context_precision, context_recall],
-        llm=ragas_llm,
-        embeddings=ragas_embeddings,
-    )
-    score_dict = scores.to_pandas().mean(numeric_only=True).to_dict()
+    print(f"  [RAGAS] Evaluating {len(samples)} samples...")
 
-    if "faithfulness" in score_dict:
-        score_dict["hallucination_rate"] = 1.0 - float(score_dict["faithfulness"])
-    return {key: float(value) for key, value in score_dict.items()}
+    try:
+        evaluator_llm = LangchainLLMWrapper(
+            ChatOpenAI(model=llm_model_name, temperature=0.0)
+        )
+        dataset = EvaluationDataset(samples=samples)
 
+        scores = evaluate(
+            dataset=dataset,
+            metrics=[
+                LLMContextRecall(),   # retrieved_contexts + reference
+                Faithfulness(),       # response + retrieved_contexts
+                FactualCorrectness(), # response + reference
+            ],
+            llm=evaluator_llm,
+        )
 
+        score_dict = scores.to_pandas().mean(numeric_only=True).to_dict()
+
+        if "faithfulness" in score_dict:
+            score_dict["hallucination_rate"] = round(1.0 - float(score_dict["faithfulness"]), 4)
+
+        final = {key: round(float(val), 4) for key, val in score_dict.items()}
+        print(f"  [RAGAS] Done: {final}")
+        return final
+
+    except Exception as e:
+        import traceback
+        print(f"  [RAGAS] Evaluation failed: {e}")
+        traceback.print_exc()   # <-- this prints the full stack trace so you can debug
+        return None
 def run_variant(
     variant: str,
     chunks: list[dict[str, Any]],
@@ -292,7 +321,7 @@ def run_variant(
     mean_reciprocal_rank = sum(reciprocal_ranks) / max(len(reciprocal_ranks), 1)
     f1_score = 2 * (precision_at_k * recall_at_k) / max(precision_at_k + recall_at_k, 1e-6)
     accuracy = recall_at_k  # Hit rate
-    ragas_scores = run_ragas(rows, llm_model_name=llm_model, embedding_model_name="text-embedding-3-large")
+    ragas_scores = run_ragas(rows, llm_model_name=llm_model)
 
     return {
         "variant": variant,
@@ -312,7 +341,6 @@ def run_variant(
 
 def write_outputs(output_dir: Path, all_results: list[dict[str, Any]]) -> None:
     output_dir.mkdir(parents=True, exist_ok=True)
-
     summary_rows: list[dict[str, Any]] = []
 
     for result in all_results:
@@ -324,44 +352,42 @@ def write_outputs(output_dir: Path, all_results: list[dict[str, Any]]) -> None:
                 handle.write(json.dumps(row, ensure_ascii=False) + "\n")
 
         summary = result["summary"]
-        summary_rows.append(
-            {
-                "variant": variant,
-                "num_questions": summary["num_questions"],
-                "precision_at_k": summary.get("precision_at_k", ""),
-                "recall_at_k": summary.get("recall_at_k", ""),
-                "f1_score": summary.get("f1_score", ""),
-                "accuracy": summary.get("accuracy", ""),
-                "mrr": summary.get("mrr", ""),
-            }
-        )
+        ragas = summary.get("ragas") or {}   # flatten RAGAS scores into the row
+
+        summary_rows.append({
+            "variant": variant,
+            "num_questions": summary["num_questions"],
+            "precision_at_k": summary.get("precision_at_k", ""),
+            "recall_at_k": summary.get("recall_at_k", ""),
+            "f1_score": summary.get("f1_score", ""),
+            "accuracy": summary.get("accuracy", ""),
+            "mrr": summary.get("mrr", ""),
+            # RAGAS scores
+            "ragas_context_recall": ragas.get("context_recall", ""),
+            "ragas_faithfulness": ragas.get("faithfulness", ""),
+            "ragas_factual_correctness": ragas.get("factual_correctness", ""),
+            "ragas_hallucination_rate": ragas.get("hallucination_rate", ""),
+        })
 
     csv_path = output_dir / "comparison_summary.csv"
     with csv_path.open("w", encoding="utf-8", newline="") as handle:
-        writer = csv.DictWriter(
-            handle,
-            fieldnames=[
-                "variant",
-                "num_questions",
-                "precision_at_k",
-                "recall_at_k",
-                "f1_score",
-                "accuracy",
-                "mrr",
-            ],
-        )
+        writer = csv.DictWriter(handle, fieldnames=[
+            "variant", "num_questions",
+            "precision_at_k", "recall_at_k", "f1_score", "accuracy", "mrr",
+            "ragas_context_recall", "ragas_faithfulness",
+            "ragas_factual_correctness", "ragas_hallucination_rate",
+        ])
         writer.writeheader()
         writer.writerows(summary_rows)
 
     json_path = output_dir / "comparison_summary.json"
     json_path.write_text(json.dumps(summary_rows, indent=2), encoding="utf-8")
 
-
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description="Compare RAG variants for investment analysis.")
     parser.add_argument("--chunks", type=Path, default=Path("JJ/data/processed/aapl_10k_chunks.jsonl"))
     parser.add_argument("--qa", type=Path, default=Path("JJ/data/manual_qa_template.jsonl"))
-    parser.add_argument("--output-dir", type=Path, default=Path("results/rag_compare"))
+    parser.add_argument("--output-dir", type=Path, default=Path("results/rag_compare_ragas"))
     parser.add_argument("--k", type=int, default=5)
     parser.add_argument(
         "--variants",

@@ -4,6 +4,7 @@ langchain-openai==0.1.7
 langgraph==0.0.55
 python-dotenv==1.0.1
 anthropic==0.86.0
+mcp>=0.1.0
 
 # Financial Data & Modeling
 yfinance==1.2.0

@@ -56,6 +56,44 @@ source .venv_rag/bin/activate
 - `hybrid` – Reciprocal Rank Fusion over BM25 + dense retrieval
 - `finance` – Finance-tuned embedding model (provide via `--finance-embedding`)
 
+## Reranking with Cross-Encoder
+
+### Run All Variants with Reranking
+```bash
+.venv_rag/bin/python JJ/experiments/rag_compare_rerank.py \
+  --variants baseline,hyde,hybrid,finance \
+  --llm-model gpt-3.5-turbo
+```
+
+### Run Specific Variants with Reranking
+```bash
+# Hybrid with reranking
+.venv_rag/bin/python JJ/experiments/rag_compare_rerank.py \
+  --variants hybrid \
+  --llm-model gpt-3.5-turbo
+
+# Finance with reranking
+.venv_rag/bin/python JJ/experiments/rag_compare_rerank.py \
+  --variants finance \
+  --llm-model gpt-3.5-turbo
+```
+
+### Reranking Options
+- `--reranker cross-encoder` (default, local reranking - no API cost)
+- `--reranker none` (baseline without reranking)
+- `--k 5` (retrieve top 5 documents before reranking)
+- `--output-dir results/rag_compare_rerank_cross_encoder` (auto-created)
+
+### Results Comparison
+Reranking uses local cross-encoder (`mmarco-mMiniLMv2-L12-H384-v1`) to reorder retrieved documents. Results saved to:
+- `results/rag_compare_rerank_cross_encoder/comparison_summary.json` (metrics)
+- `results/rag_compare_rerank_cross_encoder/{variant}+rerank_details.jsonl` (per-question details)
+
+**Recommendation:**
+- 🏆 **Best overall**: Hybrid (no reranking) – F1: 0.8348
+- 🥈 **Alternative**: Finance + reranking – F1: 0.8103 with improved MRR (0.8400)
+- Reranking adds ~2-3 seconds overhead per 50 questions
+
 ## Output Files
 - `results/rag_compare/comparison_summary.csv` – Metrics per variant (Precision, Recall, F1, Accuracy, MRR)
 - `results/rag_compare/comparison_summary.json` – Same metrics in JSON format

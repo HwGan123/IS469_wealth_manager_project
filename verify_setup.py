@@ -27,7 +27,7 @@ def test_data_files():
         return False
     
     if qa_file.exists():
-        with open(qa_file) as f:
+        with open(qa_file, encoding="utf-8") as f:
             qa_count = sum(1 for _ in f)
         print(f"✅ QA file: {qa_file} ({qa_count} QA pairs)")
     else:

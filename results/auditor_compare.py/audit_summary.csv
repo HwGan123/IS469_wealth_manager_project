@@ -1,0 +1,5 @@
+Variant,Total Entries,Overall Status,Hallucination Count,Hallucination Rate (%),Verified Count,Unsubstantiated Count,Faithfulness,Answer Relevancy,Context Recall,Avg RAGAS Score
+HYDE,50,PASSED,0,0.0%,0,59,0.870,0.010,0.405,0.428
+BASELINE,50,PASSED,0,0.0%,1,120,0.986,0.020,0.409,0.472
+FINANCE,50,PASSED,0,0.0%,0,125,0.983,0.010,0.491,0.495
+HYBRID,50,PASSED,0,0.0%,0,109,0.980,0.030,0.524,0.511

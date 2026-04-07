@@ -21,9 +21,14 @@ class WealthManagerState(Dict):
     draft_report:      str          # generated markdown report
 
     # ── Auditor agent ─────────────────────────────────────────────────────────
-    audit_score:      float         # quantitative audit score
-    audit_findings:   List[Dict]    # structured findings from auditor
-    is_hallucinating: bool          # self-correction loop flag
+    audit_score:           float           # quantitative audit score (0-1)
+    audit_findings:        List[Dict]      # structured findings from auditor
+    is_hallucinating:      bool            # self-correction loop flag
+    hallucination_count:   int             # number of hallucinations detected
+    verified_count:        int             # number of verified claims
+    unsubstantiated_count: int             # number of unsubstantiated claims
+    ragas_metrics:         Dict            # RAGAS scores (faithfulness, relevancy, recall)
+    ground_truth:          str             # expected/correct answer for comparison
 
     # ── Report generator agent ────────────────────────────────────────────────
     final_report: str               # final user-facing combined report

@@ -1,0 +1,2914 @@
+{
+  "audit_source": "results/rag_compare",
+  "variants_audited": [
+    {
+      "variant": "hyde",
+      "total_entries": 50,
+      "overall_status": "PASSED",
+      "hallucination_rate": 0.0,
+      "total_hallucinations": 0,
+      "total_verified": 0,
+      "total_unsubstantiated": 59,
+      "ragas_averages": {
+        "faithfulness": 0.87,
+        "answer_relevancy": 0.01,
+        "context_recall": 0.405
+      },
+      "audit_details": [
+        {
+          "status": "REJECTED",
+          "hallucination_count": 0,
+          "verified_count": 0,
+          "unsubstantiated_count": 6,
+          "ragas_metrics": {
+            "faithfulness": 0.333,
+            "answer_relevancy": 0.0,
+            "context_recall": 0.636
+          },
+          "findings_summary": "0 hallucinations, 0 verified, 6 unsubstantiated",
+          "question_id": 1,
+          "question": "What are the major risk factors Apple reports related to supply chain and operations?"
+        },
+        {
+          "status": "APPROVED",
+          "hallucination_count": 0,
+          "verified_count": 0,
+          "unsubstantiated_count": 0,
+          "ragas_metrics": {
+            "faithfulness": 0.95,
+            "answer_relevancy": 0.0,
+            "context_recall": 0.375
+          },
+          "findings_summary": "0 hallucinations, 0 verified, 0 unsubstantiated",
+          "question_id": 2,
+          "question": "What does Apple report in Management\u2019s Discussion and Analysis about revenue performance?"
+        },
+        {
+          "status": "APPROVED",
+          "hallucination_count": 0,
+          "verified_count": 0,
+          "unsubstantiated_count": 1,
+          "ragas_metrics": {
+            "faithfulness": 1.0,
+            "answer_relevancy": 0.0,
+            "context_recall": 0.25
+          },
+          "findings_summary": "0 hallucinations, 0 verified, 1 unsubstantiated",
+          "question_id": 3,
+          "question": "What cybersecurity disclosures are included in the 10-K?"
+        },
+        {
+          "status": "APPROVED",
+          "hallucination_count": 0,
+          "verified_count": 0,
+          "unsubstantiated_count": 0,
+          "ragas_metrics": {
+            "faithfulness": 0.95,
+            "answer_relevancy": 0.0,
+            "context_recall": 0.333
+          },
+          "findings_summary": "0 hallucinations, 0 verified, 0 unsubstantiated",
+          "question_id": 4,
+          "question": "How much revenue did Apple generate from iPhone sales in the most recent fiscal year?"
+        },
+        {
+          "status": "APPROVED",
+          "hallucination_count": 0,
+          "verified_count": 0,
+          "unsubstantiated_count": 0,
+          "ragas_metrics": {
+            "faithfulness": 0.95,
+            "answer_relevancy": 0.0,
+            "context_recall": 0.889
+          },
+          "findings_summary": "0 hallucinations, 0 verified, 0 unsubstantiated",
+          "question_id": 5,
+          "question": "What geographic regions represent Apple's largest revenue sources?"
+        },
+        {
+          "status": "APPROVED",
+          "hallucination_count": 0,
+          "verified_count": 0,
+          "unsubstantiated_count": 5,
+          "ragas_metrics": {
+            "faithfulness": 0.708,
+            "answer_relevancy": 0.0,
+            "context_recall": 0.5
+          },
+          "findings_summary": "0 hallucinations, 0 verified, 5 unsubstantiated",
+          "question_id": 6,
+          "question": "What is Apple's gross margin and operating margin trend?"
+        },
+        {
+          "status": "APPROVED",
+          "hallucination_count": 0,
+          "verified_count": 0,
+          "unsubstantiated_count": 0,
+          "ragas_metrics": {
+            "faithfulness": 0.95,
+            "answer_relevancy": 0.0,
+            "context_recall": 0.125
+          },
+          "findings_summary": "0 hallucinations, 0 verified, 0 unsubstantiated",
+          "question_id": 7,
+          "question": "How much does Apple spend on research and development annually?"
+        },
+        {
+          "status": "APPROVED",
+          "hallucination_count": 0,
+          "verified_count": 0,
+          "unsubstantiated_count": 0,
+          "ragas_metrics": {
+            "faithfulness": 0.95,
+            "answer_relevancy": 0.0,
+            "context_recall": 0.5
+          },
+          "findings_summary": "0 hallucinations, 0 verified, 0 unsubstantiated",
+          "question_id": 8,
+          "question": "What are Apple's contingent liabilities and legal proceedings?"
+        },
+        {
+          "status": "APPROVED",
+          "hallucination_count": 0,
+          "verified_count": 0,
+          "unsubstantiated_count": 0,
+          "ragas_metrics": {
+            "faithfulness": 0.95,
+            "answer_relevancy": 0.0,
+            "context_recall": 0.111
+          },
+          "findings_summary": "0 hallucinations, 0 verified, 0 unsubstantiated",
+          "question_id": 9,
+          "question": "What is Apple's debt structure and credit rating outlook?"
+        },
+        {
+          "status": "APPROVED",
+          "hallucination_count": 0,
+          "verified_count": 0,
+          "unsubstantiated_count": 0,
+          "ragas_metrics": {
+            "faithfulness": 0.95,
+            "answer_relevancy": 0.0,
+            "context_recall": 0.5
+          },
+          "findings_summary": "0 hallucinations, 0 verified, 0 unsubstantiated",
+          "question_id": 10,
+          "question": "How dependent is Apple on a single customer or channel for sales?"
+        },
+        {
+          "status": "REJECTED",
+          "hallucination_count": 0,
+          "verified_count": 0,
+          "unsubstantiated_count": 8,
+          "ragas_metrics": {
+            "faithfulness": 0.5,
+            "answer_relevancy": 0.0,
+            "context_recall": 0.5
+          },
+          "findings_summary": "0 hallucinations, 0 verified, 8 unsubstantiated",
+          "question_id": 11,
+          "question": "What are the primary competitive risks Apple faces?"
+        },
+        {
+          "status": "APPROVED",
+          "hallucination_count": 0,
+          "verified_count": 0,
+          "unsubstantiated_count": 0,
+          "ragas_metrics": {
+            "faithfulness": 0.95,
+            "answer_relevancy": 0.0,
+            "context_recall": 0.1
+          },
+          "findings_summary": "0 hallucinations, 0 verified, 0 unsubstantiated",
+          "question_id": 12,
+          "question": "How does Apple address environmental and climate-related risks?"
+        },
+        {
+          "status": "REJECTED",
+          "hallucination_count": 0,
+          "verified_count": 0,
+          "unsubstantiated_count": 5,
+          "ragas_metrics": {
+            "faithfulness": 0.6,
+            "answer_relevancy": 0.0,
+            "context_recall": 0.444
+          },
+          "findings_summary": "0 hallucinations, 0 verified, 5 unsubstantiated",
+          "question_id": 13,
+          "question": "What regulatory risks does Apple face in major markets?"
+        },
+        {
+          "status": "APPROVED",
+          "hallucination_count": 0,
+          "verified_count": 0,
+          "unsubstantiated_count": 0,
+          "ragas_metrics": {
+            "faithfulness": 0.95,
+            "answer_relevancy": 0.0,
+            "context_recall": 0.333
+          },
+          "findings_summary": "0 hallucinations, 0 verified, 0 unsubstantiated",
+          "question_id": 14,
+          "question": "How much cash and cash equivalents does Apple maintain?"
+        },
+        {
+          "status": "APPROVED",
+          "hallucination_count": 0,
+          "verified_count": 0,
+          "unsubstantiated_count": 1,
+          "ragas_metrics": {
+            "faithfulness": 1.0,
+            "answer_relevancy": 0.0,
+            "context_recall": 0.375
+          },
+          "findings_summary": "0 hallucinations, 0 verified, 1 unsubstantiated",
+          "question_id": 15,
+          "question": "What is Apple's capital allocation strategy?"
+        },
+        {
+          "status": "APPROVED",
+          "hallucination_count": 0,
+          "verified_count": 0,
+          "unsubstantiated_count": 5,
+          "ragas_metrics": {
+            "faithfulness": 1.0,
+            "answer_relevancy": 0.0,
+            "context_recall": 0.818
+          },
+          "findings_summary": "0 hallucinations, 0 verified, 5 unsubstantiated",
+          "question_id": 16,
+          "question": "What services does Apple provide beyond hardware products?"
+        },
+        {
+          "status": "APPROVED",
+          "hallucination_count": 0,
+          "verified_count": 0,
+          "unsubstantiated_count": 0,
+          "ragas_metrics": {
+            "faithfulness": 0.95,
+            "answer_relevancy": 0.0,
+            "context_recall": 0.333
+          },
+          "findings_summary": "0 hallucinations, 0 verified, 0 unsubstantiated",
+          "question_id": 17,
+          "question": "What are Apple's intellectual property and patent strategies?"
+        },
+        {
+          "status": "APPROVED",
+          "hallucination_count": 0,
+          "verified_count": 0,
+          "unsubstantiated_count": 0,
+          "ragas_metrics": {
+            "faithfulness": 0.95,
+            "answer_relevancy": 0.0,
+            "context_recall": 0.556
+          },
+          "findings_summary": "0 hallucinations, 0 verified, 0 unsubstantiated",
+          "question_id": 18,
+          "question": "How does Apple manage foreign exchange exposure?"
+        },
+        {
+          "status": "REJECTED",
+          "hallucination_count": 0,
+          "verified_count": 0,
+          "unsubstantiated_count": 5,
+          "ragas_metrics": {
+            "faithfulness": 0.2,
+            "answer_relevancy": 0.0,
+            "context_recall": 0.857
+          },
+          "findings_summary": "0 hallucinations, 0 verified, 5 unsubstantiated",
+          "question_id": 19,
+          "question": "What supplier concentration risks does Apple face?"
+        },
+        {
+          "status": "REJECTED",
+          "hallucination_count": 0,
+          "verified_count": 0,
+          "unsubstantiated_count": 2,
+          "ragas_metrics": {
+            "faithfulness": 0.667,
+            "answer_relevancy": 0.0,
+            "context_recall": 0.429
+          },
+          "findings_summary": "0 hallucinations, 0 verified, 2 unsubstantiated",
+          "question_id": 20,
+          "question": "What is Apple's tax position and effective tax rate?"
+        },
+        {
+          "status": "APPROVED",
+          "hallucination_count": 0,
+          "verified_count": 0,
+          "unsubstantiated_count": 0,
+          "ragas_metrics": {
+            "faithfulness": 0.95,
+            "answer_relevancy": 0.0,
+            "context_recall": 0.25
+          },
+          "findings_summary": "0 hallucinations, 0 verified, 0 unsubstantiated",
+          "question_id": 21,
+          "question": "How does Apple manage inventory and working capital?"
+        },
+        {
+          "status": "REJECTED",
+          "hallucination_count": 0,
+          "verified_count": 0,
+          "unsubstantiated_count": 10,
+          "ragas_metrics": {
+            "faithfulness": 0.3,
+            "answer_relevancy": 0.0,
+            "context_recall": 0.778
+          },
+          "findings_summary": "0 hallucinations, 0 verified, 10 unsubstantiated",
+          "question_id": 22,
+          "question": "What are the risks related to product recalls or defects?"
+        },
+        {
+          "status": "APPROVED",
+          "hallucination_count": 0,
+          "verified_count": 0,
+          "unsubstantiated_count": 0,
+          "ragas_metrics": {
+            "faithfulness": 0.95,
+            "answer_relevancy": 0.0,
+            "context_recall": 0.625
+          },
+          "findings_summary": "0 hallucinations, 0 verified, 0 unsubstantiated",
+          "question_id": 23,
+          "question": "What is Apple's exposure to China manufacturing and market risks?"
+        },
+        {
+          "status": "REJECTED",
+          "hallucination_count": 0,
+          "verified_count": 0,
+          "unsubstantiated_count": 4,
+          "ragas_metrics": {
+            "faithfulness": 0.7,
+            "answer_relevancy": 0.0,
+            "context_recall": 0.375
+          },
+          "findings_summary": "0 hallucinations, 0 verified, 4 unsubstantiated",
+          "question_id": 24,
+          "question": "How does Apple segment its business and what is each segment's profitability?"
+        },
+        {
+          "status": "APPROVED",
+          "hallucination_count": 0,
+          "verified_count": 0,
+          "unsubstantiated_count": 0,
+          "ragas_metrics": {
+            "faithfulness": 0.95,
+            "answer_relevancy": 0.0,
+            "context_recall": 0.125
+          },
+          "findings_summary": "0 hallucinations, 0 verified, 0 unsubstantiated",
+          "question_id": 25,
+          "question": "What are Apple's future capital expenditure plans?"
+        },
+        {
+          "status": "APPROVED",
+          "hallucination_count": 0,
+          "verified_count": 0,
+          "unsubstantiated_count": 1,
+          "ragas_metrics": {
+            "faithfulness": 1.0,
+            "answer_relevancy": 0.0,
+            "context_recall": 0.429
+          },
+          "findings_summary": "0 hallucinations, 0 verified, 1 unsubstantiated",
+          "question_id": 26,
+          "question": "How does Apple approach employee compensation and stock-based awards?"
+        },
+        {
+          "status": "APPROVED",
+          "hallucination_count": 0,
+          "verified_count": 0,
+          "unsubstantiated_count": 0,
+          "ragas_metrics": {
+            "faithfulness": 0.95,
+            "answer_relevancy": 0.0,
+            "context_recall": 0.571
+          },
+          "findings_summary": "0 hallucinations, 0 verified, 0 unsubstantiated",
+          "question_id": 27,
+          "question": "What is Apple's approach to data privacy and customer information protection?"
+        },
+        {
+          "status": "APPROVED",
+          "hallucination_count": 0,
+          "verified_count": 0,
+          "unsubstantiated_count": 0,
+          "ragas_metrics": {
+            "faithfulness": 0.95,
+            "answer_relevancy": 0.0,
+            "context_recall": 0.429
+          },
+          "findings_summary": "0 hallucinations, 0 verified, 0 unsubstantiated",
+          "question_id": 28,
+          "question": "How does Apple manage relationships with wireless carriers?"
+        },
+        {
+          "status": "APPROVED",
+          "hallucination_count": 0,
+          "verified_count": 0,
+          "unsubstantiated_count": 0,
+          "ragas_metrics": {
+            "faithfulness": 0.95,
+            "answer_relevancy": 0.0,
+            "context_recall": 0.333
+          },
+          "findings_summary": "0 hallucinations, 0 verified, 0 unsubstantiated",
+          "question_id": 29,
+          "question": "What percentage of revenue comes from Services versus Products?"
+        },
+        {
+          "status": "REJECTED",
+          "hallucination_count": 0,
+          "verified_count": 0,
+          "unsubstantiated_count": 6,
+          "ragas_metrics": {
+            "faithfulness": 0.333,
+            "answer_relevancy": 0.0,
+            "context_recall": 0.5
+          },
+          "findings_summary": "0 hallucinations, 0 verified, 6 unsubstantiated",
+          "question_id": 30,
+          "question": "What are the risks associated with economic cycles and consumer spending?"
+        },
+        {
+          "status": "APPROVED",
+          "hallucination_count": 0,
+          "verified_count": 0,
+          "unsubstantiated_count": 0,
+          "ragas_metrics": {
+            "faithfulness": 0.95,
+            "answer_relevancy": 0.0,
+            "context_recall": 0.556
+          },
+          "findings_summary": "0 hallucinations, 0 verified, 0 unsubstantiated",
+          "question_id": 31,
+          "question": "How does Apple manage product obsolescence and technology transitions?"
+        },
+        {
+          "status": "APPROVED",
+          "hallucination_count": 0,
+          "verified_count": 0,
+          "unsubstantiated_count": 0,
+          "ragas_metrics": {
+            "faithfulness": 0.95,
+            "answer_relevancy": 0.0,
+            "context_recall": 0.125
+          },
+          "findings_summary": "0 hallucinations, 0 verified, 0 unsubstantiated",
+          "question_id": 32,
+          "question": "What are Apple's commitments to diversity, equity, and inclusion?"
+        },
+        {
+          "status": "APPROVED",
+          "hallucination_count": 0,
+          "verified_count": 0,
+          "unsubstantiated_count": 0,
+          "ragas_metrics": {
+            "faithfulness": 0.95,
+            "answer_relevancy": 0.0,
+            "context_recall": 0.25
+          },
+          "findings_summary": "0 hallucinations, 0 verified, 0 unsubstantiated",
+          "question_id": 33,
+          "question": "How does Apple address supply chain labor and ethical sourcing?"
+        },
+        {
+          "status": "APPROVED",
+          "hallucination_count": 0,
+          "verified_count": 0,
+          "unsubstantiated_count": 0,
+          "ragas_metrics": {
+            "faithfulness": 0.95,
+            "answer_relevancy": 0.0,
+            "context_recall": 0.5
+          },
+          "findings_summary": "0 hallucinations, 0 verified, 0 unsubstantiated",
+          "question_id": 34,
+          "question": "What is the impact of App Store policies and ecosystem on Apple's business?"
+        },
+        {
+          "status": "APPROVED",
+          "hallucination_count": 0,
+          "verified_count": 0,
+          "unsubstantiated_count": 0,
+          "ragas_metrics": {
+            "faithfulness": 0.95,
+            "answer_relevancy": 0.5,
+            "context_recall": 0.333
+          },
+          "findings_summary": "0 hallucinations, 0 verified, 0 unsubstantiated",
+          "question_id": 35,
+          "question": "How does Apple invest in new markets and emerging technologies?"
+        },
+        {
+          "status": "APPROVED",
+          "hallucination_count": 0,
+          "verified_count": 0,
+          "unsubstantiated_count": 0,
+          "ragas_metrics": {
+            "faithfulness": 0.95,
+            "answer_relevancy": 0.0,
+            "context_recall": 0.1
+          },
+          "findings_summary": "0 hallucinations, 0 verified, 0 unsubstantiated",
+          "question_id": 36,
+          "question": "What are the risks from cryptocurrency and blockchain initiatives?"
+        },
+        {
+          "status": "APPROVED",
+          "hallucination_count": 0,
+          "verified_count": 0,
+          "unsubstantiated_count": 0,
+          "ragas_metrics": {
+            "faithfulness": 0.95,
+            "answer_relevancy": 0.0,
+            "context_recall": 0.375
+          },
+          "findings_summary": "0 hallucinations, 0 verified, 0 unsubstantiated",
+          "question_id": 37,
+          "question": "How does Apple manage its retail operations and store footprint?"
+        },
+        {
+          "status": "APPROVED",
+          "hallucination_count": 0,
+          "verified_count": 0,
+          "unsubstantiated_count": 0,
+          "ragas_metrics": {
+            "faithfulness": 0.95,
+            "answer_relevancy": 0.0,
+            "context_recall": 0.333
+          },
+          "findings_summary": "0 hallucinations, 0 verified, 0 unsubstantiated",
+          "question_id": 38,
+          "question": "What are Apple's exposure and strategy regarding artificial intelligence?"
+        },
+        {
+          "status": "APPROVED",
+          "hallucination_count": 0,
+          "verified_count": 0,
+          "unsubstantiated_count": 0,
+          "ragas_metrics": {
+            "faithfulness": 0.95,
+            "answer_relevancy": 0.0,
+            "context_recall": 0.2
+          },
+          "findings_summary": "0 hallucinations, 0 verified, 0 unsubstantiated",
+          "question_id": 39,
+          "question": "How does Apple address security vulnerabilities and patch management?"
+        },
+        {
+          "status": "APPROVED",
+          "hallucination_count": 0,
+          "verified_count": 0,
+          "unsubstantiated_count": 0,
+          "ragas_metrics": {
+            "faithfulness": 0.95,
+            "answer_relevancy": 0.0,
+            "context_recall": 0.333
+          },
+          "findings_summary": "0 hallucinations, 0 verified, 0 unsubstantiated",
+          "question_id": 40,
+          "question": "What are the terms of Apple's credit facilities and covenants?"
+        },
+        {
+          "status": "APPROVED",
+          "hallucination_count": 0,
+          "verified_count": 0,
+          "unsubstantiated_count": 0,
+          "ragas_metrics": {
+            "faithfulness": 0.95,
+            "answer_relevancy": 0.0,
+            "context_recall": 0.333
+          },
+          "findings_summary": "0 hallucinations, 0 verified, 0 unsubstantiated",
+          "question_id": 41,
+          "question": "How does Apple manage product pricing and gross margins?"
+        },
+        {
+          "status": "APPROVED",
+          "hallucination_count": 0,
+          "verified_count": 0,
+          "unsubstantiated_count": 0,
+          "ragas_metrics": {
+            "faithfulness": 0.95,
+            "answer_relevancy": 0.0,
+            "context_recall": 0.625
+          },
+          "findings_summary": "0 hallucinations, 0 verified, 0 unsubstantiated",
+          "question_id": 42,
+          "question": "What is Apple's strategy for emerging market penetration?"
+        },
+        {
+          "status": "APPROVED",
+          "hallucination_count": 0,
+          "verified_count": 0,
+          "unsubstantiated_count": 0,
+          "ragas_metrics": {
+            "faithfulness": 0.95,
+            "answer_relevancy": 0.0,
+            "context_recall": 0.556
+          },
+          "findings_summary": "0 hallucinations, 0 verified, 0 unsubstantiated",
+          "question_id": 43,
+          "question": "How does Apple manage software and cloud infrastructure costs?"
+        },
+        {
+          "status": "APPROVED",
+          "hallucination_count": 0,
+          "verified_count": 0,
+          "unsubstantiated_count": 0,
+          "ragas_metrics": {
+            "faithfulness": 0.95,
+            "answer_relevancy": 0.0,
+            "context_recall": 0.5
+          },
+          "findings_summary": "0 hallucinations, 0 verified, 0 unsubstantiated",
+          "question_id": 44,
+          "question": "What are the risks from government investigations and regulatory actions?"
+        },
+        {
+          "status": "APPROVED",
+          "hallucination_count": 0,
+          "verified_count": 0,
+          "unsubstantiated_count": 0,
+          "ragas_metrics": {
+            "faithfulness": 0.95,
+            "answer_relevancy": 0.0,
+            "context_recall": 0.111
+          },
+          "findings_summary": "0 hallucinations, 0 verified, 0 unsubstantiated",
+          "question_id": 45,
+          "question": "How does Apple manage pension obligations and post-retirement benefits?"
+        },
+        {
+          "status": "APPROVED",
+          "hallucination_count": 0,
+          "verified_count": 0,
+          "unsubstantiated_count": 0,
+          "ragas_metrics": {
+            "faithfulness": 0.95,
+            "answer_relevancy": 0.0,
+            "context_recall": 0.273
+          },
+          "findings_summary": "0 hallucinations, 0 verified, 0 unsubstantiated",
+          "question_id": 46,
+          "question": "What is Apple's strategy for hardware upgrades and product longevity?"
+        },
+        {
+          "status": "APPROVED",
+          "hallucination_count": 0,
+          "verified_count": 0,
+          "unsubstantiated_count": 0,
+          "ragas_metrics": {
+            "faithfulness": 0.95,
+            "answer_relevancy": 0.0,
+            "context_recall": 0.333
+          },
+          "findings_summary": "0 hallucinations, 0 verified, 0 unsubstantiated",
+          "question_id": 47,
+          "question": "How does Apple address subscription churn and customer retention?"
+        },
+        {
+          "status": "APPROVED",
+          "hallucination_count": 0,
+          "verified_count": 0,
+          "unsubstantiated_count": 0,
+          "ragas_metrics": {
+            "faithfulness": 0.95,
+            "answer_relevancy": 0.0,
+            "context_recall": 0.25
+          },
+          "findings_summary": "0 hallucinations, 0 verified, 0 unsubstantiated",
+          "question_id": 48,
+          "question": "What are Apple's commitments regarding manufacturing location and capacity?"
+        },
+        {
+          "status": "APPROVED",
+          "hallucination_count": 0,
+          "verified_count": 0,
+          "unsubstantiated_count": 0,
+          "ragas_metrics": {
+            "faithfulness": 0.95,
+            "answer_relevancy": 0.0,
+            "context_recall": 0.556
+          },
+          "findings_summary": "0 hallucinations, 0 verified, 0 unsubstantiated",
+          "question_id": 49,
+          "question": "How does Apple manage risks from third-party software dependencies?"
+        },
+        {
+          "status": "APPROVED",
+          "hallucination_count": 0,
+          "verified_count": 0,
+          "unsubstantiated_count": 0,
+          "ragas_metrics": {
+            "faithfulness": 0.95,
+            "answer_relevancy": 0.0,
+            "context_recall": 0.25
+          },
+          "findings_summary": "0 hallucinations, 0 verified, 0 unsubstantiated",
+          "question_id": 50,
+          "question": "What is Apple's strategy to monetize wearables and accessories?"
+        }
+      ]
+    },
+    {
+      "variant": "baseline",
+      "total_entries": 50,
+      "overall_status": "PASSED",
+      "hallucination_rate": 0.0,
+      "total_hallucinations": 0,
+      "total_verified": 1,
+      "total_unsubstantiated": 120,
+      "ragas_averages": {
+        "faithfulness": 0.986,
+        "answer_relevancy": 0.02,
+        "context_recall": 0.409
+      },
+      "audit_details": [
+        {
+          "status": "APPROVED",
+          "hallucination_count": 0,
+          "verified_count": 0,
+          "unsubstantiated_count": 1,
+          "ragas_metrics": {
+            "faithfulness": 1.0,
+            "answer_relevancy": 0.0,
+            "context_recall": 0.636
+          },
+          "findings_summary": "0 hallucinations, 0 verified, 1 unsubstantiated",
+          "question_id": 1,
+          "question": "What are the major risk factors Apple reports related to supply chain and operations?"
+        },
+        {
+          "status": "APPROVED",
+          "hallucination_count": 0,
+          "verified_count": 0,
+          "unsubstantiated_count": 2,
+          "ragas_metrics": {
+            "faithfulness": 1.0,
+            "answer_relevancy": 0.0,
+            "context_recall": 0.25
+          },
+          "findings_summary": "0 hallucinations, 0 verified, 2 unsubstantiated",
+          "question_id": 2,
+          "question": "What does Apple report in Management\u2019s Discussion and Analysis about revenue performance?"
+        },
+        {
+          "status": "APPROVED",
+          "hallucination_count": 0,
+          "verified_count": 0,
+          "unsubstantiated_count": 0,
+          "ragas_metrics": {
+            "faithfulness": 0.95,
+            "answer_relevancy": 0.0,
+            "context_recall": 0.375
+          },
+          "findings_summary": "0 hallucinations, 0 verified, 0 unsubstantiated",
+          "question_id": 3,
+          "question": "What cybersecurity disclosures are included in the 10-K?"
+        },
+        {
+          "status": "APPROVED",
+          "hallucination_count": 0,
+          "verified_count": 0,
+          "unsubstantiated_count": 4,
+          "ragas_metrics": {
+            "faithfulness": 1.0,
+            "answer_relevancy": 0.0,
+            "context_recall": 0.333
+          },
+          "findings_summary": "0 hallucinations, 0 verified, 4 unsubstantiated",
+          "question_id": 4,
+          "question": "How much revenue did Apple generate from iPhone sales in the most recent fiscal year?"
+        },
+        {
+          "status": "APPROVED",
+          "hallucination_count": 0,
+          "verified_count": 0,
+          "unsubstantiated_count": 2,
+          "ragas_metrics": {
+            "faithfulness": 1.0,
+            "answer_relevancy": 0.0,
+            "context_recall": 0.889
+          },
+          "findings_summary": "0 hallucinations, 0 verified, 2 unsubstantiated",
+          "question_id": 5,
+          "question": "What geographic regions represent Apple's largest revenue sources?"
+        },
+        {
+          "status": "APPROVED",
+          "hallucination_count": 0,
+          "verified_count": 0,
+          "unsubstantiated_count": 6,
+          "ragas_metrics": {
+            "faithfulness": 1.0,
+            "answer_relevancy": 0.0,
+            "context_recall": 0.3
+          },
+          "findings_summary": "0 hallucinations, 0 verified, 6 unsubstantiated",
+          "question_id": 6,
+          "question": "What is Apple's gross margin and operating margin trend?"
+        },
+        {
+          "status": "APPROVED",
+          "hallucination_count": 0,
+          "verified_count": 0,
+          "unsubstantiated_count": 10,
+          "ragas_metrics": {
+            "faithfulness": 1.0,
+            "answer_relevancy": 0.5,
+            "context_recall": 0.125
+          },
+          "findings_summary": "0 hallucinations, 0 verified, 10 unsubstantiated",
+          "question_id": 7,
+          "question": "How much does Apple spend on research and development annually?"
+        },
+        {
+          "status": "APPROVED",
+          "hallucination_count": 0,
+          "verified_count": 0,
+          "unsubstantiated_count": 1,
+          "ragas_metrics": {
+            "faithfulness": 1.0,
+            "answer_relevancy": 0.0,
+            "context_recall": 0.8
+          },
+          "findings_summary": "0 hallucinations, 0 verified, 1 unsubstantiated",
+          "question_id": 8,
+          "question": "What are Apple's contingent liabilities and legal proceedings?"
+        },
+        {
+          "status": "APPROVED",
+          "hallucination_count": 0,
+          "verified_count": 0,
+          "unsubstantiated_count": 8,
+          "ragas_metrics": {
+            "faithfulness": 1.0,
+            "answer_relevancy": 0.0,
+            "context_recall": 0.111
+          },
+          "findings_summary": "0 hallucinations, 0 verified, 8 unsubstantiated",
+          "question_id": 9,
+          "question": "What is Apple's debt structure and credit rating outlook?"
+        },
+        {
+          "status": "APPROVED",
+          "hallucination_count": 0,
+          "verified_count": 0,
+          "unsubstantiated_count": 0,
+          "ragas_metrics": {
+            "faithfulness": 0.95,
+            "answer_relevancy": 0.0,
+            "context_recall": 0.5
+          },
+          "findings_summary": "0 hallucinations, 0 verified, 0 unsubstantiated",
+          "question_id": 10,
+          "question": "How dependent is Apple on a single customer or channel for sales?"
+        },
+        {
+          "status": "APPROVED",
+          "hallucination_count": 0,
+          "verified_count": 0,
+          "unsubstantiated_count": 1,
+          "ragas_metrics": {
+            "faithfulness": 1.0,
+            "answer_relevancy": 0.0,
+            "context_recall": 0.4
+          },
+          "findings_summary": "0 hallucinations, 0 verified, 1 unsubstantiated",
+          "question_id": 11,
+          "question": "What are the primary competitive risks Apple faces?"
+        },
+        {
+          "status": "APPROVED",
+          "hallucination_count": 0,
+          "verified_count": 0,
+          "unsubstantiated_count": 1,
+          "ragas_metrics": {
+            "faithfulness": 1.0,
+            "answer_relevancy": 0.0,
+            "context_recall": 0.1
+          },
+          "findings_summary": "0 hallucinations, 0 verified, 1 unsubstantiated",
+          "question_id": 12,
+          "question": "How does Apple address environmental and climate-related risks?"
+        },
+        {
+          "status": "APPROVED",
+          "hallucination_count": 0,
+          "verified_count": 0,
+          "unsubstantiated_count": 1,
+          "ragas_metrics": {
+            "faithfulness": 1.0,
+            "answer_relevancy": 0.0,
+            "context_recall": 0.556
+          },
+          "findings_summary": "0 hallucinations, 0 verified, 1 unsubstantiated",
+          "question_id": 13,
+          "question": "What regulatory risks does Apple face in major markets?"
+        },
+        {
+          "status": "APPROVED",
+          "hallucination_count": 0,
+          "verified_count": 0,
+          "unsubstantiated_count": 7,
+          "ragas_metrics": {
+            "faithfulness": 1.0,
+            "answer_relevancy": 0.0,
+            "context_recall": 0.111
+          },
+          "findings_summary": "0 hallucinations, 0 verified, 7 unsubstantiated",
+          "question_id": 14,
+          "question": "How much cash and cash equivalents does Apple maintain?"
+        },
+        {
+          "status": "APPROVED",
+          "hallucination_count": 0,
+          "verified_count": 0,
+          "unsubstantiated_count": 1,
+          "ragas_metrics": {
+            "faithfulness": 1.0,
+            "answer_relevancy": 0.0,
+            "context_recall": 0.25
+          },
+          "findings_summary": "0 hallucinations, 0 verified, 1 unsubstantiated",
+          "question_id": 15,
+          "question": "What is Apple's capital allocation strategy?"
+        },
+        {
+          "status": "APPROVED",
+          "hallucination_count": 0,
+          "verified_count": 0,
+          "unsubstantiated_count": 1,
+          "ragas_metrics": {
+            "faithfulness": 1.0,
+            "answer_relevancy": 0.0,
+            "context_recall": 0.545
+          },
+          "findings_summary": "0 hallucinations, 0 verified, 1 unsubstantiated",
+          "question_id": 16,
+          "question": "What services does Apple provide beyond hardware products?"
+        },
+        {
+          "status": "APPROVED",
+          "hallucination_count": 0,
+          "verified_count": 0,
+          "unsubstantiated_count": 0,
+          "ragas_metrics": {
+            "faithfulness": 0.95,
+            "answer_relevancy": 0.0,
+            "context_recall": 0.333
+          },
+          "findings_summary": "0 hallucinations, 0 verified, 0 unsubstantiated",
+          "question_id": 17,
+          "question": "What are Apple's intellectual property and patent strategies?"
+        },
+        {
+          "status": "APPROVED",
+          "hallucination_count": 0,
+          "verified_count": 0,
+          "unsubstantiated_count": 1,
+          "ragas_metrics": {
+            "faithfulness": 1.0,
+            "answer_relevancy": 0.0,
+            "context_recall": 0.556
+          },
+          "findings_summary": "0 hallucinations, 0 verified, 1 unsubstantiated",
+          "question_id": 18,
+          "question": "How does Apple manage foreign exchange exposure?"
+        },
+        {
+          "status": "APPROVED",
+          "hallucination_count": 0,
+          "verified_count": 0,
+          "unsubstantiated_count": 1,
+          "ragas_metrics": {
+            "faithfulness": 1.0,
+            "answer_relevancy": 0.0,
+            "context_recall": 0.857
+          },
+          "findings_summary": "0 hallucinations, 0 verified, 1 unsubstantiated",
+          "question_id": 19,
+          "question": "What supplier concentration risks does Apple face?"
+        },
+        {
+          "status": "APPROVED",
+          "hallucination_count": 0,
+          "verified_count": 0,
+          "unsubstantiated_count": 10,
+          "ragas_metrics": {
+            "faithfulness": 1.0,
+            "answer_relevancy": 0.0,
+            "context_recall": 0.286
+          },
+          "findings_summary": "0 hallucinations, 0 verified, 10 unsubstantiated",
+          "question_id": 20,
+          "question": "What is Apple's tax position and effective tax rate?"
+        },
+        {
+          "status": "APPROVED",
+          "hallucination_count": 0,
+          "verified_count": 0,
+          "unsubstantiated_count": 7,
+          "ragas_metrics": {
+            "faithfulness": 1.0,
+            "answer_relevancy": 0.0,
+            "context_recall": 0.25
+          },
+          "findings_summary": "0 hallucinations, 0 verified, 7 unsubstantiated",
+          "question_id": 21,
+          "question": "How does Apple manage inventory and working capital?"
+        },
+        {
+          "status": "APPROVED",
+          "hallucination_count": 0,
+          "verified_count": 0,
+          "unsubstantiated_count": 0,
+          "ragas_metrics": {
+            "faithfulness": 0.95,
+            "answer_relevancy": 0.0,
+            "context_recall": 0.889
+          },
+          "findings_summary": "0 hallucinations, 0 verified, 0 unsubstantiated",
+          "question_id": 22,
+          "question": "What are the risks related to product recalls or defects?"
+        },
+        {
+          "status": "APPROVED",
+          "hallucination_count": 0,
+          "verified_count": 0,
+          "unsubstantiated_count": 0,
+          "ragas_metrics": {
+            "faithfulness": 0.95,
+            "answer_relevancy": 0.0,
+            "context_recall": 0.625
+          },
+          "findings_summary": "0 hallucinations, 0 verified, 0 unsubstantiated",
+          "question_id": 23,
+          "question": "What is Apple's exposure to China manufacturing and market risks?"
+        },
+        {
+          "status": "APPROVED",
+          "hallucination_count": 0,
+          "verified_count": 0,
+          "unsubstantiated_count": 1,
+          "ragas_metrics": {
+            "faithfulness": 1.0,
+            "answer_relevancy": 0.0,
+            "context_recall": 0.625
+          },
+          "findings_summary": "0 hallucinations, 0 verified, 1 unsubstantiated",
+          "question_id": 24,
+          "question": "How does Apple segment its business and what is each segment's profitability?"
+        },
+        {
+          "status": "APPROVED",
+          "hallucination_count": 0,
+          "verified_count": 0,
+          "unsubstantiated_count": 10,
+          "ragas_metrics": {
+            "faithfulness": 1.0,
+            "answer_relevancy": 0.5,
+            "context_recall": 0.0
+          },
+          "findings_summary": "0 hallucinations, 0 verified, 10 unsubstantiated",
+          "question_id": 25,
+          "question": "What are Apple's future capital expenditure plans?"
+        },
+        {
+          "status": "APPROVED",
+          "hallucination_count": 0,
+          "verified_count": 0,
+          "unsubstantiated_count": 10,
+          "ragas_metrics": {
+            "faithfulness": 1.0,
+            "answer_relevancy": 0.0,
+            "context_recall": 0.429
+          },
+          "findings_summary": "0 hallucinations, 0 verified, 10 unsubstantiated",
+          "question_id": 26,
+          "question": "How does Apple approach employee compensation and stock-based awards?"
+        },
+        {
+          "status": "APPROVED",
+          "hallucination_count": 0,
+          "verified_count": 0,
+          "unsubstantiated_count": 1,
+          "ragas_metrics": {
+            "faithfulness": 1.0,
+            "answer_relevancy": 0.0,
+            "context_recall": 0.571
+          },
+          "findings_summary": "0 hallucinations, 0 verified, 1 unsubstantiated",
+          "question_id": 27,
+          "question": "What is Apple's approach to data privacy and customer information protection?"
+        },
+        {
+          "status": "APPROVED",
+          "hallucination_count": 0,
+          "verified_count": 0,
+          "unsubstantiated_count": 1,
+          "ragas_metrics": {
+            "faithfulness": 1.0,
+            "answer_relevancy": 0.0,
+            "context_recall": 0.429
+          },
+          "findings_summary": "0 hallucinations, 0 verified, 1 unsubstantiated",
+          "question_id": 28,
+          "question": "How does Apple manage relationships with wireless carriers?"
+        },
+        {
+          "status": "APPROVED",
+          "hallucination_count": 0,
+          "verified_count": 0,
+          "unsubstantiated_count": 1,
+          "ragas_metrics": {
+            "faithfulness": 1.0,
+            "answer_relevancy": 0.0,
+            "context_recall": 0.333
+          },
+          "findings_summary": "0 hallucinations, 0 verified, 1 unsubstantiated",
+          "question_id": 29,
+          "question": "What percentage of revenue comes from Services versus Products?"
+        },
+        {
+          "status": "APPROVED",
+          "hallucination_count": 0,
+          "verified_count": 0,
+          "unsubstantiated_count": 0,
+          "ragas_metrics": {
+            "faithfulness": 0.95,
+            "answer_relevancy": 0.0,
+            "context_recall": 0.625
+          },
+          "findings_summary": "0 hallucinations, 0 verified, 0 unsubstantiated",
+          "question_id": 30,
+          "question": "What are the risks associated with economic cycles and consumer spending?"
+        },
+        {
+          "status": "APPROVED",
+          "hallucination_count": 0,
+          "verified_count": 0,
+          "unsubstantiated_count": 1,
+          "ragas_metrics": {
+            "faithfulness": 1.0,
+            "answer_relevancy": 0.0,
+            "context_recall": 0.556
+          },
+          "findings_summary": "0 hallucinations, 0 verified, 1 unsubstantiated",
+          "question_id": 31,
+          "question": "How does Apple manage product obsolescence and technology transitions?"
+        },
+        {
+          "status": "APPROVED",
+          "hallucination_count": 0,
+          "verified_count": 0,
+          "unsubstantiated_count": 1,
+          "ragas_metrics": {
+            "faithfulness": 1.0,
+            "answer_relevancy": 0.0,
+            "context_recall": 0.125
+          },
+          "findings_summary": "0 hallucinations, 0 verified, 1 unsubstantiated",
+          "question_id": 32,
+          "question": "What are Apple's commitments to diversity, equity, and inclusion?"
+        },
+        {
+          "status": "APPROVED",
+          "hallucination_count": 0,
+          "verified_count": 0,
+          "unsubstantiated_count": 0,
+          "ragas_metrics": {
+            "faithfulness": 0.95,
+            "answer_relevancy": 0.0,
+            "context_recall": 0.125
+          },
+          "findings_summary": "0 hallucinations, 0 verified, 0 unsubstantiated",
+          "question_id": 33,
+          "question": "How does Apple address supply chain labor and ethical sourcing?"
+        },
+        {
+          "status": "APPROVED",
+          "hallucination_count": 0,
+          "verified_count": 0,
+          "unsubstantiated_count": 0,
+          "ragas_metrics": {
+            "faithfulness": 0.95,
+            "answer_relevancy": 0.0,
+            "context_recall": 0.5
+          },
+          "findings_summary": "0 hallucinations, 0 verified, 0 unsubstantiated",
+          "question_id": 34,
+          "question": "What is the impact of App Store policies and ecosystem on Apple's business?"
+        },
+        {
+          "status": "APPROVED",
+          "hallucination_count": 0,
+          "verified_count": 0,
+          "unsubstantiated_count": 1,
+          "ragas_metrics": {
+            "faithfulness": 1.0,
+            "answer_relevancy": 0.0,
+            "context_recall": 0.333
+          },
+          "findings_summary": "0 hallucinations, 0 verified, 1 unsubstantiated",
+          "question_id": 35,
+          "question": "How does Apple invest in new markets and emerging technologies?"
+        },
+        {
+          "status": "APPROVED",
+          "hallucination_count": 0,
+          "verified_count": 0,
+          "unsubstantiated_count": 0,
+          "ragas_metrics": {
+            "faithfulness": 0.95,
+            "answer_relevancy": 0.0,
+            "context_recall": 0.1
+          },
+          "findings_summary": "0 hallucinations, 0 verified, 0 unsubstantiated",
+          "question_id": 36,
+          "question": "What are the risks from cryptocurrency and blockchain initiatives?"
+        },
+        {
+          "status": "APPROVED",
+          "hallucination_count": 0,
+          "verified_count": 0,
+          "unsubstantiated_count": 0,
+          "ragas_metrics": {
+            "faithfulness": 0.95,
+            "answer_relevancy": 0.0,
+            "context_recall": 0.375
+          },
+          "findings_summary": "0 hallucinations, 0 verified, 0 unsubstantiated",
+          "question_id": 37,
+          "question": "How does Apple manage its retail operations and store footprint?"
+        },
+        {
+          "status": "APPROVED",
+          "hallucination_count": 0,
+          "verified_count": 0,
+          "unsubstantiated_count": 1,
+          "ragas_metrics": {
+            "faithfulness": 1.0,
+            "answer_relevancy": 0.0,
+            "context_recall": 0.5
+          },
+          "findings_summary": "0 hallucinations, 0 verified, 1 unsubstantiated",
+          "question_id": 38,
+          "question": "What are Apple's exposure and strategy regarding artificial intelligence?"
+        },
+        {
+          "status": "APPROVED",
+          "hallucination_count": 0,
+          "verified_count": 0,
+          "unsubstantiated_count": 0,
+          "ragas_metrics": {
+            "faithfulness": 0.95,
+            "answer_relevancy": 0.0,
+            "context_recall": 0.2
+          },
+          "findings_summary": "0 hallucinations, 0 verified, 0 unsubstantiated",
+          "question_id": 39,
+          "question": "How does Apple address security vulnerabilities and patch management?"
+        },
+        {
+          "status": "APPROVED",
+          "hallucination_count": 0,
+          "verified_count": 0,
+          "unsubstantiated_count": 7,
+          "ragas_metrics": {
+            "faithfulness": 1.0,
+            "answer_relevancy": 0.0,
+            "context_recall": 0.444
+          },
+          "findings_summary": "0 hallucinations, 0 verified, 7 unsubstantiated",
+          "question_id": 40,
+          "question": "What are the terms of Apple's credit facilities and covenants?"
+        },
+        {
+          "status": "APPROVED",
+          "hallucination_count": 0,
+          "verified_count": 1,
+          "unsubstantiated_count": 5,
+          "ragas_metrics": {
+            "faithfulness": 1.0,
+            "answer_relevancy": 0.0,
+            "context_recall": 0.333
+          },
+          "findings_summary": "0 hallucinations, 1 verified, 5 unsubstantiated",
+          "question_id": 41,
+          "question": "How does Apple manage product pricing and gross margins?"
+        },
+        {
+          "status": "APPROVED",
+          "hallucination_count": 0,
+          "verified_count": 0,
+          "unsubstantiated_count": 1,
+          "ragas_metrics": {
+            "faithfulness": 1.0,
+            "answer_relevancy": 0.0,
+            "context_recall": 0.5
+          },
+          "findings_summary": "0 hallucinations, 0 verified, 1 unsubstantiated",
+          "question_id": 42,
+          "question": "What is Apple's strategy for emerging market penetration?"
+        },
+        {
+          "status": "APPROVED",
+          "hallucination_count": 0,
+          "verified_count": 0,
+          "unsubstantiated_count": 0,
+          "ragas_metrics": {
+            "faithfulness": 0.95,
+            "answer_relevancy": 0.0,
+            "context_recall": 0.556
+          },
+          "findings_summary": "0 hallucinations, 0 verified, 0 unsubstantiated",
+          "question_id": 43,
+          "question": "How does Apple manage software and cloud infrastructure costs?"
+        },
+        {
+          "status": "APPROVED",
+          "hallucination_count": 0,
+          "verified_count": 0,
+          "unsubstantiated_count": 0,
+          "ragas_metrics": {
+            "faithfulness": 0.95,
+            "answer_relevancy": 0.0,
+            "context_recall": 0.5
+          },
+          "findings_summary": "0 hallucinations, 0 verified, 0 unsubstantiated",
+          "question_id": 44,
+          "question": "What are the risks from government investigations and regulatory actions?"
+        },
+        {
+          "status": "APPROVED",
+          "hallucination_count": 0,
+          "verified_count": 0,
+          "unsubstantiated_count": 10,
+          "ragas_metrics": {
+            "faithfulness": 1.0,
+            "answer_relevancy": 0.0,
+            "context_recall": 0.111
+          },
+          "findings_summary": "0 hallucinations, 0 verified, 10 unsubstantiated",
+          "question_id": 45,
+          "question": "How does Apple manage pension obligations and post-retirement benefits?"
+        },
+        {
+          "status": "APPROVED",
+          "hallucination_count": 0,
+          "verified_count": 0,
+          "unsubstantiated_count": 1,
+          "ragas_metrics": {
+            "faithfulness": 1.0,
+            "answer_relevancy": 0.0,
+            "context_recall": 0.455
+          },
+          "findings_summary": "0 hallucinations, 0 verified, 1 unsubstantiated",
+          "question_id": 46,
+          "question": "What is Apple's strategy for hardware upgrades and product longevity?"
+        },
+        {
+          "status": "APPROVED",
+          "hallucination_count": 0,
+          "verified_count": 0,
+          "unsubstantiated_count": 1,
+          "ragas_metrics": {
+            "faithfulness": 1.0,
+            "answer_relevancy": 0.0,
+            "context_recall": 0.444
+          },
+          "findings_summary": "0 hallucinations, 0 verified, 1 unsubstantiated",
+          "question_id": 47,
+          "question": "How does Apple address subscription churn and customer retention?"
+        },
+        {
+          "status": "APPROVED",
+          "hallucination_count": 0,
+          "verified_count": 0,
+          "unsubstantiated_count": 0,
+          "ragas_metrics": {
+            "faithfulness": 0.95,
+            "answer_relevancy": 0.0,
+            "context_recall": 0.25
+          },
+          "findings_summary": "0 hallucinations, 0 verified, 0 unsubstantiated",
+          "question_id": 48,
+          "question": "What are Apple's commitments regarding manufacturing location and capacity?"
+        },
+        {
+          "status": "APPROVED",
+          "hallucination_count": 0,
+          "verified_count": 0,
+          "unsubstantiated_count": 1,
+          "ragas_metrics": {
+            "faithfulness": 1.0,
+            "answer_relevancy": 0.0,
+            "context_recall": 0.444
+          },
+          "findings_summary": "0 hallucinations, 0 verified, 1 unsubstantiated",
+          "question_id": 49,
+          "question": "How does Apple manage risks from third-party software dependencies?"
+        },
+        {
+          "status": "APPROVED",
+          "hallucination_count": 0,
+          "verified_count": 0,
+          "unsubstantiated_count": 1,
+          "ragas_metrics": {
+            "faithfulness": 1.0,
+            "answer_relevancy": 0.0,
+            "context_recall": 0.5
+          },
+          "findings_summary": "0 hallucinations, 0 verified, 1 unsubstantiated",
+          "question_id": 50,
+          "question": "What is Apple's strategy to monetize wearables and accessories?"
+        }
+      ]
+    },
+    {
+      "variant": "finance",
+      "total_entries": 50,
+      "overall_status": "PASSED",
+      "hallucination_rate": 0.0,
+      "total_hallucinations": 0,
+      "total_verified": 0,
+      "total_unsubstantiated": 125,
+      "ragas_averages": {
+        "faithfulness": 0.983,
+        "answer_relevancy": 0.01,
+        "context_recall": 0.491
+      },
+      "audit_details": [
+        {
+          "status": "APPROVED",
+          "hallucination_count": 0,
+          "verified_count": 0,
+          "unsubstantiated_count": 1,
+          "ragas_metrics": {
+            "faithfulness": 1.0,
+            "answer_relevancy": 0.0,
+            "context_recall": 0.636
+          },
+          "findings_summary": "0 hallucinations, 0 verified, 1 unsubstantiated",
+          "question_id": 1,
+          "question": "What are the major risk factors Apple reports related to supply chain and operations?"
+        },
+        {
+          "status": "APPROVED",
+          "hallucination_count": 0,
+          "verified_count": 0,
+          "unsubstantiated_count": 5,
+          "ragas_metrics": {
+            "faithfulness": 1.0,
+            "answer_relevancy": 0.0,
+            "context_recall": 0.375
+          },
+          "findings_summary": "0 hallucinations, 0 verified, 5 unsubstantiated",
+          "question_id": 2,
+          "question": "What does Apple report in Management\u2019s Discussion and Analysis about revenue performance?"
+        },
+        {
+          "status": "APPROVED",
+          "hallucination_count": 0,
+          "verified_count": 0,
+          "unsubstantiated_count": 1,
+          "ragas_metrics": {
+            "faithfulness": 1.0,
+            "answer_relevancy": 0.0,
+            "context_recall": 0.25
+          },
+          "findings_summary": "0 hallucinations, 0 verified, 1 unsubstantiated",
+          "question_id": 3,
+          "question": "What cybersecurity disclosures are included in the 10-K?"
+        },
+        {
+          "status": "APPROVED",
+          "hallucination_count": 0,
+          "verified_count": 0,
+          "unsubstantiated_count": 10,
+          "ragas_metrics": {
+            "faithfulness": 1.0,
+            "answer_relevancy": 0.0,
+            "context_recall": 0.417
+          },
+          "findings_summary": "0 hallucinations, 0 verified, 10 unsubstantiated",
+          "question_id": 4,
+          "question": "How much revenue did Apple generate from iPhone sales in the most recent fiscal year?"
+        },
+        {
+          "status": "APPROVED",
+          "hallucination_count": 0,
+          "verified_count": 0,
+          "unsubstantiated_count": 0,
+          "ragas_metrics": {
+            "faithfulness": 0.95,
+            "answer_relevancy": 0.0,
+            "context_recall": 0.889
+          },
+          "findings_summary": "0 hallucinations, 0 verified, 0 unsubstantiated",
+          "question_id": 5,
+          "question": "What geographic regions represent Apple's largest revenue sources?"
+        },
+        {
+          "status": "APPROVED",
+          "hallucination_count": 0,
+          "verified_count": 0,
+          "unsubstantiated_count": 10,
+          "ragas_metrics": {
+            "faithfulness": 1.0,
+            "answer_relevancy": 0.0,
+            "context_recall": 0.5
+          },
+          "findings_summary": "0 hallucinations, 0 verified, 10 unsubstantiated",
+          "question_id": 6,
+          "question": "What is Apple's gross margin and operating margin trend?"
+        },
+        {
+          "status": "APPROVED",
+          "hallucination_count": 0,
+          "verified_count": 0,
+          "unsubstantiated_count": 10,
+          "ragas_metrics": {
+            "faithfulness": 1.0,
+            "answer_relevancy": 0.0,
+            "context_recall": 0.125
+          },
+          "findings_summary": "0 hallucinations, 0 verified, 10 unsubstantiated",
+          "question_id": 7,
+          "question": "How much does Apple spend on research and development annually?"
+        },
+        {
+          "status": "APPROVED",
+          "hallucination_count": 0,
+          "verified_count": 0,
+          "unsubstantiated_count": 8,
+          "ragas_metrics": {
+            "faithfulness": 1.0,
+            "answer_relevancy": 0.0,
+            "context_recall": 0.6
+          },
+          "findings_summary": "0 hallucinations, 0 verified, 8 unsubstantiated",
+          "question_id": 8,
+          "question": "What are Apple's contingent liabilities and legal proceedings?"
+        },
+        {
+          "status": "APPROVED",
+          "hallucination_count": 0,
+          "verified_count": 0,
+          "unsubstantiated_count": 7,
+          "ragas_metrics": {
+            "faithfulness": 1.0,
+            "answer_relevancy": 0.0,
+            "context_recall": 0.333
+          },
+          "findings_summary": "0 hallucinations, 0 verified, 7 unsubstantiated",
+          "question_id": 9,
+          "question": "What is Apple's debt structure and credit rating outlook?"
+        },
+        {
+          "status": "APPROVED",
+          "hallucination_count": 0,
+          "verified_count": 0,
+          "unsubstantiated_count": 1,
+          "ragas_metrics": {
+            "faithfulness": 1.0,
+            "answer_relevancy": 0.0,
+            "context_recall": 0.5
+          },
+          "findings_summary": "0 hallucinations, 0 verified, 1 unsubstantiated",
+          "question_id": 10,
+          "question": "How dependent is Apple on a single customer or channel for sales?"
+        },
+        {
+          "status": "APPROVED",
+          "hallucination_count": 0,
+          "verified_count": 0,
+          "unsubstantiated_count": 1,
+          "ragas_metrics": {
+            "faithfulness": 1.0,
+            "answer_relevancy": 0.0,
+            "context_recall": 0.6
+          },
+          "findings_summary": "0 hallucinations, 0 verified, 1 unsubstantiated",
+          "question_id": 11,
+          "question": "What are the primary competitive risks Apple faces?"
+        },
+        {
+          "status": "APPROVED",
+          "hallucination_count": 0,
+          "verified_count": 0,
+          "unsubstantiated_count": 0,
+          "ragas_metrics": {
+            "faithfulness": 0.95,
+            "answer_relevancy": 0.0,
+            "context_recall": 0.3
+          },
+          "findings_summary": "0 hallucinations, 0 verified, 0 unsubstantiated",
+          "question_id": 12,
+          "question": "How does Apple address environmental and climate-related risks?"
+        },
+        {
+          "status": "APPROVED",
+          "hallucination_count": 0,
+          "verified_count": 0,
+          "unsubstantiated_count": 1,
+          "ragas_metrics": {
+            "faithfulness": 1.0,
+            "answer_relevancy": 0.0,
+            "context_recall": 0.444
+          },
+          "findings_summary": "0 hallucinations, 0 verified, 1 unsubstantiated",
+          "question_id": 13,
+          "question": "What regulatory risks does Apple face in major markets?"
+        },
+        {
+          "status": "APPROVED",
+          "hallucination_count": 0,
+          "verified_count": 0,
+          "unsubstantiated_count": 7,
+          "ragas_metrics": {
+            "faithfulness": 1.0,
+            "answer_relevancy": 0.0,
+            "context_recall": 0.333
+          },
+          "findings_summary": "0 hallucinations, 0 verified, 7 unsubstantiated",
+          "question_id": 14,
+          "question": "How much cash and cash equivalents does Apple maintain?"
+        },
+        {
+          "status": "APPROVED",
+          "hallucination_count": 0,
+          "verified_count": 0,
+          "unsubstantiated_count": 8,
+          "ragas_metrics": {
+            "faithfulness": 1.0,
+            "answer_relevancy": 0.0,
+            "context_recall": 0.25
+          },
+          "findings_summary": "0 hallucinations, 0 verified, 8 unsubstantiated",
+          "question_id": 15,
+          "question": "What is Apple's capital allocation strategy?"
+        },
+        {
+          "status": "APPROVED",
+          "hallucination_count": 0,
+          "verified_count": 0,
+          "unsubstantiated_count": 1,
+          "ragas_metrics": {
+            "faithfulness": 1.0,
+            "answer_relevancy": 0.0,
+            "context_recall": 0.818
+          },
+          "findings_summary": "0 hallucinations, 0 verified, 1 unsubstantiated",
+          "question_id": 16,
+          "question": "What services does Apple provide beyond hardware products?"
+        },
+        {
+          "status": "APPROVED",
+          "hallucination_count": 0,
+          "verified_count": 0,
+          "unsubstantiated_count": 0,
+          "ragas_metrics": {
+            "faithfulness": 0.95,
+            "answer_relevancy": 0.0,
+            "context_recall": 0.889
+          },
+          "findings_summary": "0 hallucinations, 0 verified, 0 unsubstantiated",
+          "question_id": 17,
+          "question": "What are Apple's intellectual property and patent strategies?"
+        },
+        {
+          "status": "APPROVED",
+          "hallucination_count": 0,
+          "verified_count": 0,
+          "unsubstantiated_count": 0,
+          "ragas_metrics": {
+            "faithfulness": 0.95,
+            "answer_relevancy": 0.0,
+            "context_recall": 0.556
+          },
+          "findings_summary": "0 hallucinations, 0 verified, 0 unsubstantiated",
+          "question_id": 18,
+          "question": "How does Apple manage foreign exchange exposure?"
+        },
+        {
+          "status": "APPROVED",
+          "hallucination_count": 0,
+          "verified_count": 0,
+          "unsubstantiated_count": 1,
+          "ragas_metrics": {
+            "faithfulness": 1.0,
+            "answer_relevancy": 0.0,
+            "context_recall": 0.857
+          },
+          "findings_summary": "0 hallucinations, 0 verified, 1 unsubstantiated",
+          "question_id": 19,
+          "question": "What supplier concentration risks does Apple face?"
+        },
+        {
+          "status": "APPROVED",
+          "hallucination_count": 0,
+          "verified_count": 0,
+          "unsubstantiated_count": 10,
+          "ragas_metrics": {
+            "faithfulness": 1.0,
+            "answer_relevancy": 0.0,
+            "context_recall": 0.429
+          },
+          "findings_summary": "0 hallucinations, 0 verified, 10 unsubstantiated",
+          "question_id": 20,
+          "question": "What is Apple's tax position and effective tax rate?"
+        },
+        {
+          "status": "APPROVED",
+          "hallucination_count": 0,
+          "verified_count": 0,
+          "unsubstantiated_count": 0,
+          "ragas_metrics": {
+            "faithfulness": 0.95,
+            "answer_relevancy": 0.0,
+            "context_recall": 0.375
+          },
+          "findings_summary": "0 hallucinations, 0 verified, 0 unsubstantiated",
+          "question_id": 21,
+          "question": "How does Apple manage inventory and working capital?"
+        },
+        {
+          "status": "APPROVED",
+          "hallucination_count": 0,
+          "verified_count": 0,
+          "unsubstantiated_count": 0,
+          "ragas_metrics": {
+            "faithfulness": 0.95,
+            "answer_relevancy": 0.0,
+            "context_recall": 0.778
+          },
+          "findings_summary": "0 hallucinations, 0 verified, 0 unsubstantiated",
+          "question_id": 22,
+          "question": "What are the risks related to product recalls or defects?"
+        },
+        {
+          "status": "APPROVED",
+          "hallucination_count": 0,
+          "verified_count": 0,
+          "unsubstantiated_count": 2,
+          "ragas_metrics": {
+            "faithfulness": 1.0,
+            "answer_relevancy": 0.0,
+            "context_recall": 0.75
+          },
+          "findings_summary": "0 hallucinations, 0 verified, 2 unsubstantiated",
+          "question_id": 23,
+          "question": "What is Apple's exposure to China manufacturing and market risks?"
+        },
+        {
+          "status": "APPROVED",
+          "hallucination_count": 0,
+          "verified_count": 0,
+          "unsubstantiated_count": 0,
+          "ragas_metrics": {
+            "faithfulness": 0.95,
+            "answer_relevancy": 0.0,
+            "context_recall": 0.5
+          },
+          "findings_summary": "0 hallucinations, 0 verified, 0 unsubstantiated",
+          "question_id": 24,
+          "question": "How does Apple segment its business and what is each segment's profitability?"
+        },
+        {
+          "status": "APPROVED",
+          "hallucination_count": 0,
+          "verified_count": 0,
+          "unsubstantiated_count": 10,
+          "ragas_metrics": {
+            "faithfulness": 1.0,
+            "answer_relevancy": 0.0,
+            "context_recall": 0.125
+          },
+          "findings_summary": "0 hallucinations, 0 verified, 10 unsubstantiated",
+          "question_id": 25,
+          "question": "What are Apple's future capital expenditure plans?"
+        },
+        {
+          "status": "APPROVED",
+          "hallucination_count": 0,
+          "verified_count": 0,
+          "unsubstantiated_count": 4,
+          "ragas_metrics": {
+            "faithfulness": 1.0,
+            "answer_relevancy": 0.0,
+            "context_recall": 0.429
+          },
+          "findings_summary": "0 hallucinations, 0 verified, 4 unsubstantiated",
+          "question_id": 26,
+          "question": "How does Apple approach employee compensation and stock-based awards?"
+        },
+        {
+          "status": "APPROVED",
+          "hallucination_count": 0,
+          "verified_count": 0,
+          "unsubstantiated_count": 1,
+          "ragas_metrics": {
+            "faithfulness": 1.0,
+            "answer_relevancy": 0.0,
+            "context_recall": 0.571
+          },
+          "findings_summary": "0 hallucinations, 0 verified, 1 unsubstantiated",
+          "question_id": 27,
+          "question": "What is Apple's approach to data privacy and customer information protection?"
+        },
+        {
+          "status": "APPROVED",
+          "hallucination_count": 0,
+          "verified_count": 0,
+          "unsubstantiated_count": 1,
+          "ragas_metrics": {
+            "faithfulness": 1.0,
+            "answer_relevancy": 0.0,
+            "context_recall": 0.714
+          },
+          "findings_summary": "0 hallucinations, 0 verified, 1 unsubstantiated",
+          "question_id": 28,
+          "question": "How does Apple manage relationships with wireless carriers?"
+        },
+        {
+          "status": "APPROVED",
+          "hallucination_count": 0,
+          "verified_count": 0,
+          "unsubstantiated_count": 0,
+          "ragas_metrics": {
+            "faithfulness": 0.95,
+            "answer_relevancy": 0.0,
+            "context_recall": 0.444
+          },
+          "findings_summary": "0 hallucinations, 0 verified, 0 unsubstantiated",
+          "question_id": 29,
+          "question": "What percentage of revenue comes from Services versus Products?"
+        },
+        {
+          "status": "APPROVED",
+          "hallucination_count": 0,
+          "verified_count": 0,
+          "unsubstantiated_count": 0,
+          "ragas_metrics": {
+            "faithfulness": 0.95,
+            "answer_relevancy": 0.0,
+            "context_recall": 0.5
+          },
+          "findings_summary": "0 hallucinations, 0 verified, 0 unsubstantiated",
+          "question_id": 30,
+          "question": "What are the risks associated with economic cycles and consumer spending?"
+        },
+        {
+          "status": "APPROVED",
+          "hallucination_count": 0,
+          "verified_count": 0,
+          "unsubstantiated_count": 1,
+          "ragas_metrics": {
+            "faithfulness": 1.0,
+            "answer_relevancy": 0.0,
+            "context_recall": 0.556
+          },
+          "findings_summary": "0 hallucinations, 0 verified, 1 unsubstantiated",
+          "question_id": 31,
+          "question": "How does Apple manage product obsolescence and technology transitions?"
+        },
+        {
+          "status": "APPROVED",
+          "hallucination_count": 0,
+          "verified_count": 0,
+          "unsubstantiated_count": 0,
+          "ragas_metrics": {
+            "faithfulness": 0.95,
+            "answer_relevancy": 0.0,
+            "context_recall": 0.5
+          },
+          "findings_summary": "0 hallucinations, 0 verified, 0 unsubstantiated",
+          "question_id": 32,
+          "question": "What are Apple's commitments to diversity, equity, and inclusion?"
+        },
+        {
+          "status": "APPROVED",
+          "hallucination_count": 0,
+          "verified_count": 0,
+          "unsubstantiated_count": 0,
+          "ragas_metrics": {
+            "faithfulness": 0.95,
+            "answer_relevancy": 0.0,
+            "context_recall": 0.375
+          },
+          "findings_summary": "0 hallucinations, 0 verified, 0 unsubstantiated",
+          "question_id": 33,
+          "question": "How does Apple address supply chain labor and ethical sourcing?"
+        },
+        {
+          "status": "APPROVED",
+          "hallucination_count": 0,
+          "verified_count": 0,
+          "unsubstantiated_count": 1,
+          "ragas_metrics": {
+            "faithfulness": 1.0,
+            "answer_relevancy": 0.0,
+            "context_recall": 0.5
+          },
+          "findings_summary": "0 hallucinations, 0 verified, 1 unsubstantiated",
+          "question_id": 34,
+          "question": "What is the impact of App Store policies and ecosystem on Apple's business?"
+        },
+        {
+          "status": "APPROVED",
+          "hallucination_count": 0,
+          "verified_count": 0,
+          "unsubstantiated_count": 1,
+          "ragas_metrics": {
+            "faithfulness": 1.0,
+            "answer_relevancy": 0.0,
+            "context_recall": 0.667
+          },
+          "findings_summary": "0 hallucinations, 0 verified, 1 unsubstantiated",
+          "question_id": 35,
+          "question": "How does Apple invest in new markets and emerging technologies?"
+        },
+        {
+          "status": "APPROVED",
+          "hallucination_count": 0,
+          "verified_count": 0,
+          "unsubstantiated_count": 0,
+          "ragas_metrics": {
+            "faithfulness": 0.95,
+            "answer_relevancy": 0.5,
+            "context_recall": 0.2
+          },
+          "findings_summary": "0 hallucinations, 0 verified, 0 unsubstantiated",
+          "question_id": 36,
+          "question": "What are the risks from cryptocurrency and blockchain initiatives?"
+        },
+        {
+          "status": "APPROVED",
+          "hallucination_count": 0,
+          "verified_count": 0,
+          "unsubstantiated_count": 0,
+          "ragas_metrics": {
+            "faithfulness": 0.95,
+            "answer_relevancy": 0.0,
+            "context_recall": 0.75
+          },
+          "findings_summary": "0 hallucinations, 0 verified, 0 unsubstantiated",
+          "question_id": 37,
+          "question": "How does Apple manage its retail operations and store footprint?"
+        },
+        {
+          "status": "APPROVED",
+          "hallucination_count": 0,
+          "verified_count": 0,
+          "unsubstantiated_count": 1,
+          "ragas_metrics": {
+            "faithfulness": 1.0,
+            "answer_relevancy": 0.0,
+            "context_recall": 0.667
+          },
+          "findings_summary": "0 hallucinations, 0 verified, 1 unsubstantiated",
+          "question_id": 38,
+          "question": "What are Apple's exposure and strategy regarding artificial intelligence?"
+        },
+        {
+          "status": "APPROVED",
+          "hallucination_count": 0,
+          "verified_count": 0,
+          "unsubstantiated_count": 1,
+          "ragas_metrics": {
+            "faithfulness": 1.0,
+            "answer_relevancy": 0.0,
+            "context_recall": 0.5
+          },
+          "findings_summary": "0 hallucinations, 0 verified, 1 unsubstantiated",
+          "question_id": 39,
+          "question": "How does Apple address security vulnerabilities and patch management?"
+        },
+        {
+          "status": "APPROVED",
+          "hallucination_count": 0,
+          "verified_count": 0,
+          "unsubstantiated_count": 10,
+          "ragas_metrics": {
+            "faithfulness": 1.0,
+            "answer_relevancy": 0.0,
+            "context_recall": 0.444
+          },
+          "findings_summary": "0 hallucinations, 0 verified, 10 unsubstantiated",
+          "question_id": 40,
+          "question": "What are the terms of Apple's credit facilities and covenants?"
+        },
+        {
+          "status": "APPROVED",
+          "hallucination_count": 0,
+          "verified_count": 0,
+          "unsubstantiated_count": 0,
+          "ragas_metrics": {
+            "faithfulness": 0.95,
+            "answer_relevancy": 0.0,
+            "context_recall": 0.333
+          },
+          "findings_summary": "0 hallucinations, 0 verified, 0 unsubstantiated",
+          "question_id": 41,
+          "question": "How does Apple manage product pricing and gross margins?"
+        },
+        {
+          "status": "APPROVED",
+          "hallucination_count": 0,
+          "verified_count": 0,
+          "unsubstantiated_count": 2,
+          "ragas_metrics": {
+            "faithfulness": 1.0,
+            "answer_relevancy": 0.0,
+            "context_recall": 0.25
+          },
+          "findings_summary": "0 hallucinations, 0 verified, 2 unsubstantiated",
+          "question_id": 42,
+          "question": "What is Apple's strategy for emerging market penetration?"
+        },
+        {
+          "status": "APPROVED",
+          "hallucination_count": 0,
+          "verified_count": 0,
+          "unsubstantiated_count": 0,
+          "ragas_metrics": {
+            "faithfulness": 0.95,
+            "answer_relevancy": 0.0,
+            "context_recall": 0.444
+          },
+          "findings_summary": "0 hallucinations, 0 verified, 0 unsubstantiated",
+          "question_id": 43,
+          "question": "How does Apple manage software and cloud infrastructure costs?"
+        },
+        {
+          "status": "APPROVED",
+          "hallucination_count": 0,
+          "verified_count": 0,
+          "unsubstantiated_count": 0,
+          "ragas_metrics": {
+            "faithfulness": 0.95,
+            "answer_relevancy": 0.0,
+            "context_recall": 0.5
+          },
+          "findings_summary": "0 hallucinations, 0 verified, 0 unsubstantiated",
+          "question_id": 44,
+          "question": "What are the risks from government investigations and regulatory actions?"
+        },
+        {
+          "status": "APPROVED",
+          "hallucination_count": 0,
+          "verified_count": 0,
+          "unsubstantiated_count": 4,
+          "ragas_metrics": {
+            "faithfulness": 1.0,
+            "answer_relevancy": 0.0,
+            "context_recall": 0.222
+          },
+          "findings_summary": "0 hallucinations, 0 verified, 4 unsubstantiated",
+          "question_id": 45,
+          "question": "How does Apple manage pension obligations and post-retirement benefits?"
+        },
+        {
+          "status": "APPROVED",
+          "hallucination_count": 0,
+          "verified_count": 0,
+          "unsubstantiated_count": 1,
+          "ragas_metrics": {
+            "faithfulness": 1.0,
+            "answer_relevancy": 0.0,
+            "context_recall": 0.545
+          },
+          "findings_summary": "0 hallucinations, 0 verified, 1 unsubstantiated",
+          "question_id": 46,
+          "question": "What is Apple's strategy for hardware upgrades and product longevity?"
+        },
+        {
+          "status": "APPROVED",
+          "hallucination_count": 0,
+          "verified_count": 0,
+          "unsubstantiated_count": 1,
+          "ragas_metrics": {
+            "faithfulness": 1.0,
+            "answer_relevancy": 0.0,
+            "context_recall": 0.333
+          },
+          "findings_summary": "0 hallucinations, 0 verified, 1 unsubstantiated",
+          "question_id": 47,
+          "question": "How does Apple address subscription churn and customer retention?"
+        },
+        {
+          "status": "APPROVED",
+          "hallucination_count": 0,
+          "verified_count": 0,
+          "unsubstantiated_count": 0,
+          "ragas_metrics": {
+            "faithfulness": 0.95,
+            "answer_relevancy": 0.0,
+            "context_recall": 0.5
+          },
+          "findings_summary": "0 hallucinations, 0 verified, 0 unsubstantiated",
+          "question_id": 48,
+          "question": "What are Apple's commitments regarding manufacturing location and capacity?"
+        },
+        {
+          "status": "APPROVED",
+          "hallucination_count": 0,
+          "verified_count": 0,
+          "unsubstantiated_count": 1,
+          "ragas_metrics": {
+            "faithfulness": 1.0,
+            "answer_relevancy": 0.0,
+            "context_recall": 0.333
+          },
+          "findings_summary": "0 hallucinations, 0 verified, 1 unsubstantiated",
+          "question_id": 49,
+          "question": "How does Apple manage risks from third-party software dependencies?"
+        },
+        {
+          "status": "APPROVED",
+          "hallucination_count": 0,
+          "verified_count": 0,
+          "unsubstantiated_count": 1,
+          "ragas_metrics": {
+            "faithfulness": 1.0,
+            "answer_relevancy": 0.0,
+            "context_recall": 0.625
+          },
+          "findings_summary": "0 hallucinations, 0 verified, 1 unsubstantiated",
+          "question_id": 50,
+          "question": "What is Apple's strategy to monetize wearables and accessories?"
+        }
+      ]
+    },
+    {
+      "variant": "hybrid",
+      "total_entries": 50,
+      "overall_status": "PASSED",
+      "hallucination_rate": 0.0,
+      "total_hallucinations": 0,
+      "total_verified": 0,
+      "total_unsubstantiated": 109,
+      "ragas_averages": {
+        "faithfulness": 0.98,
+        "answer_relevancy": 0.03,
+        "context_recall": 0.524
+      },
+      "audit_details": [
+        {
+          "status": "APPROVED",
+          "hallucination_count": 0,
+          "verified_count": 0,
+          "unsubstantiated_count": 0,
+          "ragas_metrics": {
+            "faithfulness": 0.95,
+            "answer_relevancy": 0.0,
+            "context_recall": 0.636
+          },
+          "findings_summary": "0 hallucinations, 0 verified, 0 unsubstantiated",
+          "question_id": 1,
+          "question": "What are the major risk factors Apple reports related to supply chain and operations?"
+        },
+        {
+          "status": "APPROVED",
+          "hallucination_count": 0,
+          "verified_count": 0,
+          "unsubstantiated_count": 10,
+          "ragas_metrics": {
+            "faithfulness": 1.0,
+            "answer_relevancy": 0.5,
+            "context_recall": 0.625
+          },
+          "findings_summary": "0 hallucinations, 0 verified, 10 unsubstantiated",
+          "question_id": 2,
+          "question": "What does Apple report in Management\u2019s Discussion and Analysis about revenue performance?"
+        },
+        {
+          "status": "APPROVED",
+          "hallucination_count": 0,
+          "verified_count": 0,
+          "unsubstantiated_count": 0,
+          "ragas_metrics": {
+            "faithfulness": 0.95,
+            "answer_relevancy": 0.0,
+            "context_recall": 0.375
+          },
+          "findings_summary": "0 hallucinations, 0 verified, 0 unsubstantiated",
+          "question_id": 3,
+          "question": "What cybersecurity disclosures are included in the 10-K?"
+        },
+        {
+          "status": "APPROVED",
+          "hallucination_count": 0,
+          "verified_count": 0,
+          "unsubstantiated_count": 3,
+          "ragas_metrics": {
+            "faithfulness": 1.0,
+            "answer_relevancy": 0.0,
+            "context_recall": 0.5
+          },
+          "findings_summary": "0 hallucinations, 0 verified, 3 unsubstantiated",
+          "question_id": 4,
+          "question": "How much revenue did Apple generate from iPhone sales in the most recent fiscal year?"
+        },
+        {
+          "status": "APPROVED",
+          "hallucination_count": 0,
+          "verified_count": 0,
+          "unsubstantiated_count": 0,
+          "ragas_metrics": {
+            "faithfulness": 0.95,
+            "answer_relevancy": 0.0,
+            "context_recall": 0.889
+          },
+          "findings_summary": "0 hallucinations, 0 verified, 0 unsubstantiated",
+          "question_id": 5,
+          "question": "What geographic regions represent Apple's largest revenue sources?"
+        },
+        {
+          "status": "APPROVED",
+          "hallucination_count": 0,
+          "verified_count": 0,
+          "unsubstantiated_count": 6,
+          "ragas_metrics": {
+            "faithfulness": 1.0,
+            "answer_relevancy": 0.0,
+            "context_recall": 0.6
+          },
+          "findings_summary": "0 hallucinations, 0 verified, 6 unsubstantiated",
+          "question_id": 6,
+          "question": "What is Apple's gross margin and operating margin trend?"
+        },
+        {
+          "status": "APPROVED",
+          "hallucination_count": 0,
+          "verified_count": 0,
+          "unsubstantiated_count": 10,
+          "ragas_metrics": {
+            "faithfulness": 1.0,
+            "answer_relevancy": 0.5,
+            "context_recall": 0.5
+          },
+          "findings_summary": "0 hallucinations, 0 verified, 10 unsubstantiated",
+          "question_id": 7,
+          "question": "How much does Apple spend on research and development annually?"
+        },
+        {
+          "status": "APPROVED",
+          "hallucination_count": 0,
+          "verified_count": 0,
+          "unsubstantiated_count": 1,
+          "ragas_metrics": {
+            "faithfulness": 1.0,
+            "answer_relevancy": 0.0,
+            "context_recall": 0.8
+          },
+          "findings_summary": "0 hallucinations, 0 verified, 1 unsubstantiated",
+          "question_id": 8,
+          "question": "What are Apple's contingent liabilities and legal proceedings?"
+        },
+        {
+          "status": "APPROVED",
+          "hallucination_count": 0,
+          "verified_count": 0,
+          "unsubstantiated_count": 7,
+          "ragas_metrics": {
+            "faithfulness": 1.0,
+            "answer_relevancy": 0.0,
+            "context_recall": 0.111
+          },
+          "findings_summary": "0 hallucinations, 0 verified, 7 unsubstantiated",
+          "question_id": 9,
+          "question": "What is Apple's debt structure and credit rating outlook?"
+        },
+        {
+          "status": "APPROVED",
+          "hallucination_count": 0,
+          "verified_count": 0,
+          "unsubstantiated_count": 0,
+          "ragas_metrics": {
+            "faithfulness": 0.95,
+            "answer_relevancy": 0.0,
+            "context_recall": 0.8
+          },
+          "findings_summary": "0 hallucinations, 0 verified, 0 unsubstantiated",
+          "question_id": 10,
+          "question": "How dependent is Apple on a single customer or channel for sales?"
+        },
+        {
+          "status": "APPROVED",
+          "hallucination_count": 0,
+          "verified_count": 0,
+          "unsubstantiated_count": 0,
+          "ragas_metrics": {
+            "faithfulness": 0.95,
+            "answer_relevancy": 0.0,
+            "context_recall": 0.6
+          },
+          "findings_summary": "0 hallucinations, 0 verified, 0 unsubstantiated",
+          "question_id": 11,
+          "question": "What are the primary competitive risks Apple faces?"
+        },
+        {
+          "status": "APPROVED",
+          "hallucination_count": 0,
+          "verified_count": 0,
+          "unsubstantiated_count": 1,
+          "ragas_metrics": {
+            "faithfulness": 1.0,
+            "answer_relevancy": 0.0,
+            "context_recall": 0.3
+          },
+          "findings_summary": "0 hallucinations, 0 verified, 1 unsubstantiated",
+          "question_id": 12,
+          "question": "How does Apple address environmental and climate-related risks?"
+        },
+        {
+          "status": "APPROVED",
+          "hallucination_count": 0,
+          "verified_count": 0,
+          "unsubstantiated_count": 1,
+          "ragas_metrics": {
+            "faithfulness": 1.0,
+            "answer_relevancy": 0.0,
+            "context_recall": 0.556
+          },
+          "findings_summary": "0 hallucinations, 0 verified, 1 unsubstantiated",
+          "question_id": 13,
+          "question": "What regulatory risks does Apple face in major markets?"
+        },
+        {
+          "status": "APPROVED",
+          "hallucination_count": 0,
+          "verified_count": 0,
+          "unsubstantiated_count": 7,
+          "ragas_metrics": {
+            "faithfulness": 1.0,
+            "answer_relevancy": 0.0,
+            "context_recall": 0.111
+          },
+          "findings_summary": "0 hallucinations, 0 verified, 7 unsubstantiated",
+          "question_id": 14,
+          "question": "How much cash and cash equivalents does Apple maintain?"
+        },
+        {
+          "status": "APPROVED",
+          "hallucination_count": 0,
+          "verified_count": 0,
+          "unsubstantiated_count": 5,
+          "ragas_metrics": {
+            "faithfulness": 1.0,
+            "answer_relevancy": 0.0,
+            "context_recall": 0.375
+          },
+          "findings_summary": "0 hallucinations, 0 verified, 5 unsubstantiated",
+          "question_id": 15,
+          "question": "What is Apple's capital allocation strategy?"
+        },
+        {
+          "status": "APPROVED",
+          "hallucination_count": 0,
+          "verified_count": 0,
+          "unsubstantiated_count": 1,
+          "ragas_metrics": {
+            "faithfulness": 1.0,
+            "answer_relevancy": 0.0,
+            "context_recall": 0.818
+          },
+          "findings_summary": "0 hallucinations, 0 verified, 1 unsubstantiated",
+          "question_id": 16,
+          "question": "What services does Apple provide beyond hardware products?"
+        },
+        {
+          "status": "APPROVED",
+          "hallucination_count": 0,
+          "verified_count": 0,
+          "unsubstantiated_count": 0,
+          "ragas_metrics": {
+            "faithfulness": 0.95,
+            "answer_relevancy": 0.0,
+            "context_recall": 0.889
+          },
+          "findings_summary": "0 hallucinations, 0 verified, 0 unsubstantiated",
+          "question_id": 17,
+          "question": "What are Apple's intellectual property and patent strategies?"
+        },
+        {
+          "status": "APPROVED",
+          "hallucination_count": 0,
+          "verified_count": 0,
+          "unsubstantiated_count": 1,
+          "ragas_metrics": {
+            "faithfulness": 1.0,
+            "answer_relevancy": 0.5,
+            "context_recall": 0.556
+          },
+          "findings_summary": "0 hallucinations, 0 verified, 1 unsubstantiated",
+          "question_id": 18,
+          "question": "How does Apple manage foreign exchange exposure?"
+        },
+        {
+          "status": "APPROVED",
+          "hallucination_count": 0,
+          "verified_count": 0,
+          "unsubstantiated_count": 2,
+          "ragas_metrics": {
+            "faithfulness": 1.0,
+            "answer_relevancy": 0.0,
+            "context_recall": 0.714
+          },
+          "findings_summary": "0 hallucinations, 0 verified, 2 unsubstantiated",
+          "question_id": 19,
+          "question": "What supplier concentration risks does Apple face?"
+        },
+        {
+          "status": "APPROVED",
+          "hallucination_count": 0,
+          "verified_count": 0,
+          "unsubstantiated_count": 6,
+          "ragas_metrics": {
+            "faithfulness": 1.0,
+            "answer_relevancy": 0.0,
+            "context_recall": 0.571
+          },
+          "findings_summary": "0 hallucinations, 0 verified, 6 unsubstantiated",
+          "question_id": 20,
+          "question": "What is Apple's tax position and effective tax rate?"
+        },
+        {
+          "status": "APPROVED",
+          "hallucination_count": 0,
+          "verified_count": 0,
+          "unsubstantiated_count": 0,
+          "ragas_metrics": {
+            "faithfulness": 0.95,
+            "answer_relevancy": 0.0,
+            "context_recall": 0.375
+          },
+          "findings_summary": "0 hallucinations, 0 verified, 0 unsubstantiated",
+          "question_id": 21,
+          "question": "How does Apple manage inventory and working capital?"
+        },
+        {
+          "status": "APPROVED",
+          "hallucination_count": 0,
+          "verified_count": 0,
+          "unsubstantiated_count": 1,
+          "ragas_metrics": {
+            "faithfulness": 1.0,
+            "answer_relevancy": 0.0,
+            "context_recall": 0.778
+          },
+          "findings_summary": "0 hallucinations, 0 verified, 1 unsubstantiated",
+          "question_id": 22,
+          "question": "What are the risks related to product recalls or defects?"
+        },
+        {
+          "status": "APPROVED",
+          "hallucination_count": 0,
+          "verified_count": 0,
+          "unsubstantiated_count": 0,
+          "ragas_metrics": {
+            "faithfulness": 0.95,
+            "answer_relevancy": 0.0,
+            "context_recall": 0.75
+          },
+          "findings_summary": "0 hallucinations, 0 verified, 0 unsubstantiated",
+          "question_id": 23,
+          "question": "What is Apple's exposure to China manufacturing and market risks?"
+        },
+        {
+          "status": "APPROVED",
+          "hallucination_count": 0,
+          "verified_count": 0,
+          "unsubstantiated_count": 2,
+          "ragas_metrics": {
+            "faithfulness": 1.0,
+            "answer_relevancy": 0.0,
+            "context_recall": 0.5
+          },
+          "findings_summary": "0 hallucinations, 0 verified, 2 unsubstantiated",
+          "question_id": 24,
+          "question": "How does Apple segment its business and what is each segment's profitability?"
+        },
+        {
+          "status": "APPROVED",
+          "hallucination_count": 0,
+          "verified_count": 0,
+          "unsubstantiated_count": 8,
+          "ragas_metrics": {
+            "faithfulness": 1.0,
+            "answer_relevancy": 0.0,
+            "context_recall": 0.125
+          },
+          "findings_summary": "0 hallucinations, 0 verified, 8 unsubstantiated",
+          "question_id": 25,
+          "question": "What are Apple's future capital expenditure plans?"
+        },
+        {
+          "status": "APPROVED",
+          "hallucination_count": 0,
+          "verified_count": 0,
+          "unsubstantiated_count": 5,
+          "ragas_metrics": {
+            "faithfulness": 1.0,
+            "answer_relevancy": 0.0,
+            "context_recall": 0.429
+          },
+          "findings_summary": "0 hallucinations, 0 verified, 5 unsubstantiated",
+          "question_id": 26,
+          "question": "How does Apple approach employee compensation and stock-based awards?"
+        },
+        {
+          "status": "APPROVED",
+          "hallucination_count": 0,
+          "verified_count": 0,
+          "unsubstantiated_count": 1,
+          "ragas_metrics": {
+            "faithfulness": 1.0,
+            "answer_relevancy": 0.0,
+            "context_recall": 0.571
+          },
+          "findings_summary": "0 hallucinations, 0 verified, 1 unsubstantiated",
+          "question_id": 27,
+          "question": "What is Apple's approach to data privacy and customer information protection?"
+        },
+        {
+          "status": "APPROVED",
+          "hallucination_count": 0,
+          "verified_count": 0,
+          "unsubstantiated_count": 3,
+          "ragas_metrics": {
+            "faithfulness": 1.0,
+            "answer_relevancy": 0.0,
+            "context_recall": 0.429
+          },
+          "findings_summary": "0 hallucinations, 0 verified, 3 unsubstantiated",
+          "question_id": 28,
+          "question": "How does Apple manage relationships with wireless carriers?"
+        },
+        {
+          "status": "APPROVED",
+          "hallucination_count": 0,
+          "verified_count": 0,
+          "unsubstantiated_count": 10,
+          "ragas_metrics": {
+            "faithfulness": 1.0,
+            "answer_relevancy": 0.0,
+            "context_recall": 0.333
+          },
+          "findings_summary": "0 hallucinations, 0 verified, 10 unsubstantiated",
+          "question_id": 29,
+          "question": "What percentage of revenue comes from Services versus Products?"
+        },
+        {
+          "status": "APPROVED",
+          "hallucination_count": 0,
+          "verified_count": 0,
+          "unsubstantiated_count": 0,
+          "ragas_metrics": {
+            "faithfulness": 0.95,
+            "answer_relevancy": 0.0,
+            "context_recall": 0.5
+          },
+          "findings_summary": "0 hallucinations, 0 verified, 0 unsubstantiated",
+          "question_id": 30,
+          "question": "What are the risks associated with economic cycles and consumer spending?"
+        },
+        {
+          "status": "APPROVED",
+          "hallucination_count": 0,
+          "verified_count": 0,
+          "unsubstantiated_count": 1,
+          "ragas_metrics": {
+            "faithfulness": 1.0,
+            "answer_relevancy": 0.0,
+            "context_recall": 0.667
+          },
+          "findings_summary": "0 hallucinations, 0 verified, 1 unsubstantiated",
+          "question_id": 31,
+          "question": "How does Apple manage product obsolescence and technology transitions?"
+        },
+        {
+          "status": "APPROVED",
+          "hallucination_count": 0,
+          "verified_count": 0,
+          "unsubstantiated_count": 0,
+          "ragas_metrics": {
+            "faithfulness": 0.95,
+            "answer_relevancy": 0.0,
+            "context_recall": 0.375
+          },
+          "findings_summary": "0 hallucinations, 0 verified, 0 unsubstantiated",
+          "question_id": 32,
+          "question": "What are Apple's commitments to diversity, equity, and inclusion?"
+        },
+        {
+          "status": "APPROVED",
+          "hallucination_count": 0,
+          "verified_count": 0,
+          "unsubstantiated_count": 0,
+          "ragas_metrics": {
+            "faithfulness": 0.95,
+            "answer_relevancy": 0.0,
+            "context_recall": 0.5
+          },
+          "findings_summary": "0 hallucinations, 0 verified, 0 unsubstantiated",
+          "question_id": 33,
+          "question": "How does Apple address supply chain labor and ethical sourcing?"
+        },
+        {
+          "status": "APPROVED",
+          "hallucination_count": 0,
+          "verified_count": 0,
+          "unsubstantiated_count": 0,
+          "ragas_metrics": {
+            "faithfulness": 0.95,
+            "answer_relevancy": 0.0,
+            "context_recall": 0.6
+          },
+          "findings_summary": "0 hallucinations, 0 verified, 0 unsubstantiated",
+          "question_id": 34,
+          "question": "What is the impact of App Store policies and ecosystem on Apple's business?"
+        },
+        {
+          "status": "APPROVED",
+          "hallucination_count": 0,
+          "verified_count": 0,
+          "unsubstantiated_count": 1,
+          "ragas_metrics": {
+            "faithfulness": 1.0,
+            "answer_relevancy": 0.0,
+            "context_recall": 0.667
+          },
+          "findings_summary": "0 hallucinations, 0 verified, 1 unsubstantiated",
+          "question_id": 35,
+          "question": "How does Apple invest in new markets and emerging technologies?"
+        },
+        {
+          "status": "APPROVED",
+          "hallucination_count": 0,
+          "verified_count": 0,
+          "unsubstantiated_count": 0,
+          "ragas_metrics": {
+            "faithfulness": 0.95,
+            "answer_relevancy": 0.0,
+            "context_recall": 0.2
+          },
+          "findings_summary": "0 hallucinations, 0 verified, 0 unsubstantiated",
+          "question_id": 36,
+          "question": "What are the risks from cryptocurrency and blockchain initiatives?"
+        },
+        {
+          "status": "APPROVED",
+          "hallucination_count": 0,
+          "verified_count": 0,
+          "unsubstantiated_count": 2,
+          "ragas_metrics": {
+            "faithfulness": 1.0,
+            "answer_relevancy": 0.0,
+            "context_recall": 0.75
+          },
+          "findings_summary": "0 hallucinations, 0 verified, 2 unsubstantiated",
+          "question_id": 37,
+          "question": "How does Apple manage its retail operations and store footprint?"
+        },
+        {
+          "status": "APPROVED",
+          "hallucination_count": 0,
+          "verified_count": 0,
+          "unsubstantiated_count": 0,
+          "ragas_metrics": {
+            "faithfulness": 0.95,
+            "answer_relevancy": 0.0,
+            "context_recall": 0.5
+          },
+          "findings_summary": "0 hallucinations, 0 verified, 0 unsubstantiated",
+          "question_id": 38,
+          "question": "What are Apple's exposure and strategy regarding artificial intelligence?"
+        },
+        {
+          "status": "APPROVED",
+          "hallucination_count": 0,
+          "verified_count": 0,
+          "unsubstantiated_count": 0,
+          "ragas_metrics": {
+            "faithfulness": 0.95,
+            "answer_relevancy": 0.0,
+            "context_recall": 0.4
+          },
+          "findings_summary": "0 hallucinations, 0 verified, 0 unsubstantiated",
+          "question_id": 39,
+          "question": "How does Apple address security vulnerabilities and patch management?"
+        },
+        {
+          "status": "APPROVED",
+          "hallucination_count": 0,
+          "verified_count": 0,
+          "unsubstantiated_count": 7,
+          "ragas_metrics": {
+            "faithfulness": 1.0,
+            "answer_relevancy": 0.0,
+            "context_recall": 0.667
+          },
+          "findings_summary": "0 hallucinations, 0 verified, 7 unsubstantiated",
+          "question_id": 40,
+          "question": "What are the terms of Apple's credit facilities and covenants?"
+        },
+        {
+          "status": "APPROVED",
+          "hallucination_count": 0,
+          "verified_count": 0,
+          "unsubstantiated_count": 0,
+          "ragas_metrics": {
+            "faithfulness": 0.95,
+            "answer_relevancy": 0.0,
+            "context_recall": 0.333
+          },
+          "findings_summary": "0 hallucinations, 0 verified, 0 unsubstantiated",
+          "question_id": 41,
+          "question": "How does Apple manage product pricing and gross margins?"
+        },
+        {
+          "status": "APPROVED",
+          "hallucination_count": 0,
+          "verified_count": 0,
+          "unsubstantiated_count": 1,
+          "ragas_metrics": {
+            "faithfulness": 1.0,
+            "answer_relevancy": 0.0,
+            "context_recall": 0.875
+          },
+          "findings_summary": "0 hallucinations, 0 verified, 1 unsubstantiated",
+          "question_id": 42,
+          "question": "What is Apple's strategy for emerging market penetration?"
+        },
+        {
+          "status": "APPROVED",
+          "hallucination_count": 0,
+          "verified_count": 0,
+          "unsubstantiated_count": 1,
+          "ragas_metrics": {
+            "faithfulness": 1.0,
+            "answer_relevancy": 0.0,
+            "context_recall": 0.778
+          },
+          "findings_summary": "0 hallucinations, 0 verified, 1 unsubstantiated",
+          "question_id": 43,
+          "question": "How does Apple manage software and cloud infrastructure costs?"
+        },
+        {
+          "status": "APPROVED",
+          "hallucination_count": 0,
+          "verified_count": 0,
+          "unsubstantiated_count": 0,
+          "ragas_metrics": {
+            "faithfulness": 0.95,
+            "answer_relevancy": 0.0,
+            "context_recall": 0.667
+          },
+          "findings_summary": "0 hallucinations, 0 verified, 0 unsubstantiated",
+          "question_id": 44,
+          "question": "What are the risks from government investigations and regulatory actions?"
+        },
+        {
+          "status": "APPROVED",
+          "hallucination_count": 0,
+          "verified_count": 0,
+          "unsubstantiated_count": 0,
+          "ragas_metrics": {
+            "faithfulness": 0.95,
+            "answer_relevancy": 0.0,
+            "context_recall": 0.222
+          },
+          "findings_summary": "0 hallucinations, 0 verified, 0 unsubstantiated",
+          "question_id": 45,
+          "question": "How does Apple manage pension obligations and post-retirement benefits?"
+        },
+        {
+          "status": "APPROVED",
+          "hallucination_count": 0,
+          "verified_count": 0,
+          "unsubstantiated_count": 1,
+          "ragas_metrics": {
+            "faithfulness": 1.0,
+            "answer_relevancy": 0.0,
+            "context_recall": 0.455
+          },
+          "findings_summary": "0 hallucinations, 0 verified, 1 unsubstantiated",
+          "question_id": 46,
+          "question": "What is Apple's strategy for hardware upgrades and product longevity?"
+        },
+        {
+          "status": "APPROVED",
+          "hallucination_count": 0,
+          "verified_count": 0,
+          "unsubstantiated_count": 0,
+          "ragas_metrics": {
+            "faithfulness": 0.95,
+            "answer_relevancy": 0.0,
+            "context_recall": 0.333
+          },
+          "findings_summary": "0 hallucinations, 0 verified, 0 unsubstantiated",
+          "question_id": 47,
+          "question": "How does Apple address subscription churn and customer retention?"
+        },
+        {
+          "status": "APPROVED",
+          "hallucination_count": 0,
+          "verified_count": 0,
+          "unsubstantiated_count": 0,
+          "ragas_metrics": {
+            "faithfulness": 0.95,
+            "answer_relevancy": 0.0,
+            "context_recall": 0.25
+          },
+          "findings_summary": "0 hallucinations, 0 verified, 0 unsubstantiated",
+          "question_id": 48,
+          "question": "What are Apple's commitments regarding manufacturing location and capacity?"
+        },
+        {
+          "status": "APPROVED",
+          "hallucination_count": 0,
+          "verified_count": 0,
+          "unsubstantiated_count": 1,
+          "ragas_metrics": {
+            "faithfulness": 1.0,
+            "answer_relevancy": 0.0,
+            "context_recall": 0.333
+          },
+          "findings_summary": "0 hallucinations, 0 verified, 1 unsubstantiated",
+          "question_id": 49,
+          "question": "How does Apple manage risks from third-party software dependencies?"
+        },
+        {
+          "status": "APPROVED",
+          "hallucination_count": 0,
+          "verified_count": 0,
+          "unsubstantiated_count": 3,
+          "ragas_metrics": {
+            "faithfulness": 1.0,
+            "answer_relevancy": 0.0,
+            "context_recall": 0.5
+          },
+          "findings_summary": "0 hallucinations, 0 verified, 3 unsubstantiated",
+          "question_id": 50,
+          "question": "What is Apple's strategy to monetize wearables and accessories?"
+        }
+      ]
+    }
+  ],
+  "comparative_summary": {
+    "best_variant_by_faithfulness": {
+      "variant": "baseline",
+      "score": 0.986
+    },
+    "best_variant_by_relevancy": {
+      "variant": "hybrid",
+      "score": 0.03
+    },
+    "best_variant_by_recall": {
+      "variant": "hybrid",
+      "score": 0.524
+    },
+    "lowest_hallucination_rate": {
+      "variant": "hyde",
+      "rate": 0.0,
+      "count": 0
+    },
+    "variant_rankings": [
+      {
+        "variant": "hybrid",
+        "average_ragas_score": 0.511,
+        "hallucination_rate": 0.0,
+        "status": "PASSED"
+      },
+      {
+        "variant": "finance",
+        "average_ragas_score": 0.495,
+        "hallucination_rate": 0.0,
+        "status": "PASSED"
+      },
+      {
+        "variant": "baseline",
+        "average_ragas_score": 0.472,
+        "hallucination_rate": 0.0,
+        "status": "PASSED"
+      },
+      {
+        "variant": "hyde",
+        "average_ragas_score": 0.428,
+        "hallucination_rate": 0.0,
+        "status": "PASSED"
+      }
+    ]
+  }
+}

@@ -1,9 +1,10 @@
 import os
 from dotenv import load_dotenv
-from graph.workflow import create_wealth_manager_graph
 
-# Load environment variables (API Keys)
+# Load environment variables (API Keys) FIRST, before any agent imports
 load_dotenv()
+
+from graph.workflow import create_wealth_manager_graph
 
 def main():
     print("--- 🚀 Initializing AI Wealth Manager System ---")
@@ -14,7 +15,7 @@ def main():
     # Initial input for the system
     # In a real-world case, this would be a specific client request
     initial_input = {
-        "messages": ["Analyze the impact of recent tech sector volatility on a high-growth portfolio."],
+        "messages": ["Should I invest more in AAPL and NVDA given the current AI boom? What about tech sector volatility?"],
         "tickers": ["AAPL", "NVDA", "GOOG", "MSFT"],
         "news_articles": [],
         "sentiment_results": [],

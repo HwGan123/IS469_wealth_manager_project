@@ -3,9 +3,9 @@ import json
 import anthropic
 
 from langchain_community.vectorstores import Chroma
-from langchain_community.embeddings import HuggingFaceEmbeddings
+from langchain_huggingface import HuggingFaceEmbeddings
 from langchain_openai import ChatOpenAI
-from langchain.prompts import ChatPromptTemplate
+from langchain_core.prompts import ChatPromptTemplate
 
 from graph.state import WealthManagerState
 from mcp_news import get_mcp_tools, dispatch_mcp_tool
@@ -91,7 +91,7 @@ def analyst_node(state: WealthManagerState):
         iteration += 1
         
         response = anthropic_client.messages.create(
-            model="claude-3-5-sonnet-20241022",
+            model="claude-haiku-4-5-20251001",
             max_tokens=4096,
             tools=tools,
             messages=messages

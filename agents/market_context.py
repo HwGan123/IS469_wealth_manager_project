@@ -20,6 +20,88 @@ import logging
 logger = logging.getLogger(__name__)
 
 
+def _summarize_tool_result(tool_name: str, result: dict) -> dict:
+    """
+    Summarize tool results to reduce context window bloat in agentic loops.
+    
+    Keeps full data in market_context but sends compressed summaries back to Claude
+    to prevent hitting token limits during multi-turn conversations.
+    
+    Args:
+        tool_name: Name of the tool that was called
+        result: Full result from the tool
+        
+    Returns:
+        Summarized version of the result
+    """
+    if "error" in result:
+        return result  # Keep errors as-is
+    
+    # Summarize by tool type
+    if tool_name == "fetch_news":
+        articles = result.get("articles", [])
+        if len(articles) > 10:
+            # Keep only top 10 articles
+            articles = articles[:10]
+            return {
+                "articles": articles,
+                "count": len(articles),
+                "note": f"Showing top 10 of {result.get('count', len(articles))} articles"
+            }
+        return result
+    
+    elif tool_name == "fetch_sec_filings":
+        # Compress filing info - just keep essential metadata
+        if isinstance(result, list):
+            summary = []
+            for filing in result[:5]:  # Keep top 5
+                summary.append({
+                    "ticker": filing.get("ticker"),
+                    "filing_type": filing.get("filing_type"),
+                    "date": filing.get("date"),
+                    "url": filing.get("url")
+                })
+            return {
+                "filings": summary,
+                "count": len(summary),
+                "note": f"Showing top 5 filings. Full data cached."
+            }
+        return result
+    
+    elif tool_name == "fetch_10k_content":
+        # Compress 10-K content - keep only summaries
+        if isinstance(result, dict):
+            compressed = {}
+            for key, value in result.items():
+                if isinstance(value, dict) and "summary" in value:
+                    # Use summary instead of full text
+                    compressed[key] = {"summary": value["summary"][:500]}
+                elif isinstance(value, str):
+                    # Truncate strings
+                    compressed[key] = value[:300]
+                else:
+                    compressed[key] = value
+            return {
+                "content": compressed,
+                "note": "10-K content compressed. Full data cached."
+            }
+        return result
+    
+    elif tool_name == "fetch_earnings":
+        # Earnings data is usually structured - keep as-is but cap size
+        if isinstance(result, dict):
+            keys = list(result.keys())[:20]  # Cap to 20 tickers
+            return {k: result[k] for k in keys} if len(result) > 20 else result
+        return result
+    
+    elif tool_name == "fetch_analyst_ratings":
+        # Keep analyst ratings - usually lean
+        return result
+    
+    # Default: return as-is
+    return result
+
+
 def market_context_node(state: WealthManagerState) -> dict:
     """
     Fetch and cache market context data for the portfolio companies.
@@ -132,14 +214,17 @@ Synthesize the gathered data into a clear summary."""
                     # Execute tool
                     result = dispatch_mcp_tool(tool_name, tool_input)
                     
-                    # Cache result
+                    # Cache full result
                     if tool_name not in market_context:
                         market_context[tool_name] = result
+                    
+                    # Summarize result for conversation (to avoid context bloat)
+                    summarized_result = _summarize_tool_result(tool_name, result)
                     
                     tool_results.append({
                         "type": "tool_result",
                         "tool_use_id": block.id,
-                        "content": json.dumps(result)
+                        "content": json.dumps(summarized_result)
                     })
             
             # Add tool results to conversation

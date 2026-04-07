@@ -28,6 +28,9 @@ class WealthManagerState(Dict):
     # ── Report generator agent ────────────────────────────────────────────────
     final_report: str               # final user-facing combined report
     
+    # ── Market Context Agent ───────────────────────────────────────────────────
+    market_context: dict            # cached market data (news, earnings, ratings, 10-K, filings)
+    
     # Domain-specific state variables
     tickers: List[str]             # Stock tickers to analyze
     news_articles: List[Dict]      # From Sentiment Agent (NewsAPI)

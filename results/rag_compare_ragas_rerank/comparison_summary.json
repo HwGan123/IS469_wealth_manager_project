@@ -1,0 +1,38 @@
+[
+  {
+    "variant": "baseline+rerank",
+    "num_questions": 50,
+    "precision_at_k": 0.452,
+    "recall_at_k": 0.84,
+    "f1_score": 0.5877399380804954,
+    "accuracy": 0.84,
+    "mrr": 0.6583333333333333
+  },
+  {
+    "variant": "hyde+rerank",
+    "num_questions": 50,
+    "precision_at_k": 0.41600000000000004,
+    "recall_at_k": 0.78,
+    "f1_score": 0.542608695652174,
+    "accuracy": 0.78,
+    "mrr": 0.653
+  },
+  {
+    "variant": "hybrid+rerank",
+    "num_questions": 50,
+    "precision_at_k": 0.764,
+    "recall_at_k": 0.92,
+    "f1_score": 0.8347743467933492,
+    "accuracy": 0.92,
+    "mrr": 0.794
+  },
+  {
+    "variant": "finance+rerank",
+    "num_questions": 50,
+    "precision_at_k": 0.7240000000000001,
+    "recall_at_k": 0.92,
+    "f1_score": 0.810316301703163,
+    "accuracy": 0.92,
+    "mrr": 0.84
+  }
+]

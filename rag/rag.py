@@ -25,7 +25,7 @@ DEFAULT_OVERLAP = 150
 def load_clean_text(path: Path) -> str:
     if not path.exists():
         raise FileNotFoundError(
-            f"Missing cleaned text: {path}. Run JJ/data_download.py and the HTML cleaner first."
+            f"Missing cleaned text: {path}. Run rag/data_download.py and the HTML cleaner first."
         )
     return path.read_text(encoding="utf-8").strip()
 

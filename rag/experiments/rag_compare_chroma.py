@@ -5,8 +5,8 @@ Uses existing Chroma embeddings, so no sentence-transformers needed.
 Compares baseline 10-K retrieval vs MCP-augmented retrieval.
 
 Usage:
-    python JJ/experiments/rag_compare_chroma.py \
-        --qa JJ/data/manual_qa_template.jsonl \
+    python rag/experiments/rag_compare_chroma.py \
+        --qa rag/data/manual_qa_template.jsonl \
         --output-dir results/rag_compare_mcp \
         --tickers AAPL NVDA GOOG MSFT
 """

@@ -115,7 +115,7 @@ TEST 4: RAG Benchmark Query (Like rag_compare_chroma.py)
 
 **Troubleshooting:**
 - If `FINNHUB_API_KEY` error: Set environment variable (see Setup section)
-- If Chroma DB not found: Run `JJ/rag.py` first to create embeddings
+- If Chroma DB not found: Run `rag/rag.py` first to create embeddings
 - If import errors: Run `pip install -r requirements.txt`
 
 ---
@@ -124,19 +124,19 @@ TEST 4: RAG Benchmark Query (Like rag_compare_chroma.py)
 
 **Purpose:** Benchmark RAG performance with and without MCP data augmentation
 
-**File:** `JJ/experiments/rag_compare_chroma.py`
+**File:** `rag/experiments/rag_compare_chroma.py`
 
 **Run - Minimal:**
 ```bash
 cd d:\Codes and Repos\IS469_wealth_manager_project
-python JJ/experiments/rag_compare_chroma.py \
-    --qa JJ/data/manual_qa_template.jsonl
+python rag/experiments/rag_compare_chroma.py \
+    --qa rag/data/manual_qa_template.jsonl
 ```
 
 **Run - Full Benchmark:**
 ```bash
-python JJ/experiments/rag_compare_chroma.py \
-    --qa JJ/data/manual_qa_template.jsonl \
+python rag/experiments/rag_compare_chroma.py \
+    --qa rag/data/manual_qa_template.jsonl \
     --output-dir results/rag_compare_mcp \
     --tickers AAPL NVDA GOOG MSFT \
     --k 5 \
@@ -268,8 +268,8 @@ dispatch_mcp_tool("fetch_sec_filings", {
 
 ```bash
 # Test with different companies
-python JJ/experiments/rag_compare_chroma.py \
-    --qa JJ/data/manual_qa_template.jsonl \
+python rag/experiments/rag_compare_chroma.py \
+    --qa rag/data/manual_qa_template.jsonl \
     --tickers TSLA MSFT AMZN \
     --output-dir results/rag_compare_custom
 ```
@@ -279,8 +279,8 @@ python JJ/experiments/rag_compare_chroma.py \
 For performance comparison without MCP overhead:
 
 ```bash
-python JJ/experiments/rag_compare_chroma.py \
-    --qa JJ/data/manual_qa_template.jsonl \
+python rag/experiments/rag_compare_chroma.py \
+    --qa rag/data/manual_qa_template.jsonl \
     --skip-mcp
 ```
 
@@ -290,8 +290,8 @@ Test different retrieval depths:
 
 ```bash
 # Retrieve top-3 instead of top-5
-python JJ/experiments/rag_compare_chroma.py \
-    --qa JJ/data/manual_qa_template.jsonl \
+python rag/experiments/rag_compare_chroma.py \
+    --qa rag/data/manual_qa_template.jsonl \
     --k 3
 ```
 
@@ -301,8 +301,8 @@ Analyze impact of historical depth:
 
 ```bash
 # Look back 30 days instead of 7
-python JJ/experiments/rag_compare_chroma.py \
-    --qa JJ/data/manual_qa_template.jsonl \
+python rag/experiments/rag_compare_chroma.py \
+    --qa rag/data/manual_qa_template.jsonl \
     --days-back 30
 ```
 
@@ -319,7 +319,7 @@ $env:FINNHUB_API_KEY="your_api_key"
 ### Error: "Chroma DB not found"
 **Solution:** Create embeddings first
 ```bash
-python JJ/rag.py
+python rag/rag.py
 ```
 
 ### Error: "ModuleNotFoundError: mcp_news"

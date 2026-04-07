@@ -117,138 +117,6 @@ def reciprocal_rank_fusion(*rank_lists: list[int], k: int = 60) -> list[int]:
     return [doc_id for doc_id, _ in sorted(score_map.items(), key=lambda item: item[1], reverse=True)]
 
 
-def rerank_with_cohere(question: str, retrieved_indices: list[int], chunks: list[dict[str, Any]], model_name: str = "rerank-v3.5") -> list[int]:
-    """Rerank retrieved chunks using Cohere rerank API"""
-    try:
-        import cohere
-    except ImportError:
-        print("Cohere package not installed. Install with: pip install cohere")
-        return retrieved_indices
-
-    api_key = os.getenv("COHERE_API_KEY")
-    if not api_key:
-        print("COHERE_API_KEY not set. Skipping reranking.")
-        return retrieved_indices
-
-    client = cohere.Client(api_key)
-
-    # Prepare documents for reranking
-    docs = [chunks[idx]["text"] for idx in retrieved_indices]
-
-    try:
-        response = client.rerank(model=model_name, query=question, documents=docs, top_n=len(docs))
-
-        # Reorder indices based on reranking
-        reranked_indices = []
-        for item in response.results:
-            reranked_indices.append(retrieved_indices[item.index])
-
-        return reranked_indices
-
-    except Exception as e:
-        print(f"Cohere reranking failed: {e}. Using original ranking.")
-        return retrieved_indices
-
-
-def rerank_with_cross_encoder(question: str, retrieved_indices: list[int], chunks: list[dict[str, Any]], model_name: str = "cross-encoder/mmarco-mMiniLMv2-L12-H384-v1") -> list[int]:
-    """Rerank retrieved chunks using local cross-encoder model (no API required)"""
-    try:
-        from sentence_transformers import CrossEncoder
-    except ImportError:
-        print("sentence-transformers package not installed. Install with: pip install sentence-transformers")
-        return retrieved_indices
-
-    try:
-        cross_encoder = CrossEncoder(model_name)
-        
-        # Prepare documents for reranking
-        docs = [chunks[idx]["text"] for idx in retrieved_indices]
-        
-        # Create query-document pairs
-        pairs = [[question, doc] for doc in docs]
-        
-        # Score pairs
-        scores = cross_encoder.predict(pairs)
-        
-        # Sort by score and get reranked indices
-        scored_indices = list(zip(range(len(retrieved_indices)), scores))
-        scored_indices.sort(key=lambda x: x[1], reverse=True)
-        
-        reranked_indices = [retrieved_indices[i] for i, _ in scored_indices]
-        return reranked_indices
-
-    except Exception as e:
-        print(f"Cross-encoder reranking failed: {e}. Using original ranking.")
-        return retrieved_indices
-
-
-def rerank_with_groq(question: str, retrieved_indices: list[int], chunks: list[dict[str, Any]], model_name: str = "mixtral-8x7b-32768") -> list[int]:
-    """Rerank retrieved chunks using Groq LLM API (uses LLM to score relevance)"""
-    try:
-        from groq import Groq
-    except ImportError:
-        print("Groq package not installed. Install with: pip install groq")
-        return retrieved_indices
-
-    api_key = os.getenv("GROQ_API_KEY")
-    if not api_key:
-        print("GROQ_API_KEY not set. Skipping Groq reranking.")
-        return retrieved_indices
-
-    client = Groq(api_key=api_key)
-    
-    # Use full document text for better ranking (Groq has higher token limits)
-    docs = [chunks[idx]["text"][:2000] for idx in retrieved_indices]  # Increased from 500 to 2000
-    
-    # Create prompt asking Groq to rank documents by relevance
-    doc_text = "\n\n".join([f"[{i}] {doc[:800]}" for i, doc in enumerate(docs)])
-    prompt = f"""You are a financial document ranking expert. For the given question, rank these documents by how relevant they are to answering it.
-
-Question: {question}
-
-Documents:
-{doc_text}
-
-Respond with ONLY a comma-separated list of indices in order of relevance (best first). Example: 2,0,1,3
-No explanations. No markdown. Just indices."""
-
-    try:
-        response = client.chat.completions.create(
-            model=model_name,
-            messages=[{"role": "user", "content": prompt}],
-            temperature=0.0,
-            max_tokens=50,
-        )
-        
-        ranking_text = response.choices[0].message.content.strip()
-        print(f"Groq ranking response: {ranking_text}")  # Debug output
-        
-        # Parse indices from response
-        ranked_positions = []
-        for token in ranking_text.replace(",", " ").split():
-            try:
-                pos = int(token.strip())
-                if 0 <= pos < len(retrieved_indices):
-                    ranked_positions.append(pos)
-            except ValueError:
-                continue
-        
-        if ranked_positions:
-            reranked = [retrieved_indices[pos] for pos in ranked_positions]
-            # Add any missing indices at the end (shouldn't happen but safety check)
-            for idx in retrieved_indices:
-                if idx not in reranked:
-                    reranked.append(idx)
-            return reranked[:len(retrieved_indices)]
-        else:
-            print("Failed to parse Groq ranking response. Using original ranking.")
-            return retrieved_indices
-
-    except Exception as e:
-        print(f"Groq reranking failed: {e}. Using original ranking.")
-        return retrieved_indices
-
-
 def get_llm(model_name: str):
     try:
         from langchain_openai import ChatOpenAI
@@ -302,7 +170,7 @@ def run_ragas(results: list[dict[str, Any]], llm_model_name: str) -> dict[str, f
         from ragas.llms import LangchainLLMWrapper
         from ragas.metrics import LLMContextRecall, Faithfulness, FactualCorrectness
         from langchain_openai import ChatOpenAI
-    except Exception as e:
+    except ImportError as e:
         print(f"  [RAGAS] Skipping — missing package: {e}")
         return None
 
@@ -318,7 +186,7 @@ def run_ragas(results: list[dict[str, Any]], llm_model_name: str) -> dict[str, f
             SingleTurnSample(
                 user_input=row["question"],
                 response=row["answer"],
-                retrieved_contexts=row["contexts"],
+                retrieved_contexts=row["contexts"],  # must be list[str]
                 reference=row["ground_truth"],
             )
         )
@@ -328,6 +196,7 @@ def run_ragas(results: list[dict[str, Any]], llm_model_name: str) -> dict[str, f
         return None
 
     print(f"  [RAGAS] Evaluating {len(samples)} samples...")
+
     try:
         evaluator_llm = LangchainLLMWrapper(
             ChatOpenAI(model=llm_model_name, temperature=0.0)
@@ -337,9 +206,9 @@ def run_ragas(results: list[dict[str, Any]], llm_model_name: str) -> dict[str, f
         scores = evaluate(
             dataset=dataset,
             metrics=[
-                LLMContextRecall(),
-                Faithfulness(),
-                FactualCorrectness(),
+                LLMContextRecall(),   # retrieved_contexts + reference
+                Faithfulness(),       # response + retrieved_contexts
+                FactualCorrectness(), # response + reference
             ],
             llm=evaluator_llm,
         )
@@ -356,10 +225,8 @@ def run_ragas(results: list[dict[str, Any]], llm_model_name: str) -> dict[str, f
     except Exception as e:
         import traceback
         print(f"  [RAGAS] Evaluation failed: {e}")
-        traceback.print_exc()
+        traceback.print_exc()   # <-- this prints the full stack trace so you can debug
         return None
-
-
 def run_variant(
     variant: str,
     chunks: list[dict[str, Any]],
@@ -368,23 +235,16 @@ def run_variant(
     baseline_model: str,
     finance_model: str,
     llm_model: str,
-    reranker: str,
-    cohere_model: str,
-    groq_model: str,
 ) -> dict[str, Any]:
     raw_texts = [chunk["text"] for chunk in chunks]
     contextual_texts = contextualize_chunks(chunks)
     llm = get_llm(llm_model)
 
-    # Determine if this variant uses reranking
-    use_rerank = variant.endswith("+rerank")
-    base_variant = variant.replace("+rerank", "") if use_rerank else variant
-
-    if base_variant == "baseline":
+    if variant == "baseline":
         dense = DenseRetriever(raw_texts, baseline_model)
         retrieve = lambda q: dense.search(q, k)
         active_texts = raw_texts
-    elif base_variant == "hyde":
+    elif variant == "hyde":
         dense = DenseRetriever(raw_texts, baseline_model)
 
         def retrieve(query: str):
@@ -392,7 +252,7 @@ def run_variant(
             return dense.search(hyde_query, k)
 
         active_texts = raw_texts
-    elif base_variant == "hybrid":
+    elif variant == "hybrid":
         dense = DenseRetriever(contextual_texts, baseline_model)
         bm25 = BM25Retriever(contextual_texts)
 
@@ -403,12 +263,12 @@ def run_variant(
             return fused[:k]
 
         active_texts = contextual_texts
-    elif base_variant == "finance":
+    elif variant == "finance":
         dense = DenseRetriever(contextual_texts, finance_model)
         retrieve = lambda q: dense.search(q, k)
         active_texts = contextual_texts
     else:
-        raise ValueError(f"Unknown variant: {base_variant}")
+        raise ValueError(f"Unknown variant: {variant}")
 
     rows: list[dict[str, Any]] = []
     hit_count = 0
@@ -417,21 +277,7 @@ def run_variant(
 
     for qa in qa_rows:
         question = qa["question"]
-
-        # Initial retrieval
         top_indices = retrieve(question)
-
-        # Apply reranking if requested
-        if use_rerank:
-            if reranker == "cohere":
-                top_indices = rerank_with_cohere(question, top_indices, chunks, cohere_model)
-            elif reranker == "groq":
-                top_indices = rerank_with_groq(question, top_indices, chunks, groq_model)
-            elif reranker == "cross-encoder":
-                top_indices = rerank_with_cross_encoder(question, top_indices, chunks)
-            else:
-                print(f"Unknown reranker '{reranker}'; using original ranking.")
-
         contexts = [active_texts[index] for index in top_indices]
         answer = generate_answer(question, contexts, llm)
 
@@ -439,7 +285,7 @@ def run_variant(
         hit = context_hit(contexts, keywords)
         if hit:
             hit_count += 1
-
+        
         # Compute MRR (Mean Reciprocal Rank)
         keyword_set = set(kw.lower() for kw in keywords)
         merged_context = "\n".join(contexts).lower()
@@ -451,7 +297,7 @@ def run_variant(
                 break
         if not mrr_found:
             reciprocal_ranks.append(0.0)
-
+        
         # Compute Precision@K (fraction of top-k with keywords)
         relevant_in_topk = sum(1 for ctx in contexts if any(kw.lower() in ctx.lower() for kw in keywords))
         precision_at_k = relevant_in_topk / max(k, 1)
@@ -495,7 +341,6 @@ def run_variant(
 
 def write_outputs(output_dir: Path, all_results: list[dict[str, Any]]) -> None:
     output_dir.mkdir(parents=True, exist_ok=True)
-
     summary_rows: list[dict[str, Any]] = []
 
     for result in all_results:
@@ -507,51 +352,48 @@ def write_outputs(output_dir: Path, all_results: list[dict[str, Any]]) -> None:
                 handle.write(json.dumps(row, ensure_ascii=False) + "\n")
 
         summary = result["summary"]
-        ragas_scores = summary.get("ragas") or {}
-        summary_rows.append(
-            {
-                "variant": variant,
-                "num_questions": summary["num_questions"],
-                "precision_at_k": summary.get("precision_at_k", ""),
-                "recall_at_k": summary.get("recall_at_k", ""),
-                "f1_score": summary.get("f1_score", ""),
-                "accuracy": summary.get("accuracy", ""),
-                "mrr": summary.get("mrr", ""),
-            }
-        )
+        ragas = summary.get("ragas") or {}   # flatten RAGAS scores into the row
+
+        summary_rows.append({
+            "variant": variant,
+            "num_questions": summary["num_questions"],
+            "precision_at_k": summary.get("precision_at_k", ""),
+            "recall_at_k": summary.get("recall_at_k", ""),
+            "f1_score": summary.get("f1_score", ""),
+            "accuracy": summary.get("accuracy", ""),
+            "mrr": summary.get("mrr", ""),
+            # RAGAS scores
+            "ragas_context_recall": ragas.get("context_recall", ""),
+            "ragas_faithfulness": ragas.get("faithfulness", ""),
+            "ragas_factual_correctness": ragas.get("factual_correctness", ""),
+            "ragas_hallucination_rate": ragas.get("hallucination_rate", ""),
+        })
 
     csv_path = output_dir / "comparison_summary.csv"
     with csv_path.open("w", encoding="utf-8", newline="") as handle:
-        writer = csv.DictWriter(
-            handle,
-            fieldnames=[
-                "variant",
-                "num_questions",
-                "precision_at_k",
-                "recall_at_k",
-                "f1_score",
-                "accuracy",
-                "mrr",
-            ],
-        )
+        writer = csv.DictWriter(handle, fieldnames=[
+            "variant", "num_questions",
+            "precision_at_k", "recall_at_k", "f1_score", "accuracy", "mrr",
+            "ragas_context_recall", "ragas_faithfulness",
+            "ragas_factual_correctness", "ragas_hallucination_rate",
+        ])
         writer.writeheader()
         writer.writerows(summary_rows)
 
     json_path = output_dir / "comparison_summary.json"
     json_path.write_text(json.dumps(summary_rows, indent=2), encoding="utf-8")
 
-
 def parse_args() -> argparse.Namespace:
-    parser = argparse.ArgumentParser(description="Compare RAG variants with Cohere reranking for investment analysis.")
-    parser.add_argument("--chunks", type=Path, default=Path("JJ/data/processed/aapl_10k_chunks.jsonl"))
-    parser.add_argument("--qa", type=Path, default=Path("JJ/data/manual_qa_template.jsonl"))
-    parser.add_argument("--output-dir", type=Path, default=Path("results/rag_compare_rerank"))
+    parser = argparse.ArgumentParser(description="Compare RAG variants for investment analysis.")
+    parser.add_argument("--chunks", type=Path, default=Path("rag/data/processed/aapl_10k_chunks.jsonl"))
+    parser.add_argument("--qa", type=Path, default=Path("rag/data/manual_qa_template.jsonl"))
+    parser.add_argument("--output-dir", type=Path, default=Path("results/rag_compare_ragas"))
     parser.add_argument("--k", type=int, default=5)
     parser.add_argument(
         "--variants",
         type=str,
-        default="baseline+rerank,hyde+rerank,hybrid+rerank,finance+rerank",
-        help="Comma-separated list: baseline+rerank, hyde+rerank, hybrid+rerank, finance+rerank",
+        default="baseline,hyde,hybrid,finance",
+        help="Comma-separated list: baseline, hyde, hybrid, finance",
     )
     parser.add_argument("--baseline-embedding", type=str, default="sentence-transformers/all-MiniLM-L6-v2")
     parser.add_argument(
@@ -560,10 +402,7 @@ def parse_args() -> argparse.Namespace:
         default="sentence-transformers/all-mpnet-base-v2",
         help="Set this to your finance-finetuned embedding checkpoint.",
     )
-    parser.add_argument("--llm-model", type=str, default="gpt-3.5-turbo")
-    parser.add_argument("--reranker", type=str, default="cross-encoder", choices=["none", "cohere", "groq", "cross-encoder"], help="Choose reranker for +rerank variants")
-    parser.add_argument("--cohere-model", type=str, default="rerank-v4.0-pro")
-    parser.add_argument("--groq-model", type=str, default="llama-3.1-70b-versatile", help="Groq model for reranking (e.g., llama-3.1-70b-versatile, llama-3.1-405b-versatile)")
+    parser.add_argument("--llm-model", type=str, default="gpt-4o-mini")
     return parser.parse_args()
 
 
@@ -585,9 +424,6 @@ def main() -> None:
             baseline_model=args.baseline_embedding,
             finance_model=args.finance_embedding,
             llm_model=args.llm_model,
-            reranker=args.reranker,
-            cohere_model=args.cohere_model,
-            groq_model=args.groq_model,
         )
         all_results.append(result)
         summary = result['summary']

@@ -17,9 +17,9 @@ source .venv_rag/bin/activate
 
 ### Run Baseline RAG (50-Question Evaluation)
 ```bash
-.venv_rag/bin/python JJ/experiments/rag_compare.py \
-  --chunks JJ/aapl_10k_chunks.jsonl \
-  --qa JJ/data/manual_qa_template.jsonl \
+.venv_rag/bin/python rag/experiments/rag_compare.py \
+  --chunks rag/aapl_10k_chunks.jsonl \
+  --qa rag/data/manual_qa_template.jsonl \
   --output-dir results/rag_compare \
   --variants baseline \
   --k 5
@@ -43,9 +43,9 @@ source .venv_rag/bin/activate
 
 ### Run All Variants
 ```bash
-.venv_rag/bin/python JJ/experiments/rag_compare.py \
+.venv_rag/bin/python rag/experiments/rag_compare.py \
   --variants baseline,hyde,hybrid,finance \
-  --qa JJ/data/manual_qa_template.jsonl \
+  --qa rag/data/manual_qa_template.jsonl \
   --output-dir results/rag_compare \
   --k 5
 ```
@@ -60,7 +60,7 @@ source .venv_rag/bin/activate
 
 ### Run All Variants with Reranking
 ```bash
-.venv_rag/bin/python JJ/experiments/rag_compare_rerank.py \
+.venv_rag/bin/python rag/experiments/rag_compare_rerank.py \
   --variants baseline,hyde,hybrid,finance \
   --llm-model gpt-3.5-turbo
 ```
@@ -68,12 +68,12 @@ source .venv_rag/bin/activate
 ### Run Specific Variants with Reranking
 ```bash
 # Hybrid with reranking
-.venv_rag/bin/python JJ/experiments/rag_compare_rerank.py \
+.venv_rag/bin/python rag/experiments/rag_compare_rerank.py \
   --variants hybrid \
   --llm-model gpt-3.5-turbo
 
 # Finance with reranking
-.venv_rag/bin/python JJ/experiments/rag_compare_rerank.py \
+.venv_rag/bin/python rag/experiments/rag_compare_rerank.py \
   --variants finance \
   --llm-model gpt-3.5-turbo
 ```
@@ -102,13 +102,13 @@ Reranking uses local cross-encoder (`mmarco-mMiniLMv2-L12-H384-v1`) to reorder r
 ## Data Pipeline
 
 ### Preparation Steps
-1. **Download**: Apple 10-K HTML → `JJ/aapl_10k_2025.htm`
-2. **Clean**: Extract readable text → `JJ/aapl_10k_clean.txt`
-3. **Chunk**: Split into 1000-char paragraphs (150-char overlap) → `JJ/aapl_10k_chunks.jsonl`
-4. **Embed**: Generate 384-dim normalized embeddings → `JJ/aapl_10k_clean_embeddings.json`
+1. **Download**: Apple 10-K HTML → `rag/aapl_10k_2025.htm`
+2. **Clean**: Extract readable text → `rag/aapl_10k_clean.txt`
+3. **Chunk**: Split into 1000-char paragraphs (150-char overlap) → `rag/aapl_10k_chunks.jsonl`
+4. **Embed**: Generate 384-dim normalized embeddings → `rag/aapl_10k_clean_embeddings.json`
 
 ### QA Dataset
-- **Location**: `JJ/data/manual_qa_template.jsonl`
+- **Location**: `rag/data/manual_qa_template.jsonl`
 - **Format**: JSON Lines (one entry per line)
 - **Schema**: `{"id", "question", "ground_truth", "gold_context_keywords"}`
 - **Size**: 50 representative questions covering risk, revenue, compliance, operations
@@ -124,7 +124,7 @@ export OPENAI_API_KEY="sk-..."
 .venv_rag/bin/pip install ragas datasets langchain-openai
 
 # Re-run with RAGAS enabled
-.venv_rag/bin/python JJ/experiments/rag_compare.py \
+.venv_rag/bin/python rag/experiments/rag_compare.py \
   --variants baseline \
   --llm-model gpt-4o-mini
 ```
@@ -132,7 +132,7 @@ export OPENAI_API_KEY="sk-..."
 ## Project Structure
 ```
 .
-├── JJ/
+├── rag/
 │   ├── aapl_10k_clean.txt              # Cleaned 10-K text
 │   ├── aapl_10k_chunks.jsonl           # Paragraph chunks
 │   ├── aapl_10k_clean_embeddings.json  # Dense embeddings

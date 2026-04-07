@@ -15,8 +15,8 @@ def test_data_files():
     print("TEST 1: Data Files Verification")
     print("=" * 60)
     
-    chunks_file = Path("JJ/data/processed/aapl_10k_chunks.jsonl")
-    qa_file = Path("JJ/data/manual_qa_template.jsonl")
+    chunks_file = Path("rag/data/processed/aapl_10k_chunks.jsonl")
+    qa_file = Path("rag/data/manual_qa_template.jsonl")
     
     if chunks_file.exists():
         with open(chunks_file, encoding='utf-8') as f:
@@ -131,9 +131,9 @@ def main():
         print("  - 4 variants × 50 questions = 200 API calls")
         print("  - Cost: ~$0.01-0.05 depending on query length")
         print("\nCommand to run:")
-        print("  source .venv_rag/bin/activate && python3 JJ/experiments/rag_compare_rerank.py \\")
-        print("    --chunks JJ/data/processed/aapl_10k_chunks.jsonl \\")
-        print("    --qa JJ/data/manual_qa_template.jsonl \\")
+        print("  source .venv_rag/bin/activate && python3 rag/experiments/rag_compare_rerank.py \\")
+        print("    --chunks rag/data/processed/aapl_10k_chunks.jsonl \\")
+        print("    --qa rag/data/manual_qa_template.jsonl \\")
         print("    --reranker cross-encoder \\")
         print("    --output-dir results/rag_compare_rerank_cross_encoder_corrected")
     else:

@@ -5,9 +5,9 @@ Extends rag_compare.py to include MCP-fetched live financial data (news, earning
 Compares MCP-augmented RAG against baseline dense retrieval.
 
 Usage:
-    python JJ/experiments/rag_compare_with_mcp.py \
-        --chunks JJ/aapl_10k_chunks.jsonl \
-        --qa JJ/data/manual_qa_template.jsonl \
+    python rag/experiments/rag_compare_with_mcp.py \
+        --chunks rag/aapl_10k_chunks.jsonl \
+        --qa rag/data/manual_qa_template.jsonl \
         --output-dir results/rag_compare_mcp \
         --tickers AAPL NVDA GOOG \
         --days-back 7

@@ -20,7 +20,7 @@ load_dotenv()
 
 def load_chunks(path: Path) -> list[dict]:
     if not path.exists():
-        raise FileNotFoundError(f"Missing chunks file: {path}. Run JJ/rag.py first.")
+        raise FileNotFoundError(f"Missing chunks file: {path}. Run rag/rag.py first.")
 
     rows = []
     with path.open("r", encoding="utf-8") as handle:

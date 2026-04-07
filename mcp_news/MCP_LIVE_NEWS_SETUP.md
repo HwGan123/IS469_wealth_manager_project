@@ -181,7 +181,7 @@ Recent news shows AMD's new Instinct 8 GPU line launching Q2.
 - **Add more MCP tools**: Extend `mcp_news/implementations.py` with additional data sources (Bloomberg, proprietary APIs, web scraping)
 - **Improve Claude's data synthesis**: Adjust the prompt in `agents/analyst.py` to ask Claude for specific analysis types
 - **Implement caching**: Cache MCP tool results to avoid repeated API calls for the same ticker within a session
-- **Optimize 10-K embedding model**: For RAG only — tune the HuggingFace embedding model in `JJ/retriever.py` for better 10-K semantic search
+- **Optimize 10-K embedding model**: For RAG only — tune the HuggingFace embedding model in `rag/retriever.py` for better 10-K semantic search
 
 ### File Organization
 
@@ -193,7 +193,7 @@ mcp_news/
   ├─ implementations.py        ← Actual tool logic (fetch_news, fetch_earnings, etc.)
   ├─ tools.py                 ← Tool definitions for Claude
   └─ __init__.py              ← Exports get_mcp_tools() and dispatch_mcp_tool()
-JJ/
+rag/
   ├─ rag.py                   ← 10-K chunking logic
   ├─ retriever.py             ← 10-K vector store retrieval
   └─ simple_rag.py            ← Alternative RAG implementation

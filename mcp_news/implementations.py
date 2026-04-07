@@ -516,3 +516,313 @@ def _fetch_cik_from_sec(ticker: str) -> str:
         logger.warning(f"Failed to fetch CIK for {ticker}: {e}")
     
     return None
+
+
+# ─────────────────────────────────────────────────────────────────────────
+# 10-K CONTENT FETCHING WITH SECTION EXTRACTION
+# ─────────────────────────────────────────────────────────────────────────
+
+def fetch_10k_content(tickers: List[str], sections: List[str] = None) -> Dict:
+    """
+    Fetch SEC 10-K documents with selective section extraction.
+    
+    Downloads actual 10-K filings and extracts key sections:
+    - MD&A (Management Discussion & Analysis)
+    - Risk Factors
+    - Business Overview
+    - Financial Summary
+    
+    Args:
+        tickers: List of stock tickers
+        sections: Which sections to extract (default: ["md_and_a", "risk_factors", "financial_summary"])
+    
+    Returns:
+        Dict with filing metadata and extracted content for each ticker
+    """
+    if sections is None:
+        sections = ["md_and_a", "risk_factors", "financial_summary"]
+    
+    results = []
+    ticker_to_cik = _load_sec_company_tickers()
+    
+    for ticker in tickers:
+        try:
+            # Get CIK for this ticker
+            cik = ticker_to_cik.get(ticker.upper())
+            if not cik:
+                cik = _fetch_cik_from_sec(ticker)
+                if not cik:
+                    results.append({
+                        "ticker": ticker,
+                        "error": f"Could not find CIK for {ticker}",
+                        "status": "cik_not_found"
+                    })
+                    continue
+            
+            # Fetch latest 10-K filing metadata
+            company_name = ticker_to_cik.get(ticker.upper(), {})
+            if isinstance(company_name, dict):
+                company_name = company_name.get("name", ticker)
+            
+            url = f"https://data.sec.gov/submissions/CIK{cik}.json"
+            headers = _get_sec_request_headers()
+            data = _sec_api_request(url, None, headers)
+            
+            if "error" in data:
+                results.append({
+                    "ticker": ticker,
+                    "error": data["error"],
+                    "status": "api_error"
+                })
+                continue
+            
+            # Find latest 10-K filing
+            filing_history = _parse_sec_filings_response(data, "10-K", cik)
+            
+            if not filing_history:
+                results.append({
+                    "ticker": ticker,
+                    "status": "no_10k_found"
+                })
+                continue
+            
+            latest_filing = filing_history[0]
+            accession = latest_filing.get("accession_number", "")
+            filing_url = latest_filing.get("url", "")
+            
+            # Download and parse the 10-K document
+            content = _download_and_extract_10k(accession, cik, ticker, sections)
+            
+            if "error" in content:
+                results.append({
+                    "ticker": ticker,
+                    "filing_date": latest_filing.get("filing_date", ""),
+                    "error": content["error"],
+                    "status": "download_error"
+                })
+                continue
+            
+            # Combine filing metadata with extracted content
+            filing_result = {
+                "ticker": ticker,
+                "company_name": company_name,
+                "filing_date": latest_filing.get("filing_date", ""),
+                "report_date": latest_filing.get("report_date", ""),
+                "accession_number": accession,
+                "status": "success",
+                "content": content
+            }
+            
+            results.append(filing_result)
+            
+            # Be respectful to SEC API
+            time.sleep(0.5)
+        
+        except Exception as e:
+            results.append({
+                "ticker": ticker,
+                "error": str(e),
+                "status": "error"
+            })
+    
+    return {
+        "results": results,
+        "count": len(results),
+        "source": "SEC Edgar with section extraction",
+        "requested_sections": sections
+    }
+
+
+def _download_and_extract_10k(accession: str, cik: str, ticker: str, sections: List[str]) -> Dict:
+    """
+    Download 10-K from SEC Edgar and extract specified sections.
+    
+    For reliability, this returns the filing metadata + extracts from sec.gov/edgar
+    API when available. Full document parsing requires more robust HTML processing.
+    
+    Args:
+        accession: Filing accession number
+        cik: Company CIK
+        ticker: Stock ticker
+        sections: List of sections to extract
+    
+    Returns:
+        Dict with extracted content or metadata for sections
+    """
+    try:
+        import re
+        
+        headers = _get_sec_request_headers()
+        
+        # Get browse-edgar page which lists all documents for this filing
+        # This is more reliable than trying to guess the exact document path
+        browse_url = f"https://www.sec.gov/cgi-bin/browse-edgar?action=getcompany&CIK={cik}&type=10-K&dateb=&owner=exclude&count=100"
+        
+        resp = requests.get(browse_url, headers=headers, timeout=15)
+        resp.raise_for_status()
+        
+        # Parse the HTML to find links to 10-K documents  
+        # Look for the accession number in the filing list
+        if accession in resp.text:
+            # Find rows containing this accession
+            accession_idx = resp.text.find(accession)
+            
+            # Extract the section containing this filing's links
+            # Look backwards for the start of the row and forward for links
+            search_text = resp.text[max(0, accession_idx-2000):accession_idx+2000]
+            
+            # Look for document links related to this filing
+            # Pattern: href="...10k.htm" or similar
+            doc_links = re.findall(r'href="([^"]*10[kK][^"]*\.htm[l]?)"', search_text, re.IGNORECASE)
+            
+            # Filter for the main document (not exhibits)
+            main_doc = None
+            for link in doc_links:
+                if 'EX-' not in link.upper() and '0001193125' not in link:
+                    main_doc = link
+                    break
+            
+            if main_doc:
+                # Construct full URL
+                if main_doc.startswith('http'):
+                    doc_url = main_doc
+                else:
+                    doc_url = f"https://www.sec.gov{main_doc}"
+                
+                # Download document
+                try:
+                    doc_response = requests.get(doc_url, headers=headers, timeout=15)
+                    doc_response.raise_for_status()
+                    html_content = doc_response.text
+                    
+                    # Extract sections
+                    extracted_content = {}
+                    
+                    if "md_and_a" in sections:
+                        md_a = _extract_section(html_content, ["ITEM 7", "MD&A", "MANAGEMENT'S DISCUSSION", "DISCUSSION AND ANALYSIS"])
+                        if md_a:
+                            extracted_content["md_and_a"] = md_a
+                    
+                    if "risk_factors" in sections:
+                        risk = _extract_section(html_content, ["ITEM 1A", "RISK FACTORS"])
+                        if risk:
+                            extracted_content["risk_factors"] = risk
+                    
+                    if "business_overview" in sections:
+                        business = _extract_section(html_content, ["ITEM 1", "BUSINESS OVERVIEW", "OUR BUSINESS"])
+                        if business:
+                            extracted_content["business_overview"] = business
+                    
+                    if "financial_summary" in sections:
+                        financial = _extract_section(html_content, ["ITEM 8", "FINANCIAL STATEMENTS", "CONSOLIDATED"])
+                        if financial:
+                            extracted_content["financial_summary"] = financial
+                    
+                    if extracted_content:
+                        return extracted_content
+                except requests.RequestException as e:
+                    logger.warning(f"Failed to download 10-K document: {e}")
+        
+        # Fallback: return a summary note that document extraction requires manual review
+        return {
+            "note": "Full document parsing unavailable - SEC Edgar HTML varies",
+            "recommendation": f"Visit: https://www.sec.gov/cgi-bin/browse-edgar?action=getcompany&CIK={cik}&type=10-K&dateb=&owner=exclude",
+            "accession": accession,
+            "status": "doc_access_provided"
+        }
+    
+    except Exception as e:
+        return {"error": f"Failed to process 10-K: {str(e)}"}
+
+
+def _extract_section(html_content: str, section_keywords: List[str]) -> str:
+    """
+    Extract a section from 10-K content based on keywords.
+    Handles various SEC filing formats (HTML, plain text, XML).
+    
+    Args:
+        html_content: Full HTML/text content of 10-K
+        section_keywords: List of keywords to identify section start
+    
+    Returns:
+        Extracted section text (cleaned and truncated to ~5000 chars)
+    """
+    import re
+    
+    if not html_content or not section_keywords:
+        return None
+    
+    # Normalize content for searching
+    content_upper = html_content.upper()
+    
+    # Try to find section start with different keyword variations
+    start_pos = None
+    matched_keyword = None
+    
+    for keyword in section_keywords:
+        # Try exact keyword match first
+        if keyword in content_upper:
+            start_pos = content_upper.find(keyword)
+            matched_keyword = keyword
+            break
+        
+        # Try fuzzy matching (just the important parts)
+        parts = keyword.split()
+        fuzzy_match = all(part in content_upper for part in parts)
+        if fuzzy_match:
+            # Find position of first matching part
+            first_part = parts[0]
+            start_pos = content_upper.find(first_part)
+            matched_keyword = keyword
+            break
+    
+    if start_pos is None:
+        return None
+    
+    # Find section end
+    # Look for next numbered ITEM (e.g., "ITEM 8", "ITEM 1A", etc.)
+    # Or look for blank lines followed by "ITEM"
+    end_pos = len(html_content)
+    
+    # Common section markers to look for after current position
+    end_markers = [
+        r'\nITEM\s+\d',
+        r'\nPART\s+[IVX]',
+        r'\n</BODY>',
+        r'\n</body>',
+        '</BODY>',
+        '</body>'
+    ]
+    
+    # Search for next section marker
+    search_start = start_pos + 50  # Skip past the current keyword
+    for marker_pattern in end_markers:
+        matches = list(re.finditer(marker_pattern, html_content[search_start:], re.IGNORECASE))
+        if matches:
+            match_pos = search_start + matches[0].start()
+            if match_pos < end_pos:
+                end_pos = match_pos
+            break
+    
+    # Extract section
+    section_text = html_content[start_pos:end_pos]
+    
+    # Remove common HTML tags and formatting
+    section_text = re.sub(r'<[^>]+>', '', section_text)
+    section_text = re.sub(r'<!DOCTYPE[^>]+>', '', section_text, flags=re.IGNORECASE)
+    section_text = re.sub(r'<\?xml[^>]+\?>', '', section_text, flags=re.IGNORECASE)
+    
+    # Clean up whitespace while preserving some structure
+    section_text = re.sub(r'\s+', ' ', section_text)
+    section_text = re.sub(r'\n\s*\n', '\n\n', section_text)
+    section_text = section_text.strip()
+    
+    # Return if we have content
+    if len(section_text) < 50:  # Too short to be useful
+        return None
+    
+    # Truncate to ~5000 chars to keep response size manageable
+    if len(section_text) > 5000:
+        section_text = section_text[:5000] + "...[truncated]"
+    
+    return section_text

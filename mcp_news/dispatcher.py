@@ -11,7 +11,8 @@ from mcp_news.implementations import (
     fetch_news,
     fetch_earnings,
     fetch_analyst_ratings,
-    fetch_sec_filings
+    fetch_sec_filings,
+    fetch_10k_content
 )
 
 
@@ -41,6 +42,9 @@ def dispatch_mcp_tool(tool_name: str, tool_input: Dict[str, Any]) -> Dict[str, A
         elif tool_name == "fetch_sec_filings":
             return fetch_sec_filings(**tool_input)
         
+        elif tool_name == "fetch_10k_content":
+            return fetch_10k_content(**tool_input)
+        
         else:
             return {
                 "error": f"Unknown tool: {tool_name}",
@@ -48,7 +52,8 @@ def dispatch_mcp_tool(tool_name: str, tool_input: Dict[str, Any]) -> Dict[str, A
                     "fetch_news",
                     "fetch_earnings",
                     "fetch_analyst_ratings",
-                    "fetch_sec_filings"
+                    "fetch_sec_filings",
+                    "fetch_10k_content"
                 ]
             }
     

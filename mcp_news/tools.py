@@ -84,5 +84,29 @@ def get_mcp_tools():
                 },
                 "required": ["tickers"]
             }
+        },
+        {
+            "name": "fetch_10k_content",
+            "description": "Fetch SEC 10-K with actual document content. Returns key sections (MD&A, Risk Factors, Financial Summary) to provide meaningful context for investment analysis without overwhelming with full documents.",
+            "input_schema": {
+                "type": "object",
+                "properties": {
+                    "tickers": {
+                        "type": "array",
+                        "items": {"type": "string"},
+                        "description": "List of stock tickers (e.g., ['AAPL', 'NVDA'])"
+                    },
+                    "sections": {
+                        "type": "array",
+                        "items": {
+                            "type": "string",
+                            "enum": ["md_and_a", "risk_factors", "business_overview", "financial_summary"]
+                        },
+                        "description": "Which sections to extract from 10-K (default: all)",
+                        "default": ["md_and_a", "risk_factors", "financial_summary"]
+                    }
+                },
+                "required": ["tickers"]
+            }
         }
     ]

@@ -26,7 +26,8 @@ def main():
         "live_data_context": "",
         "draft_report": "",
         "audit_score": 0.0,
-        "is_hallucinating": False
+        "is_hallucinating": False,
+        "audit_iteration_count": 0
     }
 
     # Execute the workflow

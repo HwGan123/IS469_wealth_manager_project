@@ -121,18 +121,22 @@ def market_context_node(state: WealthManagerState) -> dict:
         Updated state with market_context field populated
     """
     api_key = os.environ.get("ANTHROPIC_API_KEY")
-    tickers = state.get("portfolio_tickers", [])
+    tickers = state.get("tickers", [])
     
     if not tickers:
         logger.warning("No portfolio tickers found in state")
-        return {"market_context": {}}
+        return {
+            "market_context": {},
+            "audit_iteration_count": state.get("audit_iteration_count", 0)
+        }
     
     if not api_key:
         logger.error("ANTHROPIC_API_KEY not set. Cannot run market context agent.")
         return {
             "market_context": {
                 "error": "ANTHROPIC_API_KEY required for market context agent"
-            }
+            },
+            "audit_iteration_count": state.get("audit_iteration_count", 0)
         }
     
     logger.info(f"Market Context Agent: Gathering market data for {tickers}")
@@ -164,7 +168,7 @@ Synthesize the gathered data into a clear summary."""
     
     # Agentic loop: Claude calls tools until done
     market_context = {}
-    max_iterations = 10
+    max_iterations = 3
     iteration = 0
     total_input_tokens = 0
     total_output_tokens = 0
@@ -240,4 +244,7 @@ Synthesize the gathered data into a clear summary."""
         "total_tokens": total_input_tokens + total_output_tokens
     }
     
-    return {"market_context": market_context}
+    return {
+        "market_context": market_context,
+        "audit_iteration_count": state.get("audit_iteration_count", 0)
+    }

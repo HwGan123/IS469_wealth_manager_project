@@ -35,9 +35,17 @@ def create_wealth_manager_graph():
     workflow.add_edge("investment_analyst_agent", "auditor_agent")
 
     # ── Self-correction loop ───────────────────────────────────────────────────
+    def audit_route(state):
+        is_hallucinating = state.get("is_hallucinating", False)
+        iteration_count = state.get("audit_iteration_count", 0)
+        # Route back to analyst only if hallucinating AND haven't exceeded max iterations
+        if is_hallucinating and iteration_count < 2:
+            return "investment_analyst_agent"
+        return "report_generator_agent"
+    
     workflow.add_conditional_edges(
         "auditor_agent",
-        lambda state: "investment_analyst_agent" if state.get("is_hallucinating") else "report_generator_agent",
+        audit_route,
     )
 
     workflow.add_edge("report_generator_agent", END)

@@ -31,12 +31,39 @@ anthropic_client = anthropic.Anthropic(api_key=os.environ.get("ANTHROPIC_API_KEY
 analyst_llm = ChatOpenAI(model="gpt-4o", temperature=0.2)
 
 
+def _format_market_context(market_context: dict) -> str:
+    """Format cached market context data into a readable summary."""
+    if not market_context:
+        return "No market context data available."
+    
+    summary_parts = []
+    
+    if "summary" in market_context:
+        summary_parts.append(market_context["summary"])
+    
+    # Add key data points
+    if "fetch_news" in market_context:
+        articles = market_context["fetch_news"].get("articles", [])
+        if articles:
+            summary_parts.append(f"\n**Recent News ({len(articles)} articles):**")
+            for article in articles[:5]:
+                summary_parts.append(f"- {article.get('title', 'N/A')}")
+    
+    if "fetch_earnings" in market_context:
+        summary_parts.append(f"\n**Earnings Data:**\n{json.dumps(market_context['fetch_earnings'], indent=2)}")
+    
+    if "fetch_analyst_ratings" in market_context:
+        summary_parts.append(f"\n**Analyst Ratings:**\n{json.dumps(market_context['fetch_analyst_ratings'], indent=2)}")
+    
+    return "\n".join(summary_parts)
+
+
 def analyst_node(state: WealthManagerState):
     """
     Investment analyst node that combines:
-    - Historical 10-K context from RAG
-    - Live market data via MCP tools
-    - Sentiment analysis from broker/news sources
+    - Historical 10-K context from RAG (vector store)
+    - Cached market data from market_context_agent
+    - Sentiment analysis from sentiment_agent
     """
     print("--- AGENT: INVESTMENT ANALYST (RAG + MCP LIVE DATA) ---")
 
@@ -48,7 +75,16 @@ def analyst_node(state: WealthManagerState):
             "draft_report": "Awaiting portfolio data.",
             "retrieved_context": "",
             "live_data_context": "",
-            "messages": ["Analyst: Awaiting portfolio data"]
+            "messages": ["Analyst: Awaiting portfolio data"],
+            # Preserve audit-related state for the audit loop
+            "audit_iteration_count": state.get("audit_iteration_count", 0),
+            "is_hallucinating": state.get("is_hallucinating", False),
+            "audit_score": state.get("audit_score", 0.0),
+            "hallucination_count": state.get("hallucination_count", 0),
+            "verified_count": state.get("verified_count", 0),
+            "unsubstantiated_count": state.get("unsubstantiated_count", 0),
+            "ragas_metrics": state.get("ragas_metrics", {}),
+            "audit_findings": state.get("audit_findings", [])
         }
 
     print(f"  Analyzing: {tickers}")
@@ -90,7 +126,7 @@ def analyst_node(state: WealthManagerState):
     while iteration < max_iterations:
         iteration += 1
         
-        response = anthropic_client.messages.create(
+        response = anthropmic_client.messages.create(
             model="claude-haiku-4-5-20251001",
             max_tokens=4096,
             tools=tools,
@@ -180,5 +216,15 @@ def analyst_node(state: WealthManagerState):
         "draft_report": final_response.content,
         "retrieved_context": rag_context,
         "live_data_context": live_data_summary,
-        "messages": [final_response.content]
+        "messages": [final_response.content],
+        "tickers": tickers,
+        # Preserve audit-related state for the audit loop
+        "audit_iteration_count": state.get("audit_iteration_count", 0),
+        "is_hallucinating": state.get("is_hallucinating", False),
+        "audit_score": state.get("audit_score", 0.0),
+        "hallucination_count": state.get("hallucination_count", 0),
+        "verified_count": state.get("verified_count", 0),
+        "unsubstantiated_count": state.get("unsubstantiated_count", 0),
+        "ragas_metrics": state.get("ragas_metrics", {}),
+        "audit_findings": state.get("audit_findings", [])
     }

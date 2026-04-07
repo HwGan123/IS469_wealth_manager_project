@@ -414,6 +414,7 @@ def sentiment_node(state: WealthManagerState) -> dict:
             "sentiment_results": [],
             "sentiment_summary": {},
             "messages": ["Sentiment: no tickers provided."],
+            "audit_iteration_count": state.get("audit_iteration_count", 0)
         }
 
     provider = os.getenv("SENTIMENT_NEWS_PROVIDER", "newsapi")
@@ -440,4 +441,5 @@ def sentiment_node(state: WealthManagerState) -> dict:
         },
         "sentiment_score": float(aggregated.get("overall", {}).get("score", 0.0)),
         "messages": [explanation],
+        "audit_iteration_count": state.get("audit_iteration_count", 0)
     }

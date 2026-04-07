@@ -115,6 +115,7 @@ def orchestrator_node(state: WealthManagerState) -> dict:
     return {
         "tickers":  tickers,
         "route_target": route_target,
+        "audit_iteration_count": 0,
         "messages": [
             f"Orchestrator: extracted tickers {tickers} from input.",
             f"Orchestrator: next route -> {route_target}",

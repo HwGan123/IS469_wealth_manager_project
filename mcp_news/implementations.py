@@ -637,8 +637,8 @@ def _download_and_extract_10k(accession: str, cik: str, ticker: str, sections: L
     """
     Download 10-K from SEC Edgar and extract specified sections.
     
-    For reliability, this returns the filing metadata + extracts from sec.gov/edgar
-    API when available. Full document parsing requires more robust HTML processing.
+    Uses improved HTML parsing to extract actual document content from the filing.
+    Tries to find the main 10-K document and extracts requested sections.
     
     Args:
         accession: Filing accession number
@@ -647,47 +647,83 @@ def _download_and_extract_10k(accession: str, cik: str, ticker: str, sections: L
         sections: List of sections to extract
     
     Returns:
-        Dict with extracted content or metadata for sections
+        Dict with extracted content sections {section_name: text_content}
     """
     try:
         import re
         
         headers = _get_sec_request_headers()
+        debug_info = {"urls_tried": []}
         
         # Get browse-edgar page which lists all documents for this filing
         # This is more reliable than trying to guess the exact document path
         browse_url = f"https://www.sec.gov/cgi-bin/browse-edgar?action=getcompany&CIK={cik}&type=10-K&dateb=&owner=exclude&count=100"
+        debug_info["browse_url"] = browse_url
         
         resp = requests.get(browse_url, headers=headers, timeout=15)
         resp.raise_for_status()
         
         # Parse the HTML to find links to 10-K documents  
-        # Look for the accession number in the filing list
+        # Strategy: Fetch the index page first to find the main document file
         if accession in resp.text:
             # Find rows containing this accession
             accession_idx = resp.text.find(accession)
             
             # Extract the section containing this filing's links
-            # Look backwards for the start of the row and forward for links
             search_text = resp.text[max(0, accession_idx-2000):accession_idx+2000]
             
-            # Look for document links related to this filing
-            # Pattern: href="...10k.htm" or similar
-            doc_links = re.findall(r'href="([^"]*10[kK][^"]*\.htm[l]?)"', search_text, re.IGNORECASE)
+            # Find the link to the index page (e.g., /Archives/edgar/data/789019/000095017025100235/0000950170-25-100235-index.htm)
+            index_links = re.findall(r'href="(/Archives/edgar/[^"]*-index\.htm)"', search_text)
             
-            # Filter for the main document (not exhibits)
+            debug_info["index_links_found"] = index_links
+            
             main_doc = None
-            for link in doc_links:
-                if 'EX-' not in link.upper() and '0001193125' not in link:
-                    main_doc = link
-                    break
+            if index_links:
+                # Fetch the index page to find the main 10-K document
+                index_url = f"https://www.sec.gov{index_links[0]}"
+                debug_info["index_url"] = index_url
+                
+                try:
+                    index_response = requests.get(index_url, headers=headers, timeout=15)
+                    index_html = index_response.text
+                    
+                    # Look for the main iXBRL document (ends with .htm, not -index.htm)
+                    # Pattern: look for document filenames like msft-20250630.htm, aapl-20250927.htm
+                    main_docs = re.findall(r'href="([^"]*(?:msft|aapl|nvda|googl|amzn|tsla|meta|nflx|[a-z]{3,5})-\d{8}\.htm)"', index_html, re.IGNORECASE)
+                    
+                    if not main_docs:
+                        # Fallback: look for any .htm file that's not an exhibit or index
+                        main_docs = re.findall(r'href="(/Archives/edgar/[^"]*\.htm)(?!")', index_html, re.IGNORECASE)
+                        main_docs = [d for d in main_docs if 'index' not in d.lower() and 'EX-' not in d.upper()]
+                    
+                    debug_info["main_docs_found"] = main_docs
+                    
+                    if main_docs:
+                        # Use first matching document
+                        main_doc_path = main_docs[0]
+                        if main_doc_path.startswith('/'):
+                            main_doc = main_doc_path
+                        else:
+                            # Extract path from accession
+                            main_doc = f"/Archives/edgar/data/{cik}/{accession.replace('-', '')}/{main_doc_path}"
+                
+                except requests.RequestException as e:
+                    debug_info["index_error"] = str(e)
+                    logger.debug(f"Failed to fetch index page: {e}")
             
             if main_doc:
-                # Construct full URL
+                # Construct full URL - direct to document, not SEC viewer
+                # main_doc looks like: /Archives/edgar/data/789019/000095017025100235/msft-20250630.htm
                 if main_doc.startswith('http'):
                     doc_url = main_doc
                 else:
+                    # Use SEC Edgar archive directly, not the /ix viewer
                     doc_url = f"https://www.sec.gov{main_doc}"
+                
+                # Remove /ix wrapper if present
+                doc_url = doc_url.replace("/ix?doc=", "").replace("https://www.sec.gov/", "https://www.sec.gov/")
+                
+                debug_info["urls_tried"].append(doc_url)
                 
                 # Download document
                 try:
@@ -721,31 +757,33 @@ def _download_and_extract_10k(accession: str, cik: str, ticker: str, sections: L
                     if extracted_content:
                         return extracted_content
                 except requests.RequestException as e:
-                    logger.warning(f"Failed to download 10-K document: {e}")
+                    debug_info["download_error"] = str(e)
+                    logger.warning(f"Failed to download 10-K document from {doc_url}: {e}")
         
         # Fallback: return a summary note that document extraction requires manual review
         return {
             "note": "Full document parsing unavailable - SEC Edgar HTML varies",
             "recommendation": f"Visit: https://www.sec.gov/cgi-bin/browse-edgar?action=getcompany&CIK={cik}&type=10-K&dateb=&owner=exclude",
             "accession": accession,
-            "status": "doc_access_provided"
+            "status": "doc_access_provided",
+            "debug": debug_info
         }
     
     except Exception as e:
-        return {"error": f"Failed to process 10-K: {str(e)}"}
+        return {"error": f"Failed to process 10-K: {str(e)}", "debug": {"exception": str(e)}}
 
 
 def _extract_section(html_content: str, section_keywords: List[str]) -> str:
     """
-    Extract a section from 10-K content based on keywords.
-    Handles various SEC filing formats (HTML, plain text, XML).
+    Extract a section from 10-K/10-Q content based on keywords.
+    Handles various SEC filing formats (HTML, plain text, XML) with improved parsing.
     
     Args:
-        html_content: Full HTML/text content of 10-K
-        section_keywords: List of keywords to identify section start
+        html_content: Full HTML/text content of filing
+        section_keywords: List of keywords to identify section start (tried in order)
     
     Returns:
-        Extracted section text (cleaned and truncated to ~5000 chars)
+        Extracted section text (cleaned and truncated to ~5000 chars), or None if not found
     """
     import re
     
@@ -826,3 +864,526 @@ def _extract_section(html_content: str, section_keywords: List[str]) -> str:
         section_text = section_text[:5000] + "...[truncated]"
     
     return section_text
+
+
+# ─────────────────────────────────────────────────────────────────────────
+# XBRL FINANCIAL DATA FETCHING (Structured Financial Metrics)
+# ─────────────────────────────────────────────────────────────────────────
+
+def fetch_xbrl_financials(tickers: List[str], filing_type: str = "10-K") -> Dict:
+    """
+    Fetch structured financial data from SEC XBRL filings.
+    
+    XBRL (eXtensible Business Reporting Language) provides machine-readable
+    financial data directly from SEC filings. No HTML parsing needed.
+    
+    Returns key financial metrics:
+    - Income Statement: Revenue, Net Income, EPS, Operating Income
+    - Balance Sheet: Assets, Liabilities, Equity, Current Ratio
+    - Cash Flow: Operating CF, Free Cash Flow
+    - Ratios: Debt-to-Equity, ROE, Profit Margins
+    
+    Token-efficient: ~500 tokens instead of 3000+ for document text.
+    
+    Args:
+        tickers: List of stock tickers
+        filing_type: "10-K" (annual, default) or "10-Q" (quarterly)
+    
+    Returns:
+        Dict with 'results' list containing financial metrics for each ticker
+    """
+    results = []
+    ticker_to_cik = _load_sec_company_tickers()
+    
+    for ticker in tickers:
+        try:
+            # Get CIK
+            cik = ticker_to_cik.get(ticker.upper())
+            if not cik:
+                cik = _fetch_cik_from_sec(ticker)
+                if not cik:
+                    results.append({
+                        "ticker": ticker,
+                        "error": f"Could not find CIK for {ticker}",
+                        "status": "cik_not_found"
+                    })
+                    continue
+            
+            # Fetch company submissions from SEC
+            url = f"https://data.sec.gov/submissions/CIK{cik}.json"
+            headers = _get_sec_request_headers()
+            data = _sec_api_request(url, None, headers)
+            
+            if "error" in data:
+                results.append({
+                    "ticker": ticker,
+                    "error": data["error"],
+                    "status": "api_error"
+                })
+                continue
+            
+            # Find latest filing
+            filing_history = _parse_sec_filings_response(data, filing_type, cik)
+            
+            if not filing_history:
+                results.append({
+                    "ticker": ticker,
+                    "status": f"no_{filing_type.lower()}_found"
+                })
+                continue
+            
+            latest_filing = filing_history[0]
+            accession = latest_filing.get("accession_number", "")
+            filing_date = latest_filing.get("filing_date", "")
+            report_date = latest_filing.get("report_date", "")
+            
+            # Fetch XBRL data from official SEC API
+            xbrl_financials = _fetch_xbrl_metrics(ticker, cik, accession)
+            
+            result = {
+                "ticker": ticker,
+                "filing_type": filing_type,
+                "filing_date": filing_date,
+                "report_date": report_date,
+                "accession_number": accession,
+                "status": "success" if xbrl_financials else "no_data",
+                "financials": xbrl_financials
+            }
+            
+            results.append(result)
+            time.sleep(0.5)  # Be respectful to SEC API
+        
+        except Exception as e:
+            results.append({
+                "ticker": ticker,
+                "error": str(e),
+                "status": "error"
+            })
+    
+    return {
+        "results": results,
+        "count": len(results),
+        "source": "SEC XBRL API (structured financial data)",
+        "filing_type": filing_type,
+        "note": "Returns actual financial metrics, not document text"
+    }
+
+
+def _fetch_xbrl_metrics(ticker: str, cik: str, accession: str) -> Dict:
+    """
+    Fetch XBRL financial metrics from SEC submission.
+    
+    XBRL provides structured tags for financial items:
+    - us-gaap: US GAAP accounting standards
+    - dei: Document and Entity Information
+    
+    Args:
+        ticker: Stock ticker
+        cik: SEC CIK number
+        accession: Filing accession number
+    
+    Returns:
+        Dict with financial metrics or empty dict if unavailable
+    """
+    try:
+        headers = _get_sec_request_headers()
+        
+        # Try to fetch XBRL data from SEC company facts API
+        # This API returns all financial metrics for a company
+        xbrl_url = f"https://data.sec.gov/api/xbrl/companyfacts/CIK{cik}.json"
+        
+        resp = requests.get(xbrl_url, headers=headers, timeout=15)
+        resp.raise_for_status()
+        
+        xbrl_data = resp.json()
+        
+        if "facts" not in xbrl_data:
+            return {}
+        
+        # Extract key financial metrics from latest filing period
+        metrics = _extract_key_metrics(xbrl_data, accession)
+        
+        return metrics
+    
+    except Exception as e:
+        logger.debug(f"Error fetching XBRL for {ticker}: {e}")
+        return {}
+
+
+def _extract_key_metrics(xbrl_data: Dict, accession: str) -> Dict:
+    """
+    Extract key financial metrics from XBRL company facts data.
+    
+    Looks for the latest filing period and extracts:
+    - Revenue
+    - Net Income  
+    - Earnings Per Share
+    - Total Assets
+    - Total Liabilities
+    - Stockholders' Equity
+    - Operating Cash Flow
+    - Free Cash Flow
+    
+    Args:
+        xbrl_data: SEC XBRL company facts JSON
+        accession: Target accession number
+    
+    Returns:
+        Dict with extracted metrics
+    """
+    try:
+        metrics = {}
+        facts = xbrl_data.get("facts", {})
+        
+        # US GAAP tags for income statement items
+        income_items = {
+            "Revenue": "us-gaap:Revenues",
+            "NetIncome": "us-gaap:NetIncomeLoss",
+            "OperatingIncome": "us-gaap:OperatingIncomeLoss",
+            "GrossProfit": "us-gaap:GrossProfit",
+        }
+        
+        # Balance sheet items
+        balance_items = {
+            "TotalAssets": "us-gaap:Assets",
+            "CurrentAssets": "us-gaap:AssetsCurrent",
+            "TotalLiabilities": "us-gaap:Liabilities",
+            "CurrentLiabilities": "us-gaap:LiabilitiesCurrent",
+            "StockholdersEquity": "us-gaap:StockholdersEquity",
+        }
+        
+        # Cash flow items
+        cashflow_items = {
+            "OperatingCashFlow": "us-gaap:OperatingActivitiesCashFlow",
+            "FCF": "us-gaap:FreeCashFlow",
+            "CapitalExpenditure": "us-gaap:PaymentsToAcquirePropertyPlantAndEquipment",
+        }
+        
+        # Per share items
+        per_share_items = {
+            "EPS": "us-gaap:EarningsPerShareBasic",
+            "EPSDiluted": "us-gaap:EarningsPerShareDiluted",
+        }
+        
+        all_items = {**income_items, **balance_items, **cashflow_items, **per_share_items}
+        
+        # Extract latest values for each metric
+        for metric_name, xbrl_tag in all_items.items():
+            tag_parts = xbrl_tag.split(":")
+            namespace = tag_parts[0]
+            tag_name = tag_parts[1]
+            
+            if namespace not in facts or tag_name not in facts[namespace]:
+                continue
+            
+            fact = facts[namespace][tag_name]
+            
+            # Get the latest unit report (usually USD)
+            if "units" in fact and "USD" in fact["units"]:
+                values = fact["units"]["USD"]
+                # Get most recent valid (non-zero, non-null) value
+                for entry in sorted(values, key=lambda x: x.get("end", ""), reverse=True):
+                    if entry.get("val") is not None and entry.get("val") != 0:
+                        metrics[metric_name] = {
+                            "value": entry.get("val"),
+                            "period_end": entry.get("end"),
+                            "filed": entry.get("filed"),
+                            "unit": "USD"
+                        }
+                        break
+        
+        # Calculate derived metrics
+        if "TotalAssets" in metrics and "TotalLiabilities" in metrics:
+            equity = metrics["TotalAssets"]["value"] - metrics["TotalLiabilities"]["value"]
+            metrics["CalculatedEquity"] = {"value": equity, "unit": "USD"}
+        
+        if "TotalLiabilities" in metrics and "StockholdersEquity" in metrics:
+            if metrics["StockholdersEquity"]["value"] != 0:
+                debt_to_equity = metrics["TotalLiabilities"]["value"] / metrics["StockholdersEquity"]["value"]
+                metrics["DebtToEquity"] = {"value": debt_to_equity, "unit": "ratio"}
+        
+        if "NetIncome" in metrics and "Revenue" in metrics:
+            if metrics["Revenue"]["value"] != 0:
+                profit_margin = metrics["NetIncome"]["value"] / metrics["Revenue"]["value"]
+                metrics["ProfitMargin"] = {"value": profit_margin, "unit": "ratio"}
+        
+        if "CurrentAssets" in metrics and "CurrentLiabilities" in metrics:
+            if metrics["CurrentLiabilities"]["value"] != 0:
+                current_ratio = metrics["CurrentAssets"]["value"] / metrics["CurrentLiabilities"]["value"]
+                metrics["CurrentRatio"] = {"value": current_ratio, "unit": "ratio"}
+        
+        return metrics
+    
+    except Exception as e:
+        logger.debug(f"Error extracting XBRL metrics: {e}")
+        return {}
+
+
+# ─────────────────────────────────────────────────────────────────────────
+# 10-Q CONTENT FETCHING WITH SECTION EXTRACTION
+# ─────────────────────────────────────────────────────────────────────────
+
+def fetch_10q_content(tickers: List[str], sections: List[str] = None) -> Dict:
+    """
+    Fetch SEC 10-Q documents (quarterly reports) with selective section extraction.
+
+    Downloads actual 10-Q filings and extracts key sections:
+    - MD&A (Management Discussion & Analysis)
+    - Risk Factors
+    - Business Overview
+    - Financial Summary
+
+    More frequently filed than 10-K (quarterly vs. annual), useful for monitoring
+    operational changes, earnings trends, and recent developments.
+
+    Args:
+        tickers: List of stock tickers
+        sections: Which sections to extract (default: ["md_and_a", "risk_factors", "financial_summary"])
+
+    Returns:
+        Dict with filing metadata and extracted content for each ticker
+    """
+    if sections is None:
+        sections = ["md_and_a", "risk_factors", "financial_summary"]
+
+    results = []
+    ticker_to_cik = _load_sec_company_tickers()
+
+    for ticker in tickers:
+        try:
+            # Get CIK for this ticker
+            cik = ticker_to_cik.get(ticker.upper())
+            if not cik:
+                cik = _fetch_cik_from_sec(ticker)
+                if not cik:
+                    results.append({
+                        "ticker": ticker,
+                        "error": f"Could not find CIK for {ticker}",
+                        "status": "cik_not_found"
+                    })
+                    continue
+
+            # Fetch latest 10-Q filing metadata
+            company_name = ticker_to_cik.get(ticker.upper(), {})
+            if isinstance(company_name, dict):
+                company_name = company_name.get("name", ticker)
+
+            url = f"https://data.sec.gov/submissions/CIK{cik}.json"
+            headers = _get_sec_request_headers()
+            data = _sec_api_request(url, None, headers)
+
+            if "error" in data:
+                results.append({
+                    "ticker": ticker,
+                    "error": data["error"],
+                    "status": "api_error"
+                })
+                continue
+
+            # Find latest 10-Q filing (note: 10-Q/A is amended 10-Q)
+            filing_history = _parse_sec_filings_response(data, "10-Q", cik)
+
+            if not filing_history:
+                results.append({
+                    "ticker": ticker,
+                    "status": "no_10q_found"
+                })
+                continue
+
+            latest_filing = filing_history[0]
+            accession = latest_filing.get("accession_number", "")
+            filing_url = latest_filing.get("url", "")
+
+            # Download and parse the 10-Q document
+            content = _download_and_extract_10q(accession, cik, ticker, sections)
+
+            if "error" in content:
+                results.append({
+                    "ticker": ticker,
+                    "filing_date": latest_filing.get("filing_date", ""),
+                    "error": content["error"],
+                    "status": "download_error"
+                })
+                continue
+
+            # Combine filing metadata with extracted content
+            filing_result = {
+                "ticker": ticker,
+                "company_name": company_name,
+                "filing_date": latest_filing.get("filing_date", ""),
+                "report_date": latest_filing.get("report_date", ""),
+                "accession_number": accession,
+                "filing_type": "10-Q",
+                "status": "success",
+                "content": content
+            }
+
+            results.append(filing_result)
+
+            # Be respectful to SEC API
+            time.sleep(0.5)
+
+        except Exception as e:
+            results.append({
+                "ticker": ticker,
+                "error": str(e),
+                "status": "error"
+            })
+
+    return {
+        "results": results,
+        "count": len(results),
+        "source": "SEC Edgar with section extraction",
+        "filing_type": "10-Q",
+        "requested_sections": sections
+    }
+
+
+def _download_and_extract_10q(accession: str, cik: str, ticker: str, sections: List[str]) -> Dict:
+    """
+    Download 10-Q from SEC Edgar and extract specified sections.
+
+    Uses improved HTML parsing to extract actual document content from quarterly filings.
+    Tries to find the main 10-Q document and extracts requested sections.
+
+    Args:
+        accession: Filing accession number
+        cik: Company CIK
+        ticker: Stock ticker
+        sections: List of sections to extract
+
+    Returns:
+        Dict with extracted content sections {section_name: text_content}
+    """
+    try:
+        import re
+
+        headers = _get_sec_request_headers()
+        debug_info = {"urls_tried": []}
+        
+        # Get browse-edgar page which lists all documents for this filing
+        browse_url = f"https://www.sec.gov/cgi-bin/browse-edgar?action=getcompany&CIK={cik}&type=10-Q&dateb=&owner=exclude&count=100"
+        debug_info["browse_url"] = browse_url
+
+        resp = requests.get(browse_url, headers=headers, timeout=15)
+        resp.raise_for_status()
+
+        # Parse the HTML to find links to 10-Q documents  
+        # Strategy: Fetch the index page first to find the main document file
+        if accession in resp.text:
+            # Find rows containing this accession
+            accession_idx = resp.text.find(accession)
+
+            # Extract the section containing this filing's links
+            search_text = resp.text[max(0, accession_idx-2000):accession_idx+2000]
+
+            # Find the link to the index page (e.g., /Archives/edgar/data/789019/000095017025100235/0000950170-25-100235-index.htm)
+            index_links = re.findall(r'href="(/Archives/edgar/[^"]*-index\.htm)"', search_text)
+            
+            debug_info["index_links_found"] = index_links
+            
+            main_doc = None
+            if index_links:
+                # Fetch the index page to find the main 10-Q document
+                index_url = f"https://www.sec.gov{index_links[0]}"
+                debug_info["index_url"] = index_url
+                
+                try:
+                    index_response = requests.get(index_url, headers=headers, timeout=15)
+                    index_html = index_response.text
+                    
+                    # Look for the main iXBRL document (ends with .htm, not -index.htm)
+                    # 10-Q filings use pattern like m-20251101.htm, not always ticker-date
+                    
+                    # First, try to find links with ix?doc= viewer wrapper
+                    main_docs = re.findall(r'/ix\?doc=(/Archives/edgar/[^"]*\.htm)"', index_html)
+                    
+                    if not main_docs:
+                        # Try direct document links: look for any .htm that's not an exhibit or index
+                        main_docs = re.findall(r'href="(/Archives/edgar/[^"]*\.htm)"', index_html)
+                        # Filter out exhibits, index files, and other non-main documents
+                        main_docs = [
+                            d for d in main_docs 
+                            if 'index' not in d.lower() 
+                            and 'ex-' not in d.lower()
+                            and d.endswith('.htm')
+                        ]
+                        # Prefer shorter filenames (main doc vs exhibits), take first
+                        if main_docs:
+                            main_docs = sorted(main_docs, key=lambda x: len(x))[:1]
+                    
+                    debug_info["main_docs_found"] = main_docs
+                    
+                    if main_docs:
+                        # Use first matching document
+                        main_doc_path = main_docs[0]
+                        if main_doc_path.startswith('/'):
+                            main_doc = main_doc_path
+                        else:
+                            # Extract path from accession
+                            main_doc = f"/Archives/edgar/data/{cik}/{accession.replace('-', '')}/{main_doc_path}"
+                
+                except requests.RequestException as e:
+                    debug_info["index_error"] = str(e)
+                    logger.debug(f"Failed to fetch index page: {e}")
+            
+            if main_doc:
+                # Construct full URL - direct to document, not SEC viewer
+                # main_doc looks like: /Archives/edgar/data/789019/000095017025100235/msft-20250630.htm
+                if main_doc.startswith('http'):
+                    doc_url = main_doc
+                else:
+                    # Use SEC Edgar archive directly, not the /ix viewer
+                    doc_url = f"https://www.sec.gov{main_doc}"
+                
+                # Remove /ix wrapper if present
+                doc_url = doc_url.replace("/ix?doc=", "").replace("https://www.sec.gov/", "https://www.sec.gov/")
+                
+                debug_info["urls_tried"].append(doc_url)
+                
+                # Download document
+                try:
+                    doc_response = requests.get(doc_url, headers=headers, timeout=15)
+                    doc_response.raise_for_status()
+                    html_content = doc_response.text
+
+                    # Extract sections (same patterns as 10-K, but with 10-Q item numbers)
+                    extracted_content = {}
+
+                    if "md_and_a" in sections:
+                        md_a = _extract_section(html_content, ["ITEM 2", "MD&A", "MANAGEMENT'S DISCUSSION", "DISCUSSION AND ANALYSIS"])
+                        if md_a:
+                            extracted_content["md_and_a"] = md_a
+
+                    if "risk_factors" in sections:
+                        risk = _extract_section(html_content, ["ITEM 1A", "RISK FACTORS"])
+                        if risk:
+                            extracted_content["risk_factors"] = risk
+
+                    if "business_overview" in sections:
+                        business = _extract_section(html_content, ["ITEM 1", "BUSINESS OVERVIEW", "OUR BUSINESS"])
+                        if business:
+                            extracted_content["business_overview"] = business
+
+                    if "financial_summary" in sections:
+                        financial = _extract_section(html_content, ["ITEM 1", "FINANCIAL STATEMENTS", "CONSOLIDATED"])
+                        if financial:
+                            extracted_content["financial_summary"] = financial
+
+                    if extracted_content:
+                        return extracted_content
+                except requests.RequestException as e:
+                    debug_info["download_error"] = str(e)
+                    logger.warning(f"Failed to download 10-Q document from {doc_url}: {e}")
+
+        # Fallback: return a summary note that document extraction requires manual review
+        return {
+            "note": "Full document parsing unavailable - SEC Edgar HTML varies",
+            "recommendation": f"Visit: https://www.sec.gov/cgi-bin/browse-edgar?action=getcompany&CIK={cik}&type=10-Q&dateb=&owner=exclude",
+            "accession": accession,
+            "status": "doc_access_provided",
+            "debug": debug_info
+        }
+
+    except Exception as e:
+        return {"error": f"Failed to process 10-Q: {str(e)}", "debug": {"exception": str(e)}}

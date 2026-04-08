@@ -11,7 +11,9 @@ from mcp_news.implementations import (
     fetch_news,
     fetch_earnings,
     fetch_analyst_ratings,
-    fetch_10k_content
+    fetch_10k_content,
+    fetch_10q_content,
+    fetch_xbrl_financials
 )
 
 
@@ -41,6 +43,12 @@ def dispatch_mcp_tool(tool_name: str, tool_input: Dict[str, Any]) -> Dict[str, A
         elif tool_name == "fetch_10k_content":
             return fetch_10k_content(**tool_input)
         
+        elif tool_name == "fetch_10q_content":
+            return fetch_10q_content(**tool_input)
+        
+        elif tool_name == "fetch_xbrl_financials":
+            return fetch_xbrl_financials(**tool_input)
+        
         else:
             return {
                 "error": f"Unknown tool: {tool_name}",
@@ -48,7 +56,9 @@ def dispatch_mcp_tool(tool_name: str, tool_input: Dict[str, Any]) -> Dict[str, A
                     "fetch_news",
                     "fetch_earnings",
                     "fetch_analyst_ratings",
-                    "fetch_10k_content"
+                    "fetch_10k_content",
+                    "fetch_10q_content",
+                    "fetch_xbrl_financials"
                 ]
             }
     

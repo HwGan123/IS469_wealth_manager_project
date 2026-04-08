@@ -56,6 +56,11 @@ def _format_market_context(market_context: dict) -> str:
     if "summary" in market_context:
         summary_parts.append(market_context["summary"])
     
+    # Add tools used information
+    if "_tools_used" in market_context:
+        tools_used = market_context["_tools_used"]
+        summary_parts.append(f"\n**Tools Used:** {', '.join(tools_used)}")
+    
     # Add key data points
     if "fetch_news" in market_context:
         articles = market_context["fetch_news"].get("articles", [])

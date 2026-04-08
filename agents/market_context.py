@@ -107,6 +107,7 @@ def market_context_node(state: WealthManagerState) -> dict:
     Returns:
         Updated state with market_context field populated
     """
+    print("--- AGENT: MARKET CONTEXT ---")
     api_key = os.environ.get("ANTHROPIC_API_KEY")
     tickers = state.get("tickers", [])
     
@@ -133,17 +134,23 @@ def market_context_node(state: WealthManagerState) -> dict:
     user_request = messages[0] if isinstance(messages, list) else str(messages)
     
     # Build prompt for Claude to intelligently fetch data
-    prompt = f"""You are a market research agent. Your task is to gather comprehensive 
-market context for investment analysis.
+    prompt = f"""You are a comprehensive financial research agent. Your task is to gather detailed 
+market context and financial data for investment analysis.
 
 USER REQUEST: {user_request}
 PORTFOLIO TICKERS: {', '.join(tickers)}
 
-Use the available tools to fetch relevant data for these tickers:
-1. Recent news and market developments (fetch_news)
-2. Current earnings, PE ratios, EPS data (fetch_earnings)
-3. Analyst ratings and sentiment (fetch_analyst_ratings)
-4. Detailed 10-K content if needed for long-term analysis (fetch_10k_content)
+Use the available tools strategically based on the user's request:
+1. SEC 10-K Annual Reports (fetch_10k_content) - For comprehensive financial statements, management discussion, and risk factors
+2. SEC 10-Q Quarterly Reports (fetch_10q_content) - For tracking quarterly performance and recent trends
+3. XBRL Financial Metrics (fetch_xbrl_financials) - For structured financial data (revenue, net income, EPS, debt ratios, ROE, etc.)
+4. Recent news and market developments (fetch_news) - For market sentiment and recent catalysts
+5. Current earnings and valuation data (fetch_earnings) - For PE ratios, EPS projections
+6. Analyst ratings and sentiment (fetch_analyst_ratings) - For professional analyst perspectives
+
+PRIORITY: The user is requesting comprehensive financial analysis. Start with 10-K (annual), 10-Q (quarterly), 
+and XBRL tools to build a solid foundation of financial metrics and analysis. Then supplement with earnings, 
+news, and analyst data.
 
 Decide which tools are most relevant based on the user's request.
 Fetch data efficiently - avoid redundant calls.
@@ -154,6 +161,7 @@ Synthesize the gathered data into a clear summary."""
     
     # Agentic loop: Claude calls tools until done
     market_context = {}
+    tools_used = []  # Track which tools were called
     max_iterations = 3
     iteration = 0
     total_input_tokens = 0
@@ -185,6 +193,8 @@ Synthesize the gathered data into a clear summary."""
                     market_context["summary"] = block.text
             logger.info(f"  ✓ Market data gathering complete ({iteration} iterations)")
             logger.info(f"  Total tokens used: {total_input_tokens} input, {total_output_tokens} output")
+            if tools_used:
+                logger.info(f"  → Tools used: {', '.join(tools_used)}")
             break
         
         # Process tool calls
@@ -200,6 +210,10 @@ Synthesize the gathered data into a clear summary."""
                     tool_input = block.input
                     
                     logger.info(f"    → Calling {tool_name}")
+                    
+                    # Track tool usage
+                    if tool_name not in tools_used:
+                        tools_used.append(tool_name)
                     
                     # Execute tool
                     result = dispatch_mcp_tool(tool_name, tool_input)
@@ -229,6 +243,13 @@ Synthesize the gathered data into a clear summary."""
         "output_tokens": total_output_tokens,
         "total_tokens": total_input_tokens + total_output_tokens
     }
+    
+    # Add tools used to results
+    market_context["_tools_used"] = tools_used
+    
+    # Print tools used
+    if tools_used:
+        print(f"  → Tools used: {', '.join(tools_used)}")
     
     return {
         "market_context": market_context,

@@ -130,7 +130,7 @@ Close and reopen Claude Desktop app to load the new configuration.
 Start the server directly in a terminal:
 
 ```bash
-cd d:\Codes and Repos\IS469_wealth_manager_project
+cd <path to project>\IS469_wealth_manager_project
 python mcp_server.py
 ```
 
@@ -138,10 +138,12 @@ Expected output:
 ```
 Starting Wealth Manager MCP Server...
 Available tools:
-  - fetch_news: Fetch recent financial news for specific stock tickers
-  - fetch_earnings: Fetch current earnings data, PE ratios, EPS
-  - fetch_analyst_ratings: Fetch current analyst ratings, price targets
-  - fetch_sec_filings: Fetch recent SEC filings
+  - fetch_news: Fetch recent financial news for specific stock tickers using Finnhub API
+  - fetch_earnings: Fetch current earnings data, PE ratios, EPS, and profit margins
+  - fetch_analyst_ratings: Fetch current analyst ratings, price targets, and sentiment
+  - fetch_10k_content: Fetch SEC 10-K annual reports with MD&A, risk factors, and financial summary
+  - fetch_10q_content: Fetch SEC 10-Q quarterly reports with key sections and quarterly metrics
+  - fetch_xbrl_financials: Fetch structured financial metrics from SEC XBRL filings (token-efficient)
 Ready to receive tool calls from Claude
 ```
 
@@ -158,10 +160,12 @@ What tools do you have available?
 ```
 
 Claude should list:
-- fetch_news
-- fetch_earnings
-- fetch_analyst_ratings
-- fetch_sec_filings
+- fetch_news - Recent financial news and market sentiment
+- fetch_earnings - Earnings data, PE ratios, EPS, profit margins
+- fetch_analyst_ratings - Analyst ratings and price targets
+- fetch_10k_content - SEC 10-K annual report content (MD&A, risk factors, financial summary)
+- fetch_10q_content - SEC 10-Q quarterly report content and metrics
+- fetch_xbrl_financials - Structured financial metrics from SEC XBRL filings (token-efficient)
 
 If no tools appear, check:
 1. Server is running
@@ -222,6 +226,162 @@ Claude answers user's question with fresh data
 | `mcp_news/dispatcher.py` | Route tool calls |
 | `mcp_news/implementations.py` | Actual API calls |
 | `claude_desktop_config.json` | Claude registration |
+
+---
+
+## Available Tools
+
+The Wealth Manager MCP Server provides six financial data tools:
+
+### 1. **fetch_news**
+Fetch recent financial news for specific stock tickers using Finnhub API.
+
+**Usage:**
+```
+fetch_news({
+  "tickers": ["AAPL", "NVDA"],
+  "days_back": 7  # optional, default: 7, max: 90
+})
+```
+
+**Returns:** News articles with headlines, sentiment scores, categories, and publication details.
+
+**Use Cases:** Monitor recent market developments, news-driven sentiment analysis, identify catalysts.
+
+---
+
+### 2. **fetch_earnings**
+Fetch current earnings data, PE ratios, EPS, forward guidance, and profit margins.
+
+**Usage:**
+```
+fetch_earnings({
+  "tickers": ["AAPL", "NVDA"]
+})
+```
+
+**Returns:** Current earnings, P/E ratios, EPS, profit margins, and growth metrics for each ticker.
+
+**Use Cases:** Valuation analysis, earnings-based company comparison, identify undervalued stocks.
+
+---
+
+### 3. **fetch_analyst_ratings**
+Fetch current analyst ratings, price targets, recommendation consensus, and sentiment.
+
+**Usage:**
+```
+fetch_analyst_ratings({
+  "tickers": ["AAPL", "NVDA"]
+})
+```
+
+**Returns:** Analyst consensus ratings, price targets, upside/downside potential, and sentiment trends.
+
+**Use Cases:** Understand professional analyst perspectives, identify analyst consensus, track sentiment shifts.
+
+---
+
+### 4. **fetch_10k_content**
+Fetch SEC 10-K annual reports with comprehensive financial disclosure content.
+
+**Usage:**
+```
+fetch_10k_content({
+  "tickers": ["AAPL", "NVDA"],
+  "sections": ["md_and_a", "risk_factors", "financial_summary"]  # optional, default: all
+})
+```
+
+**Returns:** Key sections including Management Discussion & Analysis (MD&A), Risk Factors, Business Overview, and Financial Summary.
+
+**Use Cases:** Deep financial analysis, long-term strategy assessment, risk identification, competitive positioning.
+
+---
+
+### 5. **fetch_10q_content**
+Fetch SEC 10-Q quarterly reports with current period financial disclosure.
+
+**Usage:**
+```
+fetch_10q_content({
+  "tickers": ["AAPL", "NVDA"],
+  "sections": ["md_and_a", "risk_factors", "financial_summary"]  # optional, default: all
+})
+```
+
+**Returns:** Quarterly MD&A, updated risk factors, quarterly financial statements, and recent business developments.
+
+**Use Cases:** Monitor quarterly performance, track quarterly trends, assess recent changes, responsive analysis.
+
+---
+
+### 6. **fetch_xbrl_financials**
+Fetch structured financial metrics directly from SEC XBRL filings (machine-readable format).
+
+**Usage:**
+```
+fetch_xbrl_financials({
+  "tickers": ["AAPL", "NVDA"],
+  "filing_type": "10-K"  # "10-K" for annual, "10-Q" for quarterly
+})
+```
+
+**Returns:** Structured JSON with key financial ratios and metrics:
+- Revenue, Net Income, EPS
+- ROE (Return on Equity), Debt-to-Equity
+- Current Ratio, Quick Ratio
+- Operating Margin, Net Margin
+- And many more financial metrics
+
+**Use Cases:** Token-efficient financial analysis (~500 tokens vs 3000+ for document prose), frequent agent calls, quantitative comparison.
+
+---
+
+## Tool Selection Guide
+
+| Goal | Recommended Tools |
+|------|-------------------|
+| **Quick valuation check** | `fetch_earnings`, `fetch_xbrl_financials` |
+| **Comprehensive annual analysis** | `fetch_10k_content`, `fetch_xbrl_financials`, `fetch_analyst_ratings` |
+| **Quarterly monitoring** | `fetch_10q_content`, `fetch_earnings`, `fetch_news` |
+| **Sentiment analysis** | `fetch_news`, `fetch_analyst_ratings` |
+| **Deep financial dive** | `fetch_10k_content`, `fetch_10q_content`, `fetch_xbrl_financials` |
+| **Recent catalysts** | `fetch_news`, `fetch_earnings`, `fetch_analyst_ratings` |
+
+---
+
+## Tool Usage in Workflow
+
+The **market_context_agent** autonomously decides which tools to call based on the user's request. When you include specific requests for financial data in your message, Claude will prioritize those tools:
+
+**Example:**
+```
+User: "I need comprehensive financial analysis for AAPL and NVDA. 
+Please analyze their 10-K reports, quarterly 10-Q filings, and 
+detailed financial metrics from XBRL data."
+
+Result: market_context_agent calls →
+  • fetch_10k_content (annual analysis)
+  • fetch_10q_content (quarterly data)
+  • fetch_xbrl_financials (structured metrics)
+  • fetch_earnings (valuation)
+  • fetch_analyst_ratings (professional perspectives)
+  • fetch_news (market developments)
+```
+
+All data is cached and available to downstream agents (sentiment_agent, analyst_agent, auditor_agent, report_generator_agent).
+
+---
+
+## Performance Considerations
+
+- **fetch_xbrl_financials** - Most token-efficient (~500 tokens per company)
+- **fetch_news** - Fast, suitable for frequent calls (headlines only)
+- **fetch_earnings** - Fast, structured data
+- **fetch_analyst_ratings** - Fast, good for consensus tracking
+- **fetch_10k_content** - Larger (~2000-3000 tokens), best for annual analysis
+- **fetch_10q_content** - Medium (~1500-2000 tokens), good for quarterly tracking
 
 ---
 

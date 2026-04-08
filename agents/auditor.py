@@ -12,7 +12,7 @@ from graph.state import WealthManagerState
 import warnings
 warnings.filterwarnings("ignore")
 
-# Load environment variables
+        # Load environment variables
 load_dotenv()
 
 # 1. Define the Structured Output Schema
@@ -67,7 +67,8 @@ class RAGASCalculator:
             return 0.95  # No numbers = likely faithful
         
         overlap = sum(1 for num in answer_numbers if num in context_numbers)
-        return min(1.0, overlap / len(answer_numbers)) if answer_numbers else 0.5
+        score = min(1.0, overlap / len(answer_numbers)) if answer_numbers else 0.5
+        return score
     
     @staticmethod
     def calculate_answer_relevancy(answer: str, question: str) -> float:
@@ -86,7 +87,8 @@ class RAGASCalculator:
             return 0.5
         
         overlap = len(question_words & answer_words)
-        return min(1.0, overlap / len(question_words))
+        score = min(1.0, overlap / len(question_words))
+        return score
     
     @staticmethod
     def calculate_context_recall(retrieved_context: str, ground_truth: str) -> float:
@@ -105,7 +107,8 @@ class RAGASCalculator:
             return 0.5
         
         found = sum(1 for term in truth_terms if term in context_lower)
-        return min(1.0, found / len(truth_terms))
+        score = min(1.0, found / len(truth_terms))
+        return score
 
 # 3. Define the Auditor Agent Class
 class AuditorAgent:
@@ -138,11 +141,15 @@ class AuditorAgent:
         
         try:
             claims = json.loads(response.content)
-            return claims if isinstance(claims, list) else []
-        except:
+            if isinstance(claims, list):
+                return claims
+            else:
+                return []
+        except Exception as e:
             # Fallback: manual extraction
             lines = draft.split('\n')
-            return [line.strip() for line in lines if any(char.isdigit() for char in line)][:10]
+            manual_claims = [line.strip() for line in lines if any(char.isdigit() for char in line)][:10]
+            return manual_claims
     
     def verify_claim_against_context(self, claim: str, context: str) -> Tuple[FactCheck, float]:
         """Verify a single claim against retrieved context."""
@@ -173,6 +180,7 @@ class AuditorAgent:
         
         try:
             response = self.llm.invoke(input_data.to_messages())
+            
             # Parse just the FactCheck part
             fact_check_parser = PydanticOutputParser(pydantic_object=FactCheck)
             fact = fact_check_parser.parse(response.content)
@@ -306,7 +314,23 @@ def auditor_node(state: WealthManagerState) -> dict:
     print("--- AGENT: AUDITOR (Enhanced with RAGAS) ---")
 
     draft = state.get("draft_report", "")
-    context = state.get("retrieved_context", "")
+    retrieved_context = state.get("retrieved_context", "")  # 10-K historical data
+    live_data_context = state.get("live_data_context", "")  # Market context (news, earnings, ratings)
+    
+    # Combine both contexts for comprehensive validation
+    # This allows RAGAS to verify both historical (10-K) and live market data claims
+    USE_COMBINED_CONTEXT = False
+    USE_RETREIVED_CONTEXT_ONLY = True  # For strict auditing of 10-K claims only
+    USE_LIVE_CONTEXT_ONLY = False  # Not recommended, as it may miss verifying historical claims
+    if USE_COMBINED_CONTEXT:
+        combined_context = f"{retrieved_context}\n\n--- LIVE MARKET DATA ---\n{live_data_context}"
+    elif USE_RETREIVED_CONTEXT_ONLY:
+        combined_context = retrieved_context  # Only use 10-K for strict auditing
+    elif USE_LIVE_CONTEXT_ONLY:
+        combined_context = live_data_context  # Only use live market data for more lenient auditing
+    else:
+        combined_context = retrieved_context  # Default to 10-K context
+
     ground_truth = state.get("ground_truth", "")
     
     # Increment audit iteration counter
@@ -316,13 +340,13 @@ def auditor_node(state: WealthManagerState) -> dict:
     api_key = os.getenv("OPENAI_API_KEY")
     if not api_key:
         print("⚠️ OPENAI_API_KEY not found. Using fallback audit.")
-        audit_result = _fallback_audit(draft, context)
+        audit_result = _fallback_audit(draft, combined_context)
         audit_result["audit_iteration_count"] = iteration_count
         return audit_result
 
     try:
         agent = AuditorAgent(api_key=api_key)
-        report = agent.audit_draft(draft=draft, context=context, ground_truth=ground_truth)
+        report = agent.audit_draft(draft=draft, context=combined_context, ground_truth=ground_truth)
         
         # Force approval on final iteration to prevent infinite loops
         if iteration_count >= 2:
@@ -371,6 +395,6 @@ def auditor_node(state: WealthManagerState) -> dict:
         }
     except Exception as e:
         print(f"Error in audit: {e}")
-        audit_result = _fallback_audit(draft, context)
+        audit_result = _fallback_audit(draft, combined_context)
         audit_result["audit_iteration_count"] = iteration_count
         return audit_result

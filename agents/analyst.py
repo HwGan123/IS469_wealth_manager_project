@@ -1,6 +1,7 @@
 import os
 import json
 import anthropic
+from pathlib import Path
 from dotenv import load_dotenv
 
 from langchain_community.vectorstores import Chroma
@@ -29,9 +30,11 @@ hf_embeddings = HuggingFaceEmbeddings(
     encode_kwargs={"normalize_embeddings": False},
 )
 
-# Connect to the 10-K Vector Store
-DB_PATH = "./chroma_db"
-vectorstore = Chroma(persist_directory=DB_PATH, embedding_function=hf_embeddings)
+# Connect to the 10-K Vector Store (use absolute path)
+PROJECT_ROOT = Path(__file__).resolve().parent.parent
+DB_PATH = PROJECT_ROOT / "chroma_db"
+
+vectorstore = Chroma(persist_directory=str(DB_PATH), embedding_function=hf_embeddings)
 retriever = vectorstore.as_retriever(search_kwargs={"k": 3})
 
 
@@ -102,10 +105,40 @@ def analyst_node(state: WealthManagerState):
     print(f"  Analyzing: {tickers}")
     print(f"  Sentiment Score: {state.get('sentiment_score', 0.0)}")
 
-    # Retrieve 10-K context (existing RAG)
-    search_query = f"Financial risks, growth drivers, and strategy for {', '.join(tickers)}"
-    docs = retriever.invoke(search_query)
-    rag_context = "\n\n".join([doc.page_content for doc in docs])
+    # Retrieve 10-K context from ticker-specific collections
+    search_query = f"Financial risks, growth drivers, and strategy"
+    all_docs = []
+    
+    # Try to fetch from ticker-specific collections
+    for ticker in tickers:
+        try:
+            collection_name = f"sec_10k_{ticker.lower()}"
+            ticker_vectorstore = Chroma(
+                persist_directory=str(DB_PATH),
+                collection_name=collection_name,
+                embedding_function=hf_embeddings
+            )
+            ticker_retriever = ticker_vectorstore.as_retriever(search_kwargs={"k": 3})
+            ticker_docs = ticker_retriever.invoke(search_query)
+            all_docs.extend(ticker_docs)
+        except Exception as e:
+            pass
+    
+    # Fallback to generic sec_10k collection if no ticker-specific docs found
+    if not all_docs:
+        try:
+            fallback_vectorstore = Chroma(
+                persist_directory=str(DB_PATH),
+                collection_name="sec_10k",
+                embedding_function=hf_embeddings
+            )
+            fallback_retriever = fallback_vectorstore.as_retriever(search_kwargs={"k": 3})
+            all_docs = fallback_retriever.invoke(search_query)
+        except Exception as e:
+            pass
+    
+    rag_context = "\n\n".join([doc.page_content for doc in all_docs])
+    print(f"  📚 Retrieved {len(all_docs)} documents ({len(rag_context)} chars)")
 
     # ─────────────────────────────────────────────────────────────────────────
     # CONDITIONAL: Fetch live data based on USE_MCP_TOOLS toggle

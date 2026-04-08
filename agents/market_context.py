@@ -13,9 +13,13 @@ with consistent, up-to-date market context.
 import os
 import json
 import anthropic
+from dotenv import load_dotenv
 from graph.state import WealthManagerState
 from mcp_news import get_mcp_tools, dispatch_mcp_tool
 import logging
+
+# Load environment variables
+load_dotenv()
 
 logger = logging.getLogger(__name__)
 

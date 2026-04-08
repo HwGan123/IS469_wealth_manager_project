@@ -1,6 +1,7 @@
 import os
 import json
 import anthropic
+from dotenv import load_dotenv
 
 from langchain_community.vectorstores import Chroma
 from langchain_huggingface import HuggingFaceEmbeddings
@@ -9,6 +10,15 @@ from langchain_core.prompts import ChatPromptTemplate
 
 from graph.state import WealthManagerState
 from mcp_news import get_mcp_tools, dispatch_mcp_tool
+
+# Load environment variables
+load_dotenv()
+
+# ─────────────────────────────────────────────────────────────────────────────
+# TOGGLE: Switch between MCP live data fetching and cached market context
+# ─────────────────────────────────────────────────────────────────────────────
+USE_MCP_TOOLS = False  # Set to True to use Anthropic MCP tool calling for live data
+                       # Set to False to use cached market_context from market_context_agent
 
 
 # Setup local embeddings for 10-K retrieval
@@ -24,11 +34,12 @@ DB_PATH = "./chroma_db"
 vectorstore = Chroma(persist_directory=DB_PATH, embedding_function=hf_embeddings)
 retriever = vectorstore.as_retriever(search_kwargs={"k": 3})
 
-# Setup Anthropic client for MCP-based live data fetching
-anthropic_client = anthropic.Anthropic(api_key=os.environ.get("ANTHROPIC_API_KEY"))
 
 # Setup the Analyst LLM
 analyst_llm = ChatOpenAI(model="gpt-4o", temperature=0.2)
+
+# Setup Anthropic client for MCP-based live data fetching (used only if USE_MCP_TOOLS=True)
+anthropic_client = anthropic.Anthropic(api_key=os.environ.get("ANTHROPIC_API_KEY"))
 
 
 def _format_market_context(market_context: dict) -> str:
@@ -38,6 +49,7 @@ def _format_market_context(market_context: dict) -> str:
     
     summary_parts = []
     
+    # Add the summary if present
     if "summary" in market_context:
         summary_parts.append(market_context["summary"])
     
@@ -95,81 +107,90 @@ def analyst_node(state: WealthManagerState):
     docs = retriever.invoke(search_query)
     rag_context = "\n\n".join([doc.page_content for doc in docs])
 
-    # Autonomously fetch live data via MCP
-    print("  Invoking Claude with MCP tools for live data...")
-    
-    mcp_prompt = f"""
-    You are an investment research assistant with access to live financial data tools.
-    
-    I need you to gather comprehensive live data for this portfolio analysis:
-    
-    PORTFOLIO TICKERS: {', '.join(tickers)}
-    
-    Please use the available tools to fetch:
-    1. Recent news and market developments
-    2. Current earnings data and valuation metrics
-    3. Current analyst ratings and sentiment
-    4. Any other relevant real-time data
-    
-    For each query, call the appropriate tools to gather complete information.
-    Then synthesize the data into a structured summary.
-    """
-    
-    messages = [{"role": "user", "content": mcp_prompt}]
-    tools = get_mcp_tools()
-    
-    # Agentic loop: Claude calls tools until it's done
-    live_data_summary = ""
-    max_iterations = 5
-    iteration = 0
-    
-    while iteration < max_iterations:
-        iteration += 1
+    # ─────────────────────────────────────────────────────────────────────────
+    # CONDITIONAL: Fetch live data based on USE_MCP_TOOLS toggle
+    # ─────────────────────────────────────────────────────────────────────────
+    if USE_MCP_TOOLS:
+        # Autonomously fetch live data via MCP
+        print("  Invoking Claude with MCP tools for live data...")
         
-        response = anthropmic_client.messages.create(
-            model="claude-haiku-4-5-20251001",
-            max_tokens=4096,
-            tools=tools,
-            messages=messages
-        )
+        mcp_prompt = f"""
+        You are an investment research assistant with access to live financial data tools.
         
-        # Check if Claude is done
-        if response.stop_reason == "end_turn":
-            # Extract final response
-            for block in response.content:
-                if hasattr(block, 'text'):
-                    live_data_summary = block.text
-            break
+        I need you to gather comprehensive live data for this portfolio analysis:
         
-        # Process tool calls
-        if response.stop_reason == "tool_use":
-            # Add assistant response to conversation
-            messages.append({"role": "assistant", "content": response.content})
+        PORTFOLIO TICKERS: {', '.join(tickers)}
+        
+        Please use the available tools to fetch:
+        1. Recent news and market developments
+        2. Current earnings data and valuation metrics
+        3. Current analyst ratings and sentiment
+        4. Any other relevant real-time data
+        
+        For each query, call the appropriate tools to gather complete information.
+        Then synthesize the data into a structured summary.
+        """
+        
+        messages = [{"role": "user", "content": mcp_prompt}]
+        tools = get_mcp_tools()
+        
+        # Agentic loop: Claude calls tools until it's done
+        live_data_summary = ""
+        max_iterations = 5
+        iteration = 0
+        
+        while iteration < max_iterations:
+            iteration += 1
             
-            # Process each tool call
-            tool_results = []
-            for block in response.content:
-                if block.type == "tool_use":
-                    tool_name = block.name
-                    tool_input = block.input
-                    
-                    print(f"    → Calling {tool_name}({list(tool_input.keys())})")
-                    
-                    # Execute tool
-                    result = dispatch_mcp_tool(tool_name, tool_input)
-                    
-                    tool_results.append({
-                        "type": "tool_result",
-                        "tool_use_id": block.id,
-                        "content": json.dumps(result)
-                    })
+            response = anthropic_client.messages.create(
+                model="claude-haiku-4-5-20251001",
+                max_tokens=4096,
+                tools=tools,
+                messages=messages
+            )
             
-            # Add tool results to conversation
-            messages.append({"role": "user", "content": tool_results})
-        else:
-            break
-    
-    print(f"  ✓ MCP tools fetched live data ({iteration} calls)")
+            # Check if Claude is done
+            if response.stop_reason == "end_turn":
+                # Extract final response
+                for block in response.content:
+                    if hasattr(block, 'text'):
+                        live_data_summary = block.text
+                break
+            
+            # Process tool calls
+            if response.stop_reason == "tool_use":
+                # Add assistant response to conversation
+                messages.append({"role": "assistant", "content": response.content})
+                
+                # Process each tool call
+                tool_results = []
+                for block in response.content:
+                    if block.type == "tool_use":
+                        tool_name = block.name
+                        tool_input = block.input
+                        
+                        print(f"    → Calling {tool_name}({list(tool_input.keys())})")
+                        
+                        # Execute tool
+                        result = dispatch_mcp_tool(tool_name, tool_input)
+                        
+                        tool_results.append({
+                            "type": "tool_result",
+                            "tool_use_id": block.id,
+                            "content": json.dumps(result)
+                        })
+                
+                # Add tool results to conversation
+                messages.append({"role": "user", "content": tool_results})
+            else:
+                break
+        
+        print(f"  ✓ MCP tools fetched live data ({iteration} calls)")
+    else:
+        # Use cached market context from market_context_agent
+        market_context = state.get("market_context", {})
+        live_data_summary = _format_market_context(market_context)
+        print(f"  ✓ Using cached market context ({len(market_context)} keys)")
 
     # Generate final analysis
     final_prompt = ChatPromptTemplate.from_template("""

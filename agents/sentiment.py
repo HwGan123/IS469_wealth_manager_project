@@ -13,8 +13,12 @@ Performance design:
 """
 
 import os
+from dotenv import load_dotenv
 from collections import defaultdict
 from typing import Any
+
+# Load environment variables
+load_dotenv()
 
 import requests
 import torch

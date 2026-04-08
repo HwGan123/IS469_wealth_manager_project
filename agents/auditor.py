@@ -4,12 +4,16 @@ import json
 import re
 from typing import List, Literal, Dict, Optional, Tuple
 from pydantic import BaseModel, Field
+from dotenv import load_dotenv
 from langchain_openai import ChatOpenAI
 from langchain_core.prompts import ChatPromptTemplate
 from langchain_core.output_parsers import PydanticOutputParser
 from graph.state import WealthManagerState
 import warnings
 warnings.filterwarnings("ignore")
+
+# Load environment variables
+load_dotenv()
 
 # 1. Define the Structured Output Schema
 class FactCheck(BaseModel):

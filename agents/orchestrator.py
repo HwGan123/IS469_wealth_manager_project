@@ -13,6 +13,10 @@ Ticker extraction uses a two-stage approach:
 
 import os
 import re
+from dotenv import load_dotenv
+
+# Load environment variables
+load_dotenv()
 
 try:
     from graph.state import WealthManagerState

@@ -65,27 +65,6 @@ def get_mcp_tools():
             }
         },
         {
-            "name": "fetch_sec_filings",
-            "description": "Fetch recent SEC filings (10-K, 10-Q, 8-K) for companies from SEC Edgar database.",
-            "input_schema": {
-                "type": "object",
-                "properties": {
-                    "tickers": {
-                        "type": "array",
-                        "items": {"type": "string"},
-                        "description": "List of stock tickers"
-                    },
-                    "filing_type": {
-                        "type": "string",
-                        "description": "Type of filing: 10-K (annual), 10-Q (quarterly), 8-K (event)",
-                        "enum": ["10-K", "10-Q", "8-K"],
-                        "default": "10-K"
-                    }
-                },
-                "required": ["tickers"]
-            }
-        },
-        {
             "name": "fetch_10k_content",
             "description": "Fetch SEC 10-K with actual document content. Returns key sections (MD&A, Risk Factors, Financial Summary) to provide meaningful context for investment analysis without overwhelming with full documents.",
             "input_schema": {

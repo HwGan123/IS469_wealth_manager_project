@@ -54,24 +54,7 @@ def _summarize_tool_result(tool_name: str, result: dict) -> dict:
             }
         return result
     
-    elif tool_name == "fetch_sec_filings":
-        # Compress filing info - just keep essential metadata
-        if isinstance(result, list):
-            summary = []
-            for filing in result[:5]:  # Keep top 5
-                summary.append({
-                    "ticker": filing.get("ticker"),
-                    "filing_type": filing.get("filing_type"),
-                    "date": filing.get("date"),
-                    "url": filing.get("url")
-                })
-            return {
-                "filings": summary,
-                "count": len(summary),
-                "note": f"Showing top 5 filings. Full data cached."
-            }
-        return result
-    
+
     elif tool_name == "fetch_10k_content":
         # Compress 10-K content - keep only summaries
         if isinstance(result, dict):
@@ -160,8 +143,7 @@ Use the available tools to fetch relevant data for these tickers:
 1. Recent news and market developments (fetch_news)
 2. Current earnings, PE ratios, EPS data (fetch_earnings)
 3. Analyst ratings and sentiment (fetch_analyst_ratings)
-4. SEC filings information (fetch_sec_filings)
-5. Detailed 10-K content if needed for long-term analysis (fetch_10k_content)
+4. Detailed 10-K content if needed for long-term analysis (fetch_10k_content)
 
 Decide which tools are most relevant based on the user's request.
 Fetch data efficiently - avoid redundant calls.

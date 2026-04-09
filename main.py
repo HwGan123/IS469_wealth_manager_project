@@ -1,4 +1,5 @@
 import os
+import sys
 from dotenv import load_dotenv
 
 # Load environment variables (API Keys) FIRST, before any agent imports
@@ -38,5 +39,37 @@ def main():
             if "messages" in value:
                 print(f"Latest Update: {value['messages'][-1]}")
 
+
+def run_remote(url: str = "http://localhost:2024"):
+    """Stream from a running LangGraph dev server (model stays warm between runs)."""
+    try:
+        from langgraph_sdk import get_sync_client
+    except ImportError:
+        print("langgraph-sdk not installed. Run: uv add langgraph-sdk")
+        sys.exit(1)
+
+    print(f"--- AI Wealth Manager (remote mode → {url}) ---")
+    client = get_sync_client(url=url)
+
+    thread = client.threads.create()
+    for chunk in client.runs.stream(
+        thread["thread_id"],
+        "wealth_manager",
+        input=INITIAL_INPUT,
+        stream_mode="updates",
+    ):
+        if chunk.data and isinstance(chunk.data, dict):
+            for key, value in chunk.data.items():
+                print(f"\n--- Node '{key}' finished ---")
+                if isinstance(value, dict) and "messages" in value:
+                    msgs = value["messages"]
+                    if msgs:
+                        print(f"Latest Update: {msgs[-1]}")
+
+
 if __name__ == "__main__":
-    main()
+    mode = sys.argv[1] if len(sys.argv) > 1 else "local"
+    if mode == "remote":
+        run_remote()
+    else:
+        main()

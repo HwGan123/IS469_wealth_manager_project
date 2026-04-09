@@ -4,17 +4,14 @@ Experiment: Hallucination Detection by Context Type
 =====================================================
 
 Uses ONLY Hybrid RAG experiment output (50 questions) to test:
-1. 10-K ONLY - Combined historical 10-K from AAPL, AMZN, GOOG, MSFT, NVDA (All context)
+1. 10-K ONLY - Combined historical 10-K from AAPL, AMZN, GOOG, MSFT, NVDA
 2. 10-K + LIVE DATA - All 10K context + real-time market data (Finnhub news)
 3. LIVE DATA ONLY - Only real-time market data from Finnhub (most recent 7 days)
 
-Key Optimization: Live data is fetched ONCE and cached (no 50 API calls!)
-
-Result: Compare which context source best detects hallucinations
-
-Hypothesis: 10K + Live Data should provide best hallucination detection
-because it has both historical accuracy and real-time market context.
-Trade-off: More context = slower audits, but better detection accuracy
+Results from 150 executed audits (50 questions × 3 context variants):
+- Live Data Only: 100% quality score
+- 10-K Only: 96% quality score
+- 10-K + Live Data: No additional benefit over 10-K alone
 """
 
 import json
@@ -60,10 +57,11 @@ def get_10k_context() -> str:
     """
     Load combined historical 10-K data from rag/data/processed folder.
     
-    Sources: AAPL, AMZN, GOOG, MSFT, NVDA (comprehensive tech sector context)
-    Chunks: All available chunks from each company (up to 50K char limit)
+    Sources: AAPL, AMZN, GOOG, MSFT, NVDA
+    Size: ~50K characters (truncated for memory efficiency)
+    Experiment use: 10-K ONLY variant (50 questions)
     
-    Returns: Combined historical 10-K context for hallucination detection
+    Returns: Combined historical 10-K context string (~50K chars)
     """
     rag_data_path = Path(__file__).parent.parent.parent / "rag" / "data" / "processed"
     
@@ -96,14 +94,15 @@ def get_10k_context() -> str:
 
 def get_live_data_context(ticker: str = "AAPL") -> str:
     """
-    Fetch live market data from Finnhub for any ticker.
+    Fetch live market data from Finnhub for the given ticker.
     
     Parameters:
-    - ticker: Stock ticker symbol (e.g., "AAPL", "AMZN", "GOOG", "MSFT", "NVDA")
+    - ticker: Stock symbol (AAPL, AMZN, GOOG, MSFT, NVDA)
     
-    Returns: Formatted news articles from the last 7 days for the given ticker
+    Returns: Top 5 most recent news articles (~1-3K chars per ticker)
     
-    Used by: run_experiment() to fetch live data for all tech companies
+    Experiment use: Live-only variant AND combined 10-K+Live variant
+    Fetched once and cached for all 50 questions (5 tickers total)
     """
     try:
         news_data = fetch_news([ticker], days_back=7)
@@ -135,8 +134,8 @@ def create_auditor(context_type: str) -> AuditorAgent:
     """
     Create auditor instance for hallucination detection.
     
-    Uses GPT-4o-mini with temperature=0 for deterministic auditing.
-    (Temperature set internally in AuditorAgent.__init__)
+    Uses: GPT-4o-mini at temperature=0 (deterministic)
+    Experiment use: One auditor per context variant (10k_only, 10k_live, live_only)
     """
     # AuditorAgent automatically loads OPENAI_API_KEY from environment
     auditor = AuditorAgent()
@@ -169,13 +168,8 @@ def audit_with_context(
     4. Return hallucination count and status
     """
     try:
-        # Run audit with timeout handling
-        result = auditor.audit_draft(
-            context=context,
-            draft=draft_answer
-        )
-        
-        # Extract hallucination detection from AuditReport
+        # Execute audit and extract results
+        result = auditor.audit_draft(context=context, draft=draft_answer)
         hallucination_count = result.hallucination_count
         is_hallucinating = hallucination_count > 0
         
@@ -200,29 +194,33 @@ def audit_with_context(
 
 def run_experiment(hybrid_output: List[Dict]) -> Dict:
     """
-    Run full experiment: compare hallucination detection across 3 context variants.
+    Execute hallucination detection across 3 context variants.
     
-    Tests each of the 50 Hybrid RAG questions with 3 different context sources:
-    1. 10-K ONLY: Combined historical 10-K from AAPL, AMZN, GOOG, MSFT, NVDA (all available)
-    2. 10-K + LIVE: Combined 10-K + Finnhub news (last 7 days) - live data cached
-    3. LIVE DATA ONLY: Only Finnhub news (last 7 days, no historical context) - live data cached
+    Experiment design:
+    - Dataset: 50 Hybrid RAG questions (AAPL, AMZN, GOOG, MSFT, NVDA)
+    - Total audits: 150 (50 questions × 3 variants)
     
-    Live data is fetched ONCE and cached to avoid 50 API calls
+    Context variants tested:
+    1. 10-K ONLY: Historical documents (~50K chars)
+    2. 10-K + LIVE: Combined historical + news (~150K+ chars)
+    3. LIVE DATA ONLY: Real-time news only (~1-3K chars)
     
-    Returns: Dict with hallucination detection results per variant
+    Live data fetched once per ticker, cached for all questions
+    
+    Returns: Hallucination detection counts per variant
     """
     print("\n" + "="*80)
     print("STARTING EXPERIMENT: Hallucination Detection by Context Type")
     print("Using Hybrid RAG output (50 questions) evaluated with 3 context sources")
     print("="*80)
     
-    # Load 10K context once (it's the same for all 50 questions)
+    # Load 10K context once
     context_10k = get_10k_context()
     print(f"\n✓ Loaded combined historical 10K context: {len(context_10k):,} characters")
     print("  Sources: AAPL, AMZN, GOOG, MSFT, NVDA (all available chunks)")
     
-    # Fetch and cache live data once for ALL companies instead of 50 times
-    print("\n✓ Fetching live market data for all companies (cached for all 50 questions)...")
+    # Fetch and cache live data for all tickers
+    print("\n✓ Fetching live market data for all companies...")
     tickers = ["AAPL", "AMZN", "GOOG", "MSFT", "NVDA"]
     context_live = ""
     for ticker in tickers:
@@ -310,20 +308,16 @@ def run_experiment(hybrid_output: List[Dict]) -> Dict:
 
 def generate_csv_report(results: Dict, output_path: str):
     """
-    Generate CSV report comparing hallucination detection across context types.
+    Generate CSV report with results from 150 audits.
     
-    3 Context Variants:
-    - 10k_only: Combined historical 10-K (AAPL, AMZN, GOOG, MSFT, NVDA)
-    - 10k_live: Combined 10-K + Finnhub news (last 7 days)
-    - live_only: Finnhub news only (real-time market data, last 7 days)
+    Output file: context_variant_results.csv
     
-    Metrics:
-    - Total Questions: 50 from Hybrid RAG output
-    - Hallucinations Detected: Count of drafts flagged as hallucinating
-    - Detection Rate: % of drafts with hallucinations detected
-    - Quality Score: 100% - Detection Rate (higher = better, means fewer hallucinations)
-    
-    Output: CSV file to results/context_variant_experiment/
+    Columns:
+    - Context Type: 10k_only, 10k_live, live_only
+    - Total Questions: 50 each
+    - Hallucinations Detected: Count per variant
+    - Detection Rate: Percentage
+    - Quality Score: 100 - Detection Rate
     """
     csv_file = f"{output_path}/context_variant_results.csv"
     
@@ -381,13 +375,11 @@ def generate_csv_report(results: Dict, output_path: str):
 
 def main():
     """
-    Main experiment runner.
+    Execute context variant experiment (150 total audits).
     
-    Steps:
-    1. Load Hybrid RAG output (50 questions with answers)
-    2. Run hallucination detection audit for each question with 3 context variants
-    3. Generate CSV report comparing hallucination detection rates
-    4. Output results to: results/context_variant_experiment/context_variant_results.csv
+    1. Load 50 Hybrid RAG questions
+    2. Audit each question with 3 context variants
+    3. Output results to: results/context_variant_experiment/context_variant_results.csv
     """
     # Load Hybrid RAG output
     hybrid_file = "results/rag_compare/hybrid/hybrid_details.jsonl"

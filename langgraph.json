@@ -1,0 +1,7 @@
+{
+  "dependencies": [],
+  "graphs": {
+    "wealth_manager": "./graph/workflow.py:create_wealth_manager_graph"
+  },
+  "env": ".env"
+}

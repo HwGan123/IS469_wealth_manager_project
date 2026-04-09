@@ -1,0 +1,3216 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>WealthMind AI</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link
+    href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap"
+    rel="stylesheet">
+  <style>
+    /* ─── Reset ──────────────────────────────────────────────────────────── */
+    *,
+    *::before,
+    *::after {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    /* ─── Apple design tokens ────────────────────────────────────────────── */
+    :root {
+      --bg: #F5F5F7;
+      --surface: #FFFFFF;
+      --surface2: #F5F5F7;
+      --text: #1D1D1F;
+      --text2: #3A3A3C;
+      --muted: #86868B;
+      --muted2: #AEAEB2;
+      --sep: rgba(0, 0, 0, 0.08);
+      --sep2: rgba(0, 0, 0, 0.04);
+      --blue: #007AFF;
+      --blue-dark: #0066CC;
+      --blue-light: rgba(0, 122, 255, 0.10);
+      --green: #34C759;
+      --green-dark: #248A3D;
+      --red: #FF3B30;
+      --amber: #FF9F0A;
+      --purple: #AF52DE;
+      --r-sm: 10px;
+      --r-md: 14px;
+      --r-lg: 18px;
+      --r-xl: 22px;
+      --shadow-sm: 0 1px 8px rgba(0, 0, 0, 0.06), 0 0 0 0.5px rgba(0, 0, 0, 0.04);
+      --shadow-md: 0 4px 24px rgba(0, 0, 0, 0.08), 0 0 0 0.5px rgba(0, 0, 0, 0.04);
+      --shadow-lg: 0 8px 40px rgba(0, 0, 0, 0.12), 0 0 0 0.5px rgba(0, 0, 0, 0.05);
+      --nav-h: 52px;
+    }
+
+    html {
+      font-size: 14px;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'SF Pro Text',
+        'Inter', 'Helvetica Neue', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      -webkit-font-smoothing: antialiased;
+      min-height: 100vh;
+      overflow: hidden;
+    }
+
+    /* ─── Top navigation ─────────────────────────────────────────────────── */
+    .nav {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      z-index: 200;
+      height: var(--nav-h);
+      background: rgba(255, 255, 255, 0.82);
+      backdrop-filter: saturate(180%) blur(20px);
+      -webkit-backdrop-filter: saturate(180%) blur(20px);
+      border-bottom: 1px solid var(--sep);
+      display: flex;
+      align-items: center;
+      padding: 0 20px;
+      gap: 4px;
+    }
+
+    .nav-brand {
+      display: flex;
+      align-items: center;
+      gap: 7px;
+      font-size: 15px;
+      font-weight: 700;
+      letter-spacing: -0.4px;
+      color: var(--text);
+      margin-right: 28px;
+      flex-shrink: 0;
+      text-decoration: none;
+    }
+
+    .nav-logo {
+      width: 26px;
+      height: 26px;
+      border-radius: 7px;
+      background: linear-gradient(145deg, #007AFF, #5AC8FA);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 13px;
+      flex-shrink: 0;
+    }
+
+    .nav-tabs {
+      display: flex;
+      align-items: center;
+      gap: 1px;
+      flex: 1;
+    }
+
+    .nav-tab {
+      height: var(--nav-h);
+      padding: 0 14px;
+      border: none;
+      background: transparent;
+      font-family: inherit;
+      font-size: 13px;
+      font-weight: 500;
+      color: var(--muted);
+      cursor: pointer;
+      border-bottom: 2px solid transparent;
+      transition: color .15s, border-color .15s;
+    }
+
+    .nav-tab:hover {
+      color: var(--text);
+    }
+
+    .nav-tab.active {
+      color: var(--blue);
+      border-bottom-color: var(--blue);
+      font-weight: 600;
+    }
+
+    .nav-right {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-left: auto;
+    }
+
+    .status-pill {
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      background: var(--surface2);
+      border-radius: 20px;
+      padding: 4px 10px;
+      font-size: 11px;
+      font-weight: 500;
+      color: var(--muted);
+    }
+
+    .status-dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: var(--muted2);
+      transition: background .3s;
+      flex-shrink: 0;
+    }
+
+    .status-dot.ok {
+      background: var(--green);
+      box-shadow: 0 0 0 2px rgba(52, 199, 89, .2);
+    }
+
+    .status-dot.error {
+      background: var(--red);
+    }
+
+    /* ─── Tab panes ───────────────────────────────────────────────────────── */
+    .tab-pane {
+      display: none;
+    }
+
+    .tab-pane.active {
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* ─── Dashboard layout ───────────────────────────────────────────────── */
+    #tab-pipeline {
+      height: 100vh;
+      padding-top: var(--nav-h);
+      flex-direction: row;
+    }
+
+    .main-col {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      min-width: 0;
+    }
+
+    .main-scroll {
+      flex: 1;
+      overflow-y: auto;
+      padding: 20px 24px 0;
+      scrollbar-width: thin;
+      scrollbar-color: var(--sep) transparent;
+    }
+
+    .main-scroll::-webkit-scrollbar {
+      width: 4px;
+    }
+
+    .main-scroll::-webkit-scrollbar-thumb {
+      background: var(--muted2);
+      border-radius: 2px;
+    }
+
+    /* ─── Query bar ───────────────────────────────────────────────────────── */
+    .query-bar {
+      flex-shrink: 0;
+      padding: 14px 24px 16px;
+      background: var(--surface);
+      border-top: 1px solid var(--sep);
+    }
+
+    .query-row {
+      display: flex;
+      gap: 8px;
+      align-items: flex-end;
+    }
+
+    .query-input {
+      flex: 1;
+      background: var(--bg);
+      border: 1.5px solid var(--sep);
+      border-radius: var(--r-lg);
+      padding: 11px 16px;
+      font-family: inherit;
+      font-size: 14px;
+      color: var(--text);
+      resize: none;
+      min-height: 44px;
+      max-height: 100px;
+      outline: none;
+      line-height: 1.5;
+      transition: border-color .2s, box-shadow .2s;
+    }
+
+    .query-input:focus {
+      border-color: var(--blue);
+      box-shadow: 0 0 0 4px rgba(0, 122, 255, .1);
+    }
+
+    .query-input::placeholder {
+      color: var(--muted2);
+    }
+
+    .run-btn {
+      height: 44px;
+      padding: 0 20px;
+      background: var(--blue);
+      color: #fff;
+      border: none;
+      border-radius: var(--r-md);
+      font-family: inherit;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      flex-shrink: 0;
+      display: flex;
+      align-items: center;
+      gap: 7px;
+      transition: background .15s, transform .1s, opacity .15s;
+      box-shadow: 0 2px 12px rgba(0, 122, 255, .35);
+    }
+
+    .run-btn:hover:not(:disabled) {
+      background: var(--blue-dark);
+    }
+
+    .run-btn:active:not(:disabled) {
+      transform: scale(.97);
+    }
+
+    .run-btn:disabled {
+      opacity: .5;
+      cursor: not-allowed;
+      box-shadow: none;
+    }
+
+    .chips {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 5px;
+      margin-top: 9px;
+    }
+
+    .chip {
+      background: var(--surface);
+      border: 1px solid var(--sep);
+      border-radius: 20px;
+      padding: 4px 12px;
+      font-size: 12px;
+      color: var(--muted);
+      cursor: pointer;
+      font-family: inherit;
+      transition: all .15s;
+      box-shadow: var(--shadow-sm);
+    }
+
+    .chip:hover {
+      background: var(--blue-light);
+      color: var(--blue);
+      border-color: rgba(0, 122, 255, .25);
+    }
+
+    /* ─── Section label ───────────────────────────────────────────────────── */
+    .section-lbl {
+      font-size: 11px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: .08em;
+      color: var(--muted);
+      margin-bottom: 10px;
+    }
+
+    /* ─── Idle state: portfolio overview ─────────────────────────────────── */
+    .portfolio-header {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      margin-bottom: 16px;
+    }
+
+    .pf-name {
+      font-size: 22px;
+      font-weight: 700;
+      letter-spacing: -.5px;
+      margin-bottom: 3px;
+    }
+
+    .pf-sub {
+      font-size: 12px;
+      color: var(--muted);
+    }
+
+    .risk-pill {
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      background: rgba(0, 122, 255, .08);
+      border: 1px solid rgba(0, 122, 255, .2);
+      border-radius: 20px;
+      padding: 5px 12px;
+      font-size: 11px;
+      font-weight: 600;
+      color: var(--blue);
+      flex-shrink: 0;
+    }
+
+    .risk-dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: var(--blue);
+    }
+
+    /* metric cards */
+    .kpi-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 10px;
+      margin-bottom: 12px;
+    }
+
+    .kpi-card {
+      background: var(--surface);
+      border-radius: var(--r-lg);
+      padding: 16px 18px;
+      box-shadow: var(--shadow-sm);
+    }
+
+    .kpi-lbl {
+      font-size: 11px;
+      color: var(--muted);
+      font-weight: 500;
+      margin-bottom: 6px;
+    }
+
+    .kpi-val {
+      font-size: 26px;
+      font-weight: 700;
+      letter-spacing: -.05em;
+      line-height: 1;
+      margin-bottom: 4px;
+    }
+
+    .kpi-val.neg {
+      color: var(--red);
+    }
+
+    .kpi-sub {
+      font-size: 11px;
+      font-weight: 500;
+    }
+
+    .kpi-sub.pos {
+      color: var(--green-dark);
+    }
+
+    .kpi-sub.neg {
+      color: var(--red);
+    }
+
+    .kpi-sub.muted {
+      color: var(--muted);
+    }
+
+    .pf-grid2 {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+      margin-bottom: 12px;
+    }
+
+    .pf-card {
+      background: var(--surface);
+      border-radius: var(--r-lg);
+      padding: 16px 18px;
+      box-shadow: var(--shadow-sm);
+    }
+
+    .pf-card-title {
+      font-size: 12px;
+      font-weight: 600;
+      margin-bottom: 12px;
+      color: var(--text2);
+    }
+
+    /* Holdings table */
+    .holdings-table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+
+    .holdings-table th {
+      font-size: 10px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: .07em;
+      color: var(--muted);
+      text-align: left;
+      padding: 0 6px 8px;
+      border-bottom: 1px solid var(--sep);
+    }
+
+    .holdings-table th.r {
+      text-align: right;
+    }
+
+    .holdings-table td {
+      font-size: 12px;
+      padding: 6px 6px;
+      border-bottom: 1px solid var(--sep2);
+    }
+
+    .holdings-table tr:last-child td {
+      border-bottom: none;
+    }
+
+    .ht-ticker {
+      font-weight: 700;
+    }
+
+    .ht-name {
+      color: var(--muted);
+    }
+
+    .ht-weight {
+      text-align: right;
+      font-weight: 500;
+    }
+
+    .ht-pnl-pos {
+      text-align: right;
+      font-weight: 600;
+      color: var(--green-dark);
+    }
+
+    .ht-pnl-neg {
+      text-align: right;
+      font-weight: 600;
+      color: var(--red);
+    }
+
+    .ht-pnl-neu {
+      text-align: right;
+      color: var(--muted);
+    }
+
+    /* Volatility */
+    .vol-row {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 8px;
+    }
+
+    .vol-row:last-child {
+      margin-bottom: 0;
+    }
+
+    .vol-ticker {
+      font-size: 11px;
+      font-weight: 700;
+      width: 36px;
+      flex-shrink: 0;
+    }
+
+    .vol-track {
+      flex: 1;
+      background: var(--bg);
+      border-radius: 4px;
+      height: 6px;
+      overflow: hidden;
+    }
+
+    .vol-fill {
+      height: 100%;
+      border-radius: 4px;
+      transition: width .5s;
+    }
+
+    .vol-pct {
+      font-size: 11px;
+      color: var(--muted);
+      width: 30px;
+      text-align: right;
+      flex-shrink: 0;
+    }
+
+    /* Correlation heatmap */
+    .corr-wrap {
+      overflow-x: auto;
+    }
+
+    .corr-table {
+      border-collapse: collapse;
+      margin: 0 auto;
+    }
+
+    .corr-table th {
+      font-size: 9px;
+      font-weight: 600;
+      color: var(--muted);
+      padding: 2px 3px;
+      text-align: center;
+    }
+
+    .corr-th-row {
+      font-size: 9px;
+      font-weight: 600;
+      color: var(--muted);
+      padding: 2px 8px 2px 0;
+      text-align: right;
+    }
+
+    .corr-cell {
+      width: 36px;
+      height: 26px;
+      border-radius: 5px;
+      margin: 1px;
+      font-size: 9px;
+      font-weight: 600;
+      text-align: center;
+      vertical-align: middle;
+      padding: 0 2px;
+    }
+
+    /* ─── Progress bar (top of page, full-width) ──────────────────────────── */
+    .progress-bar-track {
+      height: 3px;
+      background: var(--sep);
+      overflow: hidden;
+      display: none;
+    }
+
+    .progress-bar-track.visible {
+      display: block;
+    }
+
+    .progress-bar-fill {
+      height: 100%;
+      background: var(--blue);
+      border-radius: 0 2px 2px 0;
+      transition: width .6s ease;
+      width: 0%;
+    }
+
+    /* ─── Running: stepper card ───────────────────────────────────────────── */
+    .stepper-card {
+      background: var(--surface);
+      border-radius: var(--r-xl);
+      box-shadow: var(--shadow-md);
+      padding: 24px 28px;
+      margin-bottom: 16px;
+      display: none;
+    }
+
+    .stepper-card.visible {
+      display: block;
+    }
+
+    .stepper-header {
+      margin-bottom: 20px;
+    }
+
+    .stepper-title {
+      font-size: 17px;
+      font-weight: 700;
+      letter-spacing: -.3px;
+      margin-bottom: 4px;
+    }
+
+    .stepper-subtitle {
+      font-size: 13px;
+      color: var(--muted);
+    }
+
+    .eta-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      background: var(--bg);
+      border-radius: var(--r-md);
+      padding: 10px 14px;
+      margin-bottom: 20px;
+    }
+
+    .eta-main {
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--text);
+    }
+
+    .eta-sub {
+      font-size: 12px;
+      color: var(--muted);
+      margin-top: 1px;
+    }
+
+    .eta-elapsed {
+      font-size: 22px;
+      font-weight: 700;
+      letter-spacing: -.5px;
+      color: var(--blue);
+    }
+
+    /* Step items */
+    .step-list {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+    }
+
+    .step-item {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      padding: 11px 14px;
+      border-radius: var(--r-md);
+      transition: background .2s;
+    }
+
+    .step-item.running {
+      background: rgba(0, 122, 255, .06);
+    }
+
+    .step-item.done {
+      background: rgba(52, 199, 89, .05);
+    }
+
+    .step-item.error {
+      background: rgba(255, 59, 48, .05);
+    }
+
+    .step-icon {
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      flex-shrink: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 14px;
+      transition: all .3s;
+    }
+
+    .step-icon.idle {
+      background: var(--bg);
+      color: var(--muted2);
+    }
+
+    .step-icon.running {
+      background: var(--blue-light);
+      animation: step-pulse 1.6s ease-in-out infinite;
+    }
+
+    .step-icon.done {
+      background: rgba(52, 199, 89, .15);
+      color: var(--green-dark);
+    }
+
+    .step-icon.error {
+      background: rgba(255, 59, 48, .12);
+      color: var(--red);
+    }
+
+    @keyframes step-pulse {
+
+      0%,
+      100% {
+        box-shadow: 0 0 0 0 rgba(0, 122, 255, .3);
+      }
+
+      50% {
+        box-shadow: 0 0 0 6px rgba(0, 122, 255, .0);
+      }
+    }
+
+    .step-body {
+      flex: 1;
+      min-width: 0;
+    }
+
+    .step-name {
+      font-size: 14px;
+      font-weight: 600;
+      margin-bottom: 2px;
+    }
+
+    .step-desc {
+      font-size: 12px;
+      color: var(--muted);
+    }
+
+    .step-item.idle .step-name {
+      color: var(--muted);
+      font-weight: 500;
+    }
+
+    .step-timing {
+      text-align: right;
+      flex-shrink: 0;
+    }
+
+    .step-est {
+      font-size: 12px;
+      color: var(--muted);
+    }
+
+    .step-live {
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--blue);
+    }
+
+    .step-done-time {
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--green-dark);
+    }
+
+    /* spinning ring for running steps */
+    .spin-ring {
+      width: 14px;
+      height: 14px;
+      border: 2px solid rgba(0, 122, 255, .2);
+      border-top-color: var(--blue);
+      border-radius: 50%;
+      animation: spin .8s linear infinite;
+      display: inline-block;
+    }
+
+    @keyframes spin {
+      to {
+        transform: rotate(360deg);
+      }
+    }
+
+    /* ─── Log grid (terminal panels) ─────────────────────────────────────── */
+    .log-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+      margin-bottom: 16px;
+    }
+
+    .log-panel {
+      border-radius: var(--r-lg);
+      overflow: hidden;
+      box-shadow: var(--shadow-sm);
+    }
+
+    .log-bar {
+      background: #1C1C1E;
+      padding: 8px 14px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      border-bottom: 1px solid rgba(255, 255, 255, .05);
+    }
+
+    .dot-cluster {
+      display: flex;
+      gap: 5px;
+    }
+
+    .dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+    }
+
+    .dot-r {
+      background: #FF5F57;
+    }
+
+    .dot-y {
+      background: #FEBC2E;
+    }
+
+    .dot-g {
+      background: #28C840;
+    }
+
+    .log-bar-title {
+      font-size: 10px;
+      font-weight: 500;
+      color: rgba(255, 255, 255, .45);
+      margin-left: 4px;
+      font-family: 'JetBrains Mono', monospace;
+    }
+
+    .log-body {
+      background: #111114;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 10.5px;
+      line-height: 1.7;
+      color: #C9C9C7;
+      padding: 10px 14px;
+      min-height: 130px;
+      max-height: 200px;
+      overflow-y: auto;
+      scrollbar-width: thin;
+      scrollbar-color: #2C2C2E #111114;
+      white-space: pre-wrap;
+      word-break: break-all;
+    }
+
+    .log-body::-webkit-scrollbar {
+      width: 4px;
+    }
+
+    .log-body::-webkit-scrollbar-thumb {
+      background: #2C2C2E;
+      border-radius: 2px;
+    }
+
+    .ll-dim {
+      color: #48484A;
+    }
+
+    .ll-ok {
+      color: #30D160;
+    }
+
+    .ll-run {
+      color: #FF9F0A;
+    }
+
+    .ll-warn {
+      color: #FFE066;
+    }
+
+    .ll-err {
+      color: #FF453A;
+    }
+
+    .ll-info {
+      color: #64AEFF;
+    }
+
+    .ll-hi {
+      color: #5AC8FA;
+      font-weight: 500;
+    }
+
+    /* ─── Final report ─────────────────────────────────────────────────────── */
+    .report-card {
+      display: none;
+      background: var(--surface);
+      border-radius: var(--r-xl);
+      box-shadow: var(--shadow-md);
+      padding: 28px 32px;
+      margin-bottom: 24px;
+    }
+
+    .report-card.visible {
+      display: block;
+      animation: fade-up .4s ease;
+    }
+
+    @keyframes fade-up {
+      from {
+        opacity: 0;
+        transform: translateY(10px);
+      }
+
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    .report-top {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 16px;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+
+    .report-title {
+      font-size: 16px;
+      font-weight: 700;
+      letter-spacing: -.3px;
+    }
+
+    .audit-badge {
+      font-size: 11px;
+      font-weight: 600;
+      padding: 4px 12px;
+      border-radius: 20px;
+      background: rgba(52, 199, 89, .12);
+      color: var(--green-dark);
+      border: 1px solid rgba(52, 199, 89, .3);
+    }
+
+    .audit-badge.fail {
+      background: rgba(255, 59, 48, .1);
+      color: var(--red);
+      border-color: rgba(255, 59, 48, .25);
+    }
+
+    .metrics-strip {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      margin-bottom: 20px;
+    }
+
+    .metric-pill {
+      background: var(--bg);
+      border-radius: var(--r-sm);
+      padding: 8px 14px;
+      min-width: 90px;
+    }
+
+    .metric-lbl {
+      font-size: 10px;
+      color: var(--muted);
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: .05em;
+      margin-bottom: 3px;
+    }
+
+    .metric-val {
+      font-size: 18px;
+      font-weight: 700;
+      letter-spacing: -.03em;
+    }
+
+    .metric-val.pos {
+      color: var(--green-dark);
+    }
+
+    .metric-val.neg {
+      color: var(--red);
+    }
+
+    .metric-val.neu {
+      color: var(--text);
+    }
+
+    .report-body {
+      font-size: 14px;
+      line-height: 1.8;
+      color: var(--text);
+    }
+
+    .report-body h1 {
+      font-size: 20px;
+      font-weight: 700;
+      margin: 0 0 12px;
+      letter-spacing: -.4px;
+    }
+
+    .report-body h2 {
+      font-size: 16px;
+      font-weight: 600;
+      margin: 20px 0 8px;
+      padding-top: 6px;
+      border-top: 1px solid var(--sep);
+    }
+
+    .report-body h3 {
+      font-size: 13px;
+      font-weight: 600;
+      margin: 14px 0 6px;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: .06em;
+    }
+
+    .report-body p {
+      margin-bottom: 12px;
+    }
+
+    .report-body ul,
+    .report-body ol {
+      padding-left: 20px;
+      margin-bottom: 12px;
+    }
+
+    .report-body li {
+      margin-bottom: 4px;
+    }
+
+    .report-body strong {
+      font-weight: 600;
+    }
+
+    .report-body em {
+      font-style: italic;
+      color: var(--muted);
+    }
+
+    .report-body code {
+      background: var(--bg);
+      border-radius: 5px;
+      padding: 2px 6px;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 12px;
+      color: #C0392B;
+    }
+
+    .report-body blockquote {
+      border-left: 3px solid var(--blue);
+      margin: 12px 0;
+      padding: 8px 16px;
+      color: var(--muted);
+      font-style: italic;
+      background: var(--blue-light);
+      border-radius: 0 var(--r-sm) var(--r-sm) 0;
+    }
+
+    .report-body hr {
+      border: none;
+      border-top: 1px solid var(--sep);
+      margin: 18px 0;
+    }
+
+    /* ─── Right sidebar ────────────────────────────────────────────────────── */
+    .sidebar {
+      width: 260px;
+      flex-shrink: 0;
+      background: var(--surface);
+      border-left: 1px solid var(--sep);
+      overflow-y: auto;
+      scrollbar-width: thin;
+      scrollbar-color: var(--sep) transparent;
+    }
+
+    .sidebar::-webkit-scrollbar {
+      width: 4px;
+    }
+
+    .sidebar::-webkit-scrollbar-thumb {
+      background: var(--muted2);
+      border-radius: 2px;
+    }
+
+    .sb-section {
+      padding: 16px;
+      border-bottom: 1px solid var(--sep2);
+    }
+
+    .sb-section:last-child {
+      border-bottom: none;
+    }
+
+    .sb-title {
+      font-size: 10px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: .09em;
+      color: var(--muted);
+      margin-bottom: 12px;
+    }
+
+    /* Donut */
+    .donut-wrap {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .donut-legend {
+      flex: 1;
+      min-width: 0;
+    }
+
+    .legend-item {
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      font-size: 11px;
+      margin-bottom: 3px;
+    }
+
+    .legend-dot {
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      flex-shrink: 0;
+    }
+
+    .legend-ticker {
+      font-weight: 600;
+      width: 34px;
+      flex-shrink: 0;
+    }
+
+    .legend-pct {
+      color: var(--muted);
+      margin-left: auto;
+    }
+
+    .donut-empty {
+      font-size: 11px;
+      color: var(--muted);
+      padding: 8px 0;
+    }
+
+    /* Sent badge */
+    .sent-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      padding: 4px 10px;
+      border-radius: 20px;
+      margin-bottom: 8px;
+      font-size: 11px;
+      font-weight: 600;
+    }
+
+    .sent-positive {
+      background: rgba(52, 199, 89, .12);
+      color: var(--green-dark);
+      border: 1px solid rgba(52, 199, 89, .3);
+    }
+
+    .sent-negative {
+      background: rgba(255, 59, 48, .10);
+      color: var(--red);
+      border: 1px solid rgba(255, 59, 48, .25);
+    }
+
+    .sent-neutral {
+      background: var(--bg);
+      color: var(--muted);
+      border: 1px solid var(--sep);
+    }
+
+    /* Stat rows */
+    .stat-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 4px 0;
+      font-size: 11px;
+    }
+
+    .stat-lbl {
+      color: var(--muted);
+    }
+
+    .stat-val {
+      font-weight: 600;
+    }
+
+    /* RAGAS bars */
+    .ragas-item {
+      margin-bottom: 8px;
+    }
+
+    .ragas-item:last-child {
+      margin-bottom: 0;
+    }
+
+    .ragas-header {
+      display: flex;
+      justify-content: space-between;
+      font-size: 11px;
+      margin-bottom: 4px;
+    }
+
+    .ragas-metric {
+      color: var(--muted);
+    }
+
+    .ragas-val {
+      font-weight: 600;
+    }
+
+    .ragas-track {
+      background: var(--bg);
+      border-radius: 4px;
+      height: 4px;
+    }
+
+    .ragas-fill {
+      height: 100%;
+      border-radius: 4px;
+      transition: width .5s;
+    }
+
+    /* ─── Architecture / Monitor pages ────────────────────────────────────── */
+    #tab-architecture,
+    #tab-monitor {
+      height: 100vh;
+      padding-top: var(--nav-h);
+      overflow-y: auto;
+      scrollbar-width: thin;
+      scrollbar-color: var(--sep) transparent;
+    }
+
+    .page {
+      max-width: 1080px;
+      margin: 0 auto;
+      padding: 32px 24px 48px;
+    }
+
+    .page-hd {
+      margin-bottom: 28px;
+    }
+
+    .page-title {
+      font-size: 24px;
+      font-weight: 700;
+      letter-spacing: -.5px;
+      margin-bottom: 5px;
+    }
+
+    .page-sub {
+      font-size: 14px;
+      color: var(--muted);
+      line-height: 1.6;
+    }
+
+    /* Card base */
+    .card {
+      background: var(--surface);
+      border-radius: var(--r-lg);
+      box-shadow: var(--shadow-sm);
+      padding: 20px 22px;
+    }
+
+    .card-title {
+      font-size: 11px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: .08em;
+      color: var(--muted);
+      margin-bottom: 16px;
+    }
+
+    .mb-12 {
+      margin-bottom: 12px;
+    }
+
+    .mb-16 {
+      margin-bottom: 16px;
+    }
+
+    .mb-24 {
+      margin-bottom: 24px;
+    }
+
+    /* ─── Winner banner ────────────────────────────────────────────────────── */
+    .winner-banner {
+      background: linear-gradient(135deg, #0A1628 0%, #002D6B 50%, #004DB3 100%);
+      border-radius: var(--r-xl);
+      padding: 28px 32px;
+      margin-bottom: 20px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 20px;
+      box-shadow: 0 8px 40px rgba(0, 77, 179, .35);
+      overflow: hidden;
+      position: relative;
+    }
+
+    .winner-banner::before {
+      content: '';
+      position: absolute;
+      top: -40px;
+      right: -40px;
+      width: 200px;
+      height: 200px;
+      border-radius: 50%;
+      background: rgba(0, 122, 255, .15);
+    }
+
+    .winner-banner::after {
+      content: '';
+      position: absolute;
+      bottom: -60px;
+      left: 30%;
+      width: 280px;
+      height: 280px;
+      border-radius: 50%;
+      background: rgba(90, 200, 250, .07);
+    }
+
+    .winner-left {
+      position: relative;
+      z-index: 1;
+    }
+
+    .winner-eyebrow {
+      font-size: 11px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: .12em;
+      color: rgba(90, 200, 250, .8);
+      margin-bottom: 8px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .winner-name {
+      font-size: 28px;
+      font-weight: 800;
+      letter-spacing: -.6px;
+      color: #fff;
+      margin-bottom: 6px;
+    }
+
+    .winner-desc {
+      font-size: 14px;
+      color: rgba(255, 255, 255, .65);
+      line-height: 1.5;
+      max-width: 440px;
+    }
+
+    .winner-right {
+      position: relative;
+      z-index: 1;
+      flex-shrink: 0;
+    }
+
+    .winner-stats {
+      display: flex;
+      gap: 10px;
+    }
+
+    .winner-stat {
+      background: rgba(255, 255, 255, .08);
+      backdrop-filter: blur(10px);
+      border: 1px solid rgba(255, 255, 255, .12);
+      border-radius: var(--r-md);
+      padding: 12px 16px;
+      text-align: center;
+      min-width: 90px;
+    }
+
+    .winner-stat-val {
+      font-size: 22px;
+      font-weight: 800;
+      color: #fff;
+      letter-spacing: -.04em;
+    }
+
+    .winner-stat-lbl {
+      font-size: 10px;
+      color: rgba(255, 255, 255, .55);
+      font-weight: 500;
+      margin-top: 2px;
+    }
+
+    /* Comparison table */
+    .compare-table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+
+    .compare-table th {
+      font-size: 11px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: .07em;
+      color: var(--muted);
+      text-align: left;
+      padding: 0 12px 12px;
+      border-bottom: 1px solid var(--sep);
+    }
+
+    .compare-table th.r {
+      text-align: right;
+    }
+
+    .compare-table td {
+      padding: 10px 12px;
+      border-bottom: 1px solid var(--sep2);
+      font-size: 13px;
+    }
+
+    .compare-table tr:last-child td {
+      border-bottom: none;
+    }
+
+    .compare-table tr.winner-row td {
+      background: rgba(0, 122, 255, .04);
+    }
+
+    .compare-table tr.winner-row td:first-child {
+      border-left: 3px solid var(--blue);
+    }
+
+    .cmp-wf {
+      font-weight: 600;
+    }
+
+    .cmp-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      font-size: 10px;
+      font-weight: 700;
+      padding: 2px 8px;
+      border-radius: 20px;
+      background: var(--blue-light);
+      color: var(--blue);
+      border: 1px solid rgba(0, 122, 255, .25);
+      margin-left: 6px;
+    }
+
+    .cmp-val {
+      text-align: right;
+      font-weight: 500;
+    }
+
+    .cmp-best {
+      color: var(--green-dark);
+      font-weight: 700;
+    }
+
+    .cmp-ok {
+      color: var(--text);
+    }
+
+    .cmp-slow {
+      color: var(--red);
+    }
+
+    /* Radar-style score bars */
+    .score-bars {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .score-row {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .score-lbl {
+      font-size: 11px;
+      color: var(--muted);
+      width: 80px;
+      flex-shrink: 0;
+    }
+
+    .score-track {
+      flex: 1;
+      background: var(--bg);
+      border-radius: 4px;
+      height: 6px;
+    }
+
+    .score-fill {
+      height: 100%;
+      border-radius: 4px;
+      transition: width .5s;
+    }
+
+    .score-num {
+      font-size: 11px;
+      font-weight: 600;
+      width: 36px;
+      text-align: right;
+      flex-shrink: 0;
+    }
+
+    /* Agent cards grid */
+    .agent-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 12px;
+      margin-bottom: 20px;
+    }
+
+    .agent-card {
+      border-radius: var(--r-lg);
+      padding: 18px;
+      box-shadow: var(--shadow-sm);
+      background: var(--surface);
+    }
+
+    .agent-icon {
+      font-size: 20px;
+      margin-bottom: 8px;
+    }
+
+    .agent-name {
+      font-size: 14px;
+      font-weight: 700;
+      margin-bottom: 4px;
+    }
+
+    .agent-role {
+      font-size: 12px;
+      color: var(--muted);
+      line-height: 1.5;
+      margin-bottom: 10px;
+    }
+
+    .tag-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 4px;
+      margin-bottom: 10px;
+    }
+
+    .tag {
+      background: var(--bg);
+      border-radius: 5px;
+      padding: 2px 8px;
+      font-size: 10px;
+      color: var(--muted);
+      font-weight: 500;
+    }
+
+    .agent-io {
+      font-size: 11px;
+      color: var(--muted);
+      line-height: 1.7;
+    }
+
+    .agent-io strong {
+      color: var(--text);
+      font-weight: 600;
+    }
+
+    /* Flow diagram */
+    .flow-wrap {
+      overflow-x: auto;
+      padding-bottom: 4px;
+    }
+
+    .flow-nodes {
+      display: flex;
+      align-items: center;
+      flex-wrap: nowrap;
+      min-width: max-content;
+      gap: 0;
+    }
+
+    .fnode {
+      border-radius: var(--r-md);
+      padding: 12px 16px;
+      background: var(--bg);
+      text-align: center;
+      min-width: 108px;
+      flex-shrink: 0;
+    }
+
+    .fnode-icon {
+      font-size: 16px;
+      margin-bottom: 5px;
+    }
+
+    .fnode-label {
+      font-size: 11px;
+      font-weight: 700;
+    }
+
+    .fnode-sub {
+      font-size: 10px;
+      color: var(--muted);
+      margin-top: 2px;
+      line-height: 1.4;
+    }
+
+    .fnode.blue {
+      background: rgba(0, 122, 255, .08);
+      border: 1px solid rgba(0, 122, 255, .2);
+    }
+
+    .fnode.teal {
+      background: rgba(52, 199, 89, .08);
+      border: 1px solid rgba(52, 199, 89, .25);
+    }
+
+    .fnode.amber {
+      background: rgba(255, 159, 10, .10);
+      border: 1px solid rgba(255, 159, 10, .3);
+    }
+
+    .fnode.red {
+      background: rgba(255, 59, 48, .08);
+      border: 1px solid rgba(255, 59, 48, .2);
+    }
+
+    .flow-arr {
+      color: var(--muted2);
+      font-size: 14px;
+      padding: 0 6px;
+      margin-top: -18px;
+    }
+
+    .flow-note {
+      font-size: 12px;
+      color: var(--muted);
+      margin-top: 16px;
+      background: var(--bg);
+      border-radius: var(--r-sm);
+      padding: 10px 14px;
+      line-height: 1.6;
+    }
+
+    /* Stack */
+    .stack-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 12px;
+    }
+
+    .stack-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 5px 0;
+      border-bottom: 1px solid var(--sep2);
+      font-size: 13px;
+    }
+
+    .stack-row:last-child {
+      border-bottom: none;
+    }
+
+    .stack-badge {
+      font-size: 10px;
+      font-weight: 700;
+      padding: 2px 8px;
+      border-radius: 20px;
+    }
+
+    .b-free {
+      background: rgba(52, 199, 89, .12);
+      color: var(--green-dark);
+    }
+
+    .b-open {
+      background: var(--blue-light);
+      color: var(--blue);
+    }
+
+    .b-local {
+      background: rgba(255, 159, 10, .12);
+      color: #B36200;
+    }
+
+    /* Monitor */
+    .monitor-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 14px;
+      margin-bottom: 16px;
+    }
+
+    .rag-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+    }
+
+    .rag-item {
+      background: var(--bg);
+      border-radius: var(--r-sm);
+      padding: 12px 14px;
+    }
+
+    .rag-metric {
+      font-size: 11px;
+      color: var(--muted);
+      margin-bottom: 3px;
+    }
+
+    .rag-val {
+      font-size: 22px;
+      font-weight: 700;
+    }
+
+    .rag-bar {
+      background: rgba(0, 0, 0, 0.06);
+      border-radius: 3px;
+      height: 3px;
+      margin-top: 5px;
+    }
+
+    .rag-fill {
+      height: 100%;
+      border-radius: 3px;
+    }
+
+    .finding-row {
+      display: flex;
+      align-items: flex-start;
+      gap: 10px;
+      padding: 9px 0;
+      border-bottom: 1px solid var(--sep2);
+    }
+
+    .finding-row:last-child {
+      border-bottom: none;
+    }
+
+    .finding-dot {
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      flex-shrink: 0;
+      margin-top: 5px;
+    }
+
+    .d-ok {
+      background: var(--green);
+    }
+
+    .d-warn {
+      background: var(--amber);
+    }
+
+    .d-err {
+      background: var(--red);
+    }
+
+    .finding-text {
+      font-size: 13px;
+      line-height: 1.5;
+    }
+
+    .finding-meta {
+      font-size: 11px;
+      color: var(--muted);
+      margin-top: 2px;
+    }
+
+    /* scrollbar global */
+    ::-webkit-scrollbar {
+      width: 5px;
+      height: 5px;
+    }
+
+    ::-webkit-scrollbar-track {
+      background: transparent;
+    }
+
+    ::-webkit-scrollbar-thumb {
+      background: var(--muted2);
+      border-radius: 3px;
+    }
+  </style>
+</head>
+
+<body>
+
+  <!-- ════════════ NAV ═══════════════════════════════════════════════ -->
+  <nav class="nav">
+    <a class="nav-brand" href="#">
+      <div class="nav-logo">◈</div>
+      WealthMind AI
+    </a>
+    <div class="nav-tabs">
+      <button class="nav-tab active" data-tab="pipeline">Dashboard</button>
+      <button class="nav-tab" data-tab="architecture">Architecture</button>
+      <button class="nav-tab" data-tab="monitor">Monitor</button>
+    </div>
+    <div class="nav-right">
+      <div class="status-pill">
+        <div class="status-dot" id="healthDot"></div>
+        <span id="healthLabel">Checking…</span>
+      </div>
+    </div>
+  </nav>
+
+  <!-- ════════════ DASHBOARD ════════════════════════════════════════ -->
+  <div id="tab-pipeline" class="tab-pane active">
+
+    <!-- Main content column -->
+    <div class="main-col">
+
+      <!-- Thin progress bar at very top -->
+      <div class="progress-bar-track" id="progressTrack">
+        <div class="progress-bar-fill" id="progressFill"></div>
+      </div>
+
+      <div class="main-scroll" id="mainScroll">
+
+        <!-- ── Running: stepper ── -->
+        <div class="stepper-card" id="stepperCard">
+          <div class="stepper-header">
+            <div class="stepper-title" id="stepperTitle">Analyzing…</div>
+            <div class="stepper-subtitle">Sequential Workflow · 6-agent pipeline</div>
+          </div>
+
+          <!-- ETA row -->
+          <div class="eta-row">
+            <div>
+              <div class="eta-main" id="etaMain">Preparing pipeline…</div>
+              <div class="eta-sub" id="etaSub">Sequential workflow · ~8 min total</div>
+            </div>
+            <div class="eta-elapsed" id="etaElapsed">0:00</div>
+          </div>
+
+          <!-- Step list -->
+          <div class="step-list" id="stepList">
+            <!-- populated by JS -->
+          </div>
+        </div>
+
+        <!-- ── Idle: portfolio overview ── -->
+        <div id="portfolioPanel">
+          <div class="portfolio-header">
+            <div>
+              <div class="pf-name">Laura Wynter — Portfolio</div>
+              <div class="pf-sub">HNW Client · AUM S$6.8M · Conservative-Moderate · Apr 2026</div>
+            </div>
+            <div class="risk-pill">
+              <div class="risk-dot"></div>Conservative-Moderate
+            </div>
+          </div>
+
+          <div class="kpi-grid">
+            <div class="kpi-card">
+              <div class="kpi-lbl">Portfolio Value</div>
+              <div class="kpi-val">S$6.8M</div>
+              <div class="kpi-sub pos">↑ +8.3% YTD</div>
+            </div>
+            <div class="kpi-card">
+              <div class="kpi-lbl">Sharpe Ratio</div>
+              <div class="kpi-val">1.47</div>
+              <div class="kpi-sub pos">↑ +0.21 vs benchmark</div>
+            </div>
+            <div class="kpi-card">
+              <div class="kpi-lbl">Max Drawdown</div>
+              <div class="kpi-val neg">-6.2%</div>
+              <div class="kpi-sub muted">Within tolerance</div>
+            </div>
+            <div class="kpi-card">
+              <div class="kpi-lbl">Annualised Vol</div>
+              <div class="kpi-val">11.4%</div>
+              <div class="kpi-sub muted">Low vs peers</div>
+            </div>
+          </div>
+
+          <div class="pf-grid2">
+            <div class="pf-card">
+              <div class="pf-card-title">P&amp;L — Past 12 Months</div>
+              <svg id="plChart" style="width:100%;display:block"></svg>
+            </div>
+            <div class="pf-card">
+              <div class="pf-card-title">Current Holdings</div>
+              <table class="holdings-table">
+                <thead>
+                  <tr>
+                    <th>Ticker</th>
+                    <th>Name</th>
+                    <th class="r">Weight</th>
+                    <th class="r">P&amp;L</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td class="ht-ticker">MSFT</td>
+                    <td class="ht-name">Microsoft</td>
+                    <td class="ht-weight">20%</td>
+                    <td class="ht-pnl-pos">+9.1%</td>
+                  </tr>
+                  <tr>
+                    <td class="ht-ticker">AAPL</td>
+                    <td class="ht-name">Apple</td>
+                    <td class="ht-weight">15%</td>
+                    <td class="ht-pnl-pos">+4.2%</td>
+                  </tr>
+                  <tr>
+                    <td class="ht-ticker">NVDA</td>
+                    <td class="ht-name">NVIDIA</td>
+                    <td class="ht-weight">10%</td>
+                    <td class="ht-pnl-pos">+18.3%</td>
+                  </tr>
+                  <tr>
+                    <td class="ht-ticker">JNJ</td>
+                    <td class="ht-name">Johnson &amp; Johnson</td>
+                    <td class="ht-weight">10%</td>
+                    <td class="ht-pnl-neg">-1.1%</td>
+                  </tr>
+                  <tr>
+                    <td class="ht-ticker">AGG</td>
+                    <td class="ht-name">Bond ETF</td>
+                    <td class="ht-weight">25%</td>
+                    <td class="ht-pnl-pos">+0.4%</td>
+                  </tr>
+                  <tr>
+                    <td class="ht-ticker">GLD</td>
+                    <td class="ht-name">Gold ETF</td>
+                    <td class="ht-weight">10%</td>
+                    <td class="ht-pnl-pos">+5.2%</td>
+                  </tr>
+                  <tr>
+                    <td class="ht-ticker">CASH</td>
+                    <td class="ht-name">Cash</td>
+                    <td class="ht-weight">10%</td>
+                    <td class="ht-pnl-neu">—</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <div class="pf-grid2">
+            <div class="pf-card">
+              <div class="pf-card-title">Per-Asset Volatility (Annualised)</div>
+              <div class="vol-row"><span class="vol-ticker">MSFT</span>
+                <div class="vol-track">
+                  <div class="vol-fill" style="width:43%;background:var(--blue)"></div>
+                </div><span class="vol-pct">18%</span>
+              </div>
+              <div class="vol-row"><span class="vol-ticker">AAPL</span>
+                <div class="vol-track">
+                  <div class="vol-fill" style="width:52%;background:var(--blue)"></div>
+                </div><span class="vol-pct">22%</span>
+              </div>
+              <div class="vol-row"><span class="vol-ticker">NVDA</span>
+                <div class="vol-track">
+                  <div class="vol-fill" style="width:100%;background:var(--red)"></div>
+                </div><span class="vol-pct">42%</span>
+              </div>
+              <div class="vol-row"><span class="vol-ticker">JNJ</span>
+                <div class="vol-track">
+                  <div class="vol-fill" style="width:33%;background:var(--green)"></div>
+                </div><span class="vol-pct">14%</span>
+              </div>
+              <div class="vol-row"><span class="vol-ticker">AGG</span>
+                <div class="vol-track">
+                  <div class="vol-fill" style="width:19%;background:var(--green)"></div>
+                </div><span class="vol-pct">8%</span>
+              </div>
+              <div class="vol-row"><span class="vol-ticker">GLD</span>
+                <div class="vol-track">
+                  <div class="vol-fill" style="width:38%;background:var(--amber)"></div>
+                </div><span class="vol-pct">16%</span>
+              </div>
+            </div>
+            <div class="pf-card">
+              <div class="pf-card-title">Correlation Heatmap</div>
+              <div class="corr-wrap" id="corrHeatmap"></div>
+            </div>
+          </div>
+
+          <div class="section-lbl" style="margin-top:4px">Live Agent Logs</div>
+          <div class="log-grid">
+            <div class="log-panel">
+              <div class="log-bar">
+                <div class="dot-cluster">
+                  <div class="dot dot-r"></div>
+                  <div class="dot dot-y"></div>
+                  <div class="dot dot-g"></div>
+                </div>
+                <div class="log-bar-title">market_context + orchestrator</div>
+              </div>
+              <div class="log-body" id="log-market"><span class="ll-dim">waiting for run…</span></div>
+            </div>
+            <div class="log-panel">
+              <div class="log-bar">
+                <div class="dot-cluster">
+                  <div class="dot dot-r"></div>
+                  <div class="dot dot-y"></div>
+                  <div class="dot dot-g"></div>
+                </div>
+                <div class="log-bar-title">sentiment_agent · FinBERT</div>
+              </div>
+              <div class="log-body" id="log-sentiment"><span class="ll-dim">waiting for run…</span></div>
+            </div>
+            <div class="log-panel">
+              <div class="log-bar">
+                <div class="dot-cluster">
+                  <div class="dot dot-r"></div>
+                  <div class="dot dot-y"></div>
+                  <div class="dot dot-g"></div>
+                </div>
+                <div class="log-bar-title">investment_analyst · RAG</div>
+              </div>
+              <div class="log-body" id="log-analyst"><span class="ll-dim">waiting for run…</span></div>
+            </div>
+            <div class="log-panel">
+              <div class="log-bar">
+                <div class="dot-cluster">
+                  <div class="dot dot-r"></div>
+                  <div class="dot dot-y"></div>
+                  <div class="dot dot-g"></div>
+                </div>
+                <div class="log-bar-title">auditor · LLM-as-Judge</div>
+              </div>
+              <div class="log-body" id="log-audit"><span class="ll-dim">waiting for run…</span></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- ── Final report ── -->
+        <div class="report-card" id="reportCard">
+          <div class="report-top">
+            <div class="report-title">Analysis Complete</div>
+            <div class="audit-badge" id="auditBadge">Audit Passed</div>
+          </div>
+          <div class="metrics-strip" id="metricsStrip"></div>
+          <div class="report-body" id="reportBody"></div>
+        </div>
+
+        <div style="height:20px"></div>
+      </div><!-- /main-scroll -->
+
+      <!-- Query bar -->
+      <div class="query-bar">
+        <div class="query-row">
+          <textarea class="query-input" id="promptInput" rows="2"
+            placeholder="Ask about your portfolio — e.g. 'Analyze AAPL and MSFT for long-term potential'"></textarea>
+          <button class="run-btn" id="runBtn" onclick="runPipeline()">
+            <span id="runBtnIcon">▶</span> <span id="runBtnText">Analyze</span>
+          </button>
+        </div>
+        <div class="chips">
+          <button class="chip" onclick="setPrompt(this)">Analyse earnings beat and rebalance</button>
+          <button class="chip" onclick="setPrompt(this)">Generate Q1 2026 investment review</button>
+          <button class="chip" onclick="setPrompt(this)">Increase AGG bond allocation given rate environment?</button>
+          <button class="chip" onclick="setPrompt(this)">AI sector outlook for Q2 2026</button>
+        </div>
+      </div>
+    </div><!-- /main-col -->
+
+    <!-- RIGHT SIDEBAR -->
+    <div class="sidebar">
+
+      <div class="sb-section">
+        <div class="sb-title">Portfolio Weights</div>
+        <div id="donutWrap">
+          <div class="donut-empty">Run the pipeline to see weights</div>
+        </div>
+      </div>
+
+      <div class="sb-section">
+        <div class="sb-title">Sentiment</div>
+        <div id="sentBadgeWrap"><span style="font-size:11px;color:var(--muted)">—</span></div>
+        <div class="stat-row"><span class="stat-lbl">Overall</span><span class="stat-val" id="st-sentOverall">—</span>
+        </div>
+        <div class="stat-row"><span class="stat-lbl">Strength</span><span class="stat-val" id="st-sentStrength">—</span>
+        </div>
+        <div class="stat-row"><span class="stat-lbl">Score</span><span class="stat-val" id="st-sentScore">—</span></div>
+        <div class="stat-row"><span class="stat-lbl">Tickers</span><span class="stat-val" id="st-tickers">—</span></div>
+      </div>
+
+      <div class="sb-section">
+        <div class="sb-title">Audit</div>
+        <div class="stat-row"><span class="stat-lbl">Score</span><span class="stat-val" id="st-auditScore">—</span>
+        </div>
+        <div class="stat-row"><span class="stat-lbl">Verified</span><span class="stat-val" id="st-verified"
+            style="color:var(--green-dark)">—</span></div>
+        <div class="stat-row"><span class="stat-lbl">Hallucinations</span><span class="stat-val" id="st-hallucinations"
+            style="color:var(--red)">—</span></div>
+        <div class="stat-row"><span class="stat-lbl">Correction loops</span><span class="stat-val"
+            id="st-loops">—</span></div>
+      </div>
+
+      <div class="sb-section">
+        <div class="sb-title">RAGAS</div>
+        <div class="ragas-item">
+          <div class="ragas-header"><span class="ragas-metric">Faithfulness</span><span class="ragas-val"
+              id="rm-faith">—</span></div>
+          <div class="ragas-track">
+            <div class="ragas-fill" id="rb-faith" style="width:0%;background:var(--blue)"></div>
+          </div>
+        </div>
+        <div class="ragas-item">
+          <div class="ragas-header"><span class="ragas-metric">Relevancy</span><span class="ragas-val"
+              id="rm-rel">—</span></div>
+          <div class="ragas-track">
+            <div class="ragas-fill" id="rb-rel" style="width:0%;background:var(--green)"></div>
+          </div>
+        </div>
+        <div class="ragas-item">
+          <div class="ragas-header"><span class="ragas-metric">Precision</span><span class="ragas-val"
+              id="rm-prec">—</span></div>
+          <div class="ragas-track">
+            <div class="ragas-fill" id="rb-prec" style="width:0%;background:var(--purple)"></div>
+          </div>
+        </div>
+        <div class="ragas-item">
+          <div class="ragas-header"><span class="ragas-metric">Recall</span><span class="ragas-val" id="rm-rec">—</span>
+          </div>
+          <div class="ragas-track">
+            <div class="ragas-fill" id="rb-rec" style="width:0%;background:var(--amber)"></div>
+          </div>
+        </div>
+      </div>
+
+    </div><!-- /sidebar -->
+  </div><!-- /tab-pipeline -->
+
+  <!-- ════════════ ARCHITECTURE ════════════════════════════════════ -->
+  <div id="tab-architecture" class="tab-pane">
+    <div class="page">
+      <div class="page-hd">
+        <div class="page-title">Architecture</div>
+        <div class="page-sub">Three workflow variants benchmarked across quality, speed, and token efficiency — one
+          clear winner emerged.</div>
+      </div>
+
+      <!-- Winner banner -->
+      <div class="winner-banner mb-24">
+        <div class="winner-left">
+          <div class="winner-eyebrow">🏆 Recommended Architecture</div>
+          <div class="winner-name">Sequential Workflow</div>
+          <div class="winner-desc">Fastest end-to-end latency, lowest token consumption, and matching quality to the
+            more complex orchestration variant. The optimal choice for production use.</div>
+        </div>
+        <div class="winner-right">
+          <div class="winner-stats">
+            <div class="winner-stat">
+              <div class="winner-stat-val">8.3m</div>
+              <div class="winner-stat-lbl">Avg Latency</div>
+            </div>
+            <div class="winner-stat">
+              <div class="winner-stat-val">33K</div>
+              <div class="winner-stat-lbl">Avg Tokens</div>
+            </div>
+            <div class="winner-stat">
+              <div class="winner-stat-val">96%</div>
+              <div class="winner-stat-lbl">Quality Score</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Comparison table -->
+      <div class="card mb-24">
+        <div class="card-title">Workflow Comparison (averaged across 3 queries)</div>
+        <table class="compare-table">
+          <thead>
+            <tr>
+              <th>Workflow</th>
+              <th class="r">Avg Latency</th>
+              <th class="r">Avg Tokens</th>
+              <th class="r">Fail Rate</th>
+              <th class="r">Correctness</th>
+              <th class="r">Relevance</th>
+              <th class="r">Groundedness</th>
+              <th class="r">Safety</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr class="winner-row">
+              <td class="cmp-wf">Sequential<span class="cmp-badge">★ Best</span></td>
+              <td class="cmp-val cmp-best">8.4 min</td>
+              <td class="cmp-val cmp-best">26.3K</td>
+              <td class="cmp-val cmp-best">0.000</td>
+              <td class="cmp-val cmp-best">0.933</td>
+              <td class="cmp-val cmp-best">0.983</td>
+              <td class="cmp-val cmp-best">0.883</td>
+              <td class="cmp-val cmp-best">1.000</td>
+            </tr>
+            <tr>
+              <td class="cmp-wf">Orchestration-Worker</td>
+              <td class="cmp-val cmp-ok">10.8 min</td>
+              <td class="cmp-val cmp-ok">28.3K</td>
+              <td class="cmp-val cmp-best">0.000</td>
+              <td class="cmp-val cmp-ok">0.933</td>
+              <td class="cmp-val cmp-ok">0.967</td>
+              <td class="cmp-val cmp-ok">0.867</td>
+              <td class="cmp-val cmp-best">1.000</td>
+            </tr>
+            <tr>
+              <td class="cmp-wf">Conditional</td>
+              <td class="cmp-val cmp-slow">15.9 min</td>
+              <td class="cmp-val cmp-slow">51.3K</td>
+              <td class="cmp-val cmp-best">0.000</td>
+              <td class="cmp-val cmp-ok">0.900</td>
+              <td class="cmp-val cmp-ok">0.950</td>
+              <td class="cmp-val cmp-ok">0.850</td>
+              <td class="cmp-val cmp-best">1.000</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Quality breakdown with score bars -->
+      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;" class="mb-24">
+        <div class="card">
+          <div class="card-title">Sequential Quality</div>
+          <div class="score-bars">
+            <div class="score-row"><span class="score-lbl">Correctness</span>
+              <div class="score-track">
+                <div class="score-fill" style="width:93%;background:var(--blue)"></div>
+              </div><span class="score-num" style="color:var(--blue)">0.93</span>
+            </div>
+            <div class="score-row"><span class="score-lbl">Relevance</span>
+              <div class="score-track">
+                <div class="score-fill" style="width:98%;background:var(--blue)"></div>
+              </div><span class="score-num" style="color:var(--blue)">0.98</span>
+            </div>
+            <div class="score-row"><span class="score-lbl">Grounded</span>
+              <div class="score-track">
+                <div class="score-fill" style="width:88%;background:var(--blue)"></div>
+              </div><span class="score-num" style="color:var(--blue)">0.88</span>
+            </div>
+            <div class="score-row"><span class="score-lbl">Guidelines</span>
+              <div class="score-track">
+                <div class="score-fill" style="width:94%;background:var(--blue)"></div>
+              </div><span class="score-num" style="color:var(--blue)">0.94</span>
+            </div>
+            <div class="score-row"><span class="score-lbl">Safety</span>
+              <div class="score-track">
+                <div class="score-fill" style="width:100%;background:var(--green)"></div>
+              </div><span class="score-num" style="color:var(--green-dark)">1.00</span>
+            </div>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-title">Orchestration Quality</div>
+          <div class="score-bars">
+            <div class="score-row"><span class="score-lbl">Correctness</span>
+              <div class="score-track">
+                <div class="score-fill" style="width:93%;background:var(--muted2)"></div>
+              </div><span class="score-num" style="color:var(--muted)">0.93</span>
+            </div>
+            <div class="score-row"><span class="score-lbl">Relevance</span>
+              <div class="score-track">
+                <div class="score-fill" style="width:97%;background:var(--muted2)"></div>
+              </div><span class="score-num" style="color:var(--muted)">0.97</span>
+            </div>
+            <div class="score-row"><span class="score-lbl">Grounded</span>
+              <div class="score-track">
+                <div class="score-fill" style="width:87%;background:var(--muted2)"></div>
+              </div><span class="score-num" style="color:var(--muted)">0.87</span>
+            </div>
+            <div class="score-row"><span class="score-lbl">Guidelines</span>
+              <div class="score-track">
+                <div class="score-fill" style="width:94%;background:var(--muted2)"></div>
+              </div><span class="score-num" style="color:var(--muted)">0.94</span>
+            </div>
+            <div class="score-row"><span class="score-lbl">Safety</span>
+              <div class="score-track">
+                <div class="score-fill" style="width:100%;background:var(--green)"></div>
+              </div><span class="score-num" style="color:var(--green-dark)">1.00</span>
+            </div>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-title">Conditional Quality</div>
+          <div class="score-bars">
+            <div class="score-row"><span class="score-lbl">Correctness</span>
+              <div class="score-track">
+                <div class="score-fill" style="width:90%;background:var(--muted2)"></div>
+              </div><span class="score-num" style="color:var(--muted)">0.90</span>
+            </div>
+            <div class="score-row"><span class="score-lbl">Relevance</span>
+              <div class="score-track">
+                <div class="score-fill" style="width:95%;background:var(--muted2)"></div>
+              </div><span class="score-num" style="color:var(--muted)">0.95</span>
+            </div>
+            <div class="score-row"><span class="score-lbl">Grounded</span>
+              <div class="score-track">
+                <div class="score-fill" style="width:85%;background:var(--muted2)"></div>
+              </div><span class="score-num" style="color:var(--muted)">0.85</span>
+            </div>
+            <div class="score-row"><span class="score-lbl">Guidelines</span>
+              <div class="score-track">
+                <div class="score-fill" style="width:90%;background:var(--muted2)"></div>
+              </div><span class="score-num" style="color:var(--muted)">0.90</span>
+            </div>
+            <div class="score-row"><span class="score-lbl">Safety</span>
+              <div class="score-track">
+                <div class="score-fill" style="width:100%;background:var(--green)"></div>
+              </div><span class="score-num" style="color:var(--green-dark)">1.00</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Pipeline flow -->
+      <div class="card mb-24">
+        <div class="card-title">Sequential Pipeline Flow</div>
+        <div class="flow-wrap">
+          <div class="flow-nodes">
+            <div class="fnode blue">
+              <div class="fnode-icon">💬</div>
+              <div class="fnode-label">User Query</div>
+              <div class="fnode-sub">Natural language</div>
+            </div>
+            <div class="flow-arr">→</div>
+            <div class="fnode blue">
+              <div class="fnode-icon">◎</div>
+              <div class="fnode-label">Market Context</div>
+              <div class="fnode-sub">Live data · MCP</div>
+            </div>
+            <div class="flow-arr">→</div>
+            <div class="fnode blue">
+              <div class="fnode-icon">▦</div>
+              <div class="fnode-label">Sentiment</div>
+              <div class="fnode-sub">FinBERT headlines</div>
+            </div>
+            <div class="flow-arr">→</div>
+            <div class="fnode blue">
+              <div class="fnode-icon">⊡</div>
+              <div class="fnode-label">Analyst</div>
+              <div class="fnode-sub">RAG · ChromaDB</div>
+            </div>
+            <div class="flow-arr">→</div>
+            <div class="fnode red">
+              <div class="fnode-icon">◈</div>
+              <div class="fnode-label">Auditor</div>
+              <div class="fnode-sub">RAGAS · LLM-judge</div>
+            </div>
+            <div class="flow-arr">→</div>
+            <div class="fnode teal">
+              <div class="fnode-icon">▤</div>
+              <div class="fnode-label">Report</div>
+              <div class="fnode-sub">Final synthesis</div>
+            </div>
+          </div>
+        </div>
+        <div class="flow-note"><strong>Self-correction loop:</strong> Auditor → if <code>is_hallucinating = true</code>
+          and <code>audit_iteration_count &lt; 2</code> → loops back to Market Context for fresh data, then re-runs
+          Analyst. Otherwise → Report Generator.</div>
+      </div>
+
+      <!-- Agent cards -->
+      <div class="section-lbl mb-12">Agents</div>
+      <div class="agent-grid mb-24">
+        <div class="agent-card">
+          <div class="agent-icon">◎</div>
+          <div class="agent-name">Market Context</div>
+          <div class="agent-role">Gathers live earnings, ratings, and news via MCP web scraper. Grounds downstream
+            agents with real-time market data.</div>
+          <div class="tag-row"><span class="tag">MCP</span><span class="tag">NewsAPI</span><span
+              class="tag">DuckDuckGo</span></div>
+          <div class="agent-io"><strong>Writes:</strong> live_data_context, market_context</div>
+        </div>
+        <div class="agent-card">
+          <div class="agent-icon">▦</div>
+          <div class="agent-name">Sentiment Agent</div>
+          <div class="agent-role">Scores news headlines per ticker using FinBERT. Aggregates into portfolio-level and
+            per-ticker sentiment scores.</div>
+          <div class="tag-row"><span class="tag">FinBERT</span><span class="tag">HuggingFace</span><span
+              class="tag">local</span></div>
+          <div class="agent-io"><strong>Reads:</strong> tickers, live_data_context<br><strong>Writes:</strong>
+            sentiment_score, sentiment_summary</div>
+        </div>
+        <div class="agent-card">
+          <div class="agent-icon">⊡</div>
+          <div class="agent-name">Investment Analyst</div>
+          <div class="agent-role">Retrieves 10-K filing chunks from ChromaDB (RAG), combines with market context and
+            sentiment to synthesise an investment thesis.</div>
+          <div class="tag-row"><span class="tag">ChromaDB</span><span class="tag">RAG</span><span
+              class="tag">GPT-4o-mini</span></div>
+          <div class="agent-io"><strong>Reads:</strong> tickers, sentiment_score,
+            live_data_context<br><strong>Writes:</strong> retrieved_context, draft_report</div>
+        </div>
+        <div class="agent-card">
+          <div class="agent-icon">◈</div>
+          <div class="agent-name">Auditor Agent</div>
+          <div class="agent-role">LLM-as-Judge. Cross-checks every factual claim against RAG context. Computes RAGAS
+            metrics. Flags hallucinations and triggers self-correction.</div>
+          <div class="tag-row"><span class="tag">RAGAS</span><span class="tag">LLM-judge</span><span
+              class="tag">GPT-4o-mini</span></div>
+          <div class="agent-io"><strong>Reads:</strong> draft_report, retrieved_context<br><strong>Writes:</strong>
+            audit_score, is_hallucinating, ragas_metrics</div>
+        </div>
+        <div class="agent-card">
+          <div class="agent-icon">▤</div>
+          <div class="agent-name">Report Generator</div>
+          <div class="agent-role">Synthesises the verified draft, sentiment summary, and audit log into the final
+            client-facing markdown report.</div>
+          <div class="tag-row"><span class="tag">GPT-4o-mini</span><span class="tag">Markdown</span></div>
+          <div class="agent-io"><strong>Reads:</strong> draft_report, audit_findings,
+            sentiment_summary<br><strong>Writes:</strong> final_report</div>
+        </div>
+        <div class="agent-card">
+          <div class="agent-icon">↔</div>
+          <div class="agent-name">Orchestrator</div>
+          <div class="agent-role">Extracts ticker symbols from the user prompt using regex + optional LLM, and populates
+            initial state for downstream agents.</div>
+          <div class="tag-row"><span class="tag">Regex</span><span class="tag">LangGraph</span></div>
+          <div class="agent-io"><strong>Writes:</strong> tickers, route_target</div>
+        </div>
+      </div>
+
+      <!-- Tech stack -->
+      <div class="section-lbl mb-12">Tech Stack</div>
+      <div class="stack-grid">
+        <div class="card">
+          <div class="card-title">Models &amp; Inference</div>
+          <div class="stack-row">GPT-4o-mini (OpenAI)<span class="stack-badge b-open">API</span></div>
+          <div class="stack-row">FinBERT (ProsusAI)<span class="stack-badge b-local">Local</span></div>
+          <div class="stack-row">sentence-transformers<span class="stack-badge b-local">Local</span></div>
+        </div>
+        <div class="card">
+          <div class="card-title">Data &amp; Retrieval</div>
+          <div class="stack-row">ChromaDB (10-K RAG)<span class="stack-badge b-free">Free</span></div>
+          <div class="stack-row">yFinance<span class="stack-badge b-free">Free</span></div>
+          <div class="stack-row">SEC EDGAR API<span class="stack-badge b-free">Free</span></div>
+        </div>
+        <div class="card">
+          <div class="card-title">Orchestration &amp; Eval</div>
+          <div class="stack-row">LangGraph<span class="stack-badge b-open">Open</span></div>
+          <div class="stack-row">RAGAS<span class="stack-badge b-free">Free</span></div>
+          <div class="stack-row">FastAPI + SSE<span class="stack-badge b-free">Free</span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ════════════ MONITOR ══════════════════════════════════════════ -->
+  <div id="tab-monitor" class="tab-pane">
+    <div class="page">
+      <div class="page-hd">
+        <div class="page-title">Monitor</div>
+        <div class="page-sub">Last-run metrics — RAGAS scores, audit findings, sentiment breakdown, pipeline telemetry
+        </div>
+      </div>
+      <div class="monitor-grid mb-16">
+        <div class="card">
+          <div class="card-title">RAGAS Metrics</div>
+          <div class="rag-grid">
+            <div class="rag-item">
+              <div class="rag-metric">Faithfulness</div>
+              <div class="rag-val" id="rm2-faith">—</div>
+              <div class="rag-bar">
+                <div class="rag-fill" id="rb2-faith" style="width:0%;background:var(--blue)"></div>
+              </div>
+            </div>
+            <div class="rag-item">
+              <div class="rag-metric">Relevancy</div>
+              <div class="rag-val" id="rm2-rel">—</div>
+              <div class="rag-bar">
+                <div class="rag-fill" id="rb2-rel" style="width:0%;background:var(--green)"></div>
+              </div>
+            </div>
+            <div class="rag-item">
+              <div class="rag-metric">Precision</div>
+              <div class="rag-val" id="rm2-prec">—</div>
+              <div class="rag-bar">
+                <div class="rag-fill" id="rb2-prec" style="width:0%;background:var(--purple)"></div>
+              </div>
+            </div>
+            <div class="rag-item">
+              <div class="rag-metric">Recall</div>
+              <div class="rag-val" id="rm2-rec">—</div>
+              <div class="rag-bar">
+                <div class="rag-fill" id="rb2-rec" style="width:0%;background:var(--amber)"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-title">Audit Stats</div>
+          <div class="stat-row"><span class="stat-lbl">Audit Score</span><span class="stat-val"
+              id="st2-auditScore">—</span></div>
+          <div class="stat-row"><span class="stat-lbl">Verified Claims</span><span class="stat-val" id="st2-verified"
+              style="color:var(--green-dark)">—</span></div>
+          <div class="stat-row"><span class="stat-lbl">Hallucinations</span><span class="stat-val"
+              id="st2-hallucinations" style="color:var(--red)">—</span></div>
+          <div class="stat-row"><span class="stat-lbl">Unsubstantiated</span><span class="stat-val" id="st2-unsubst"
+              style="color:var(--amber)">—</span></div>
+          <div class="stat-row"><span class="stat-lbl">Correction Loops</span><span class="stat-val"
+              id="st2-loops">—</span></div>
+          <div class="stat-row"><span class="stat-lbl">Is Hallucinating</span><span class="stat-val"
+              id="st2-isHall">—</span></div>
+        </div>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;" class="mb-16">
+        <div class="card">
+          <div class="card-title">Sentiment Summary</div>
+          <div class="stat-row"><span class="stat-lbl">Overall</span><span class="stat-val"
+              id="st2-sentOverall">—</span></div>
+          <div class="stat-row"><span class="stat-lbl">Strength</span><span class="stat-val"
+              id="st2-sentStrength">—</span></div>
+          <div class="stat-row"><span class="stat-lbl">CWNS Score</span><span class="stat-val"
+              id="st2-sentCwns">—</span></div>
+          <div class="stat-row"><span class="stat-lbl">Composite Score</span><span class="stat-val"
+              id="st2-sentScore">—</span></div>
+          <div class="stat-row"><span class="stat-lbl">Tickers Analysed</span><span class="stat-val"
+              id="st2-tickers">—</span></div>
+        </div>
+        <div class="card">
+          <div class="card-title">Portfolio Weights</div>
+          <div id="portfolioWeights" style="font-size:12px;color:var(--muted)">Not available — run the pipeline first.
+          </div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-title">Audit Findings</div>
+        <div id="auditFindings" style="font-size:13px;color:var(--muted)">No findings yet — run the pipeline first.
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ════════════════════════════════════════════════════════════════
+     JAVASCRIPT
+═══════════════════════════════════════════════════════════════════ -->
+  <script>
+    const API = 'http://localhost:8000';
+
+    const DONUT_COLORS = [
+      '#007AFF', '#34C759', '#FF9F0A', '#AF52DE', '#FF3B30',
+      '#5AC8FA', '#30D158', '#FF6B35', '#8E44AD', '#2ECC71',
+    ];
+
+    // ── Node pipeline definition ─────────────────────────────────────
+    const PIPELINE_NODES = [
+      { id: 'market_context_agent', label: 'Market Context', desc: 'Fetching live data · MCP scraper', est_ms: 43000, icon: '◎' },
+      { id: 'sentiment_agent', label: 'Sentiment Analysis', desc: 'FinBERT headline scoring · local model', est_ms: 397000, icon: '▦' },
+      { id: 'investment_analyst_agent', label: 'Investment Analyst', desc: 'RAG retrieval · writing draft report', est_ms: 13000, icon: '⊡' },
+      { id: 'auditor_agent', label: 'Auditor', desc: 'LLM-as-Judge · RAGAS evaluation', est_ms: 46000, icon: '◈' },
+      { id: 'report_generator_agent', label: 'Report Generator', desc: 'Synthesising final report', est_ms: 1000, icon: '▤' },
+    ];
+
+    const TOTAL_EST_MS = PIPELINE_NODES.reduce((s, n) => s + n.est_ms, 0); // ~500s
+
+    const NODE_PANEL = {
+      orchestrator_agent: 'market',
+      market_context_agent: 'market',
+      sentiment_agent: 'sentiment',
+      investment_analyst_agent: 'analyst',
+      auditor_agent: 'audit',
+      report_generator_agent: 'analyst',
+    };
+
+    const STATE = {
+      running: false,
+      lastRunState: {},
+      nodeStartTimes: {},
+      nodeEndTimes: {},
+      nodeStatuses: {},   // idle | running | done | error
+    };
+
+    // ── Tab switching ─────────────────────────────────────────────────
+    document.querySelectorAll('.nav-tab').forEach(btn => {
+      btn.addEventListener('click', () => {
+        document.querySelectorAll('.nav-tab').forEach(b => b.classList.remove('active'));
+        document.querySelectorAll('.tab-pane').forEach(p => p.classList.remove('active'));
+        btn.classList.add('active');
+        document.getElementById('tab-' + btn.dataset.tab).classList.add('active');
+      });
+    });
+
+    // ── Health check ──────────────────────────────────────────────────
+    async function checkHealth() {
+      try {
+        const r = await fetch(API + '/api/health', { signal: AbortSignal.timeout(3000) });
+        const ok = r.ok;
+        document.getElementById('healthDot').className = 'status-dot ' + (ok ? 'ok' : 'error');
+        document.getElementById('healthLabel').textContent = ok ? 'Backend online' : 'Backend error';
+      } catch {
+        document.getElementById('healthDot').className = 'status-dot error';
+        document.getElementById('healthLabel').textContent = 'Unreachable';
+      }
+    }
+    checkHealth();
+    setInterval(checkHealth, 30000);
+
+    // ── Prompt helpers ────────────────────────────────────────────────
+    function setPrompt(chip) {
+      document.getElementById('promptInput').value = chip.textContent.trim();
+      document.getElementById('promptInput').focus();
+    }
+
+    const BLOCKED = new Set([
+      'AND', 'THE', 'FOR', 'WITH', 'FROM', 'THIS', 'THAT', 'WILL', 'SHOULD', 'ABOUT',
+      'CHECK', 'PLEASE', 'GIVEN', 'LAURA', 'PORTFOLIO', 'AGENT', 'AGENTS', 'RUN',
+      'RESEARCH', 'REBALANCE', 'AI', 'IS', 'IN', 'TO', 'OF', 'ON', 'AT', 'AS', 'BE',
+      'BY', 'DO', 'GO', 'UP', 'WE', 'IT', 'AN', 'IF', 'OR', 'SO', 'HAS', 'HAD', 'NOT',
+      'ARE', 'WAS', 'ALL', 'CAN', 'GET', 'ITS', 'NEW', 'OUR', 'OUT', 'USE', 'WAY',
+      'WHO', 'WHY', 'HOW', 'INCREASE', 'GIVEN', 'SECTOR', 'OUTLOOK',
+    ]);
+    function extractTickers(text) {
+      const matches = text.toUpperCase().match(/\b[A-Z]{1,5}\b/g) || [];
+      const seen = new Set();
+      return matches.filter(t => !BLOCKED.has(t) && !seen.has(t) && seen.add(t));
+    }
+
+    // ── Stepper UI ────────────────────────────────────────────────────
+    function buildStepList() {
+      const list = document.getElementById('stepList');
+      list.innerHTML = PIPELINE_NODES.map(n => `
+    <div class="step-item idle" id="step-${n.id}">
+      <div class="step-icon idle" id="step-icon-${n.id}">${n.icon}</div>
+      <div class="step-body">
+        <div class="step-name">${n.label}</div>
+        <div class="step-desc" id="step-desc-${n.id}">${n.desc}</div>
+      </div>
+      <div class="step-timing">
+        <div class="step-est" id="step-est-${n.id}">~${fmtMs(n.est_ms)}</div>
+        <div class="step-live" id="step-live-${n.id}" style="display:none"></div>
+      </div>
+    </div>
+  `).join('');
+    }
+
+    function setStepStatus(nodeId, status) {
+      const item = document.getElementById('step-' + nodeId);
+      const icon = document.getElementById('step-icon-' + nodeId);
+      if (!item || !icon) return;
+
+      STATE.nodeStatuses[nodeId] = status;
+      item.className = 'step-item ' + status;
+      icon.className = 'step-icon ' + status;
+
+      const node = PIPELINE_NODES.find(n => n.id === nodeId);
+      const iconText = status === 'done' ? '✓' : status === 'error' ? '✕' : status === 'running' ? '<span class="spin-ring"></span>' : (node?.icon || '○');
+
+      if (status === 'running') {
+        icon.innerHTML = iconText;
+        document.getElementById('step-est-' + nodeId).style.display = 'none';
+        document.getElementById('step-live-' + nodeId).style.display = 'block';
+      } else if (status === 'done') {
+        icon.innerHTML = iconText;
+        const elapsed = STATE.nodeEndTimes[nodeId] && STATE.nodeStartTimes[nodeId]
+          ? ((STATE.nodeEndTimes[nodeId] - STATE.nodeStartTimes[nodeId]) / 1000).toFixed(1) + 's'
+          : '';
+        document.getElementById('step-est-' + nodeId).style.display = 'none';
+        const live = document.getElementById('step-live-' + nodeId);
+        live.style.display = 'block';
+        live.className = 'step-done-time';
+        live.textContent = elapsed;
+      } else {
+        icon.textContent = node?.icon || '○';
+        document.getElementById('step-est-' + nodeId).style.display = 'block';
+        document.getElementById('step-live-' + nodeId).style.display = 'none';
+      }
+    }
+
+    // ── ETA & timer ───────────────────────────────────────────────────
+    let _runStart = null;
+    let _timerInterval = null;
+    let _stepTimers = {};  // nodeId → interval
+
+    function fmtMs(ms) {
+      if (ms < 60000) return Math.round(ms / 1000) + 's';
+      const m = Math.floor(ms / 60000);
+      const s = Math.round((ms % 60000) / 1000);
+      return s > 0 ? `${m}m ${s}s` : `${m}m`;
+    }
+
+    function fmtSec(s) {
+      s = Math.floor(s);
+      const m = Math.floor(s / 60);
+      const sec = s % 60;
+      return m > 0 ? `${m}:${String(sec).padStart(2, '0')}` : `0:${String(sec).padStart(2, '0')}`;
+    }
+
+    function getCompletedMs() {
+      let total = 0;
+      for (const n of PIPELINE_NODES) {
+        if (STATE.nodeStatuses[n.id] === 'done') {
+          const actual = STATE.nodeStartTimes[n.id] && STATE.nodeEndTimes[n.id]
+            ? STATE.nodeEndTimes[n.id] - STATE.nodeStartTimes[n.id]
+            : n.est_ms;
+          total += actual;
+        }
+      }
+      return total;
+    }
+
+    function getRemainingEstMs() {
+      let total = 0;
+      for (const n of PIPELINE_NODES) {
+        const s = STATE.nodeStatuses[n.id];
+        if (s === 'running') {
+          const elapsed = STATE.nodeStartTimes[n.id] ? Date.now() - STATE.nodeStartTimes[n.id] : 0;
+          const remaining = Math.max(0, n.est_ms - elapsed);
+          total += remaining;
+        } else if (!s || s === 'idle') {
+          total += n.est_ms;
+        }
+      }
+      return total;
+    }
+
+    function updateGlobalTimer() {
+      if (!_runStart) return;
+      const elapsedSec = (Date.now() - _runStart) / 1000;
+      document.getElementById('etaElapsed').textContent = fmtSec(elapsedSec);
+
+      const remainMs = getRemainingEstMs();
+      const progressPct = Math.min(98, ((TOTAL_EST_MS - remainMs) / TOTAL_EST_MS) * 100);
+      document.getElementById('progressFill').style.width = progressPct.toFixed(1) + '%';
+
+      if (remainMs > 1000) {
+        document.getElementById('etaMain').textContent = `~${fmtMs(remainMs)} remaining`;
+      } else {
+        document.getElementById('etaMain').textContent = 'Finalising report…';
+      }
+    }
+
+    function startStepTimer(nodeId) {
+      const liveEl = document.getElementById('step-live-' + nodeId);
+      if (!liveEl) return;
+      const t = setInterval(() => {
+        if (!STATE.nodeStartTimes[nodeId]) return;
+        const s = (Date.now() - STATE.nodeStartTimes[nodeId]) / 1000;
+        const n = PIPELINE_NODES.find(x => x.id === nodeId);
+        liveEl.textContent = fmtSec(s) + (n ? ` / ~${fmtMs(n.est_ms)}` : '');
+      }, 500);
+      _stepTimers[nodeId] = t;
+    }
+
+    function stopStepTimer(nodeId) {
+      if (_stepTimers[nodeId]) {
+        clearInterval(_stepTimers[nodeId]);
+        delete _stepTimers[nodeId];
+      }
+    }
+
+    // ── Logs ──────────────────────────────────────────────────────────
+    function clearLogs() {
+      ['market', 'sentiment', 'analyst', 'audit'].forEach(p => {
+        document.getElementById('log-' + p).innerHTML = '<span class="ll-dim">starting…</span>';
+      });
+    }
+
+    function appendLog(panel, msg, cls = '') {
+      const el = document.getElementById('log-' + panel);
+      if (!el) return;
+      if (el.querySelector('.ll-dim')) el.innerHTML = '';
+      const line = document.createElement('div');
+      if (cls) line.className = cls;
+      line.textContent = msg;
+      el.appendChild(line);
+      el.scrollTop = el.scrollHeight;
+    }
+
+    function classifyLog(msg) {
+      const m = msg.toLowerCase();
+      if (m.startsWith('✅') || m.includes('complete') || m.includes('done') || m.includes('ok')) return 'll-ok';
+      if (m.startsWith('⏳') || m.includes('start') || m.includes('running')) return 'll-run';
+      if (m.startsWith('⚠') || m.includes('warn') || m.includes('slow')) return 'll-warn';
+      if (m.startsWith('❌') || m.includes('error') || m.includes('fail')) return 'll-err';
+      if (m.includes('summary') || m.startsWith('---') || m.startsWith('overall')) return 'll-hi';
+      if (m.startsWith('  ')) return 'll-dim';
+      return '';
+    }
+
+    // ── Donut chart ───────────────────────────────────────────────────
+    function renderDonut(weights) {
+      const wrap = document.getElementById('donutWrap');
+      const entries = Object.entries(weights)
+        .map(([k, v]) => [k, parseFloat(v)])
+        .filter(([, v]) => v > 0)
+        .sort(([, a], [, b]) => b - a);
+      if (!entries.length) { wrap.innerHTML = '<div class="donut-empty">No weights data</div>'; return; }
+      const total = entries.reduce((s, [, v]) => s + v, 0);
+      const r = 34, cx = 44, cy = 44, sw = 12;
+      const circ = 2 * Math.PI * r;
+      let offset = 0;
+      const segs = entries.map(([, val], i) => {
+        const pct = val / total;
+        const dash = (pct * circ).toFixed(2) + ' ' + ((1 - pct) * circ).toFixed(2);
+        const rot = offset * 360 - 90;
+        offset += pct;
+        return `<circle cx="${cx}" cy="${cy}" r="${r}" fill="none"
+      stroke="${DONUT_COLORS[i % DONUT_COLORS.length]}" stroke-width="${sw}"
+      stroke-dasharray="${dash}" stroke-dashoffset="0"
+      transform="rotate(${rot},${cx},${cy})"/>`;
+      });
+      const legend = entries.slice(0, 7).map(([t, val], i) => {
+        const pct = ((val / total) * 100).toFixed(1);
+        return `<div class="legend-item"><div class="legend-dot" style="background:${DONUT_COLORS[i % DONUT_COLORS.length]}"></div><span class="legend-ticker">${t}</span><span class="legend-pct">${pct}%</span></div>`;
+      }).join('');
+      wrap.innerHTML = `<div class="donut-wrap">
+    <svg width="88" height="88" viewBox="0 0 88 88" style="flex-shrink:0">
+      <circle cx="${cx}" cy="${cy}" r="${r}" fill="none" stroke="rgba(0,0,0,0.06)" stroke-width="${sw}"/>
+      ${segs.join('')}
+    </svg>
+    <div class="donut-legend">${legend}</div>
+  </div>`;
+    }
+
+    // ── Markdown renderer ─────────────────────────────────────────────
+    function renderMd(md) {
+      if (!md) return '';
+      let s = md.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+      s = s.replace(/```[\w]*\n([\s\S]*?)```/g, '<pre><code>$1</code></pre>');
+      s = s.replace(/^#### (.+)$/gm, '<h3 style="font-size:13px;font-weight:600;margin:12px 0 5px">$1</h3>');
+      s = s.replace(/^### (.+)$/gm, '<h3>$1</h3>');
+      s = s.replace(/^## (.+)$/gm, '<h2>$1</h2>');
+      s = s.replace(/^# (.+)$/gm, '<h1>$1</h1>');
+      s = s.replace(/^---+$/gm, '<hr>');
+      s = s.replace(/\*\*\*(.+?)\*\*\*/g, '<strong><em>$1</em></strong>');
+      s = s.replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>');
+      s = s.replace(/\*(.+?)\*/g, '<em>$1</em>');
+      s = s.replace(/`(.+?)`/g, '<code>$1</code>');
+      s = s.replace(/^&gt; (.+)$/gm, '<blockquote>$1</blockquote>');
+      s = s.replace(/((?:^[-*+] .+\n?)+)/gm, b => {
+        const items = b.split('\n').filter(l => l.trim()).map(l => `<li>${l.replace(/^[-*+] /, '')}</li>`).join('');
+        return `<ul>${items}</ul>`;
+      });
+      s = s.replace(/((?:^\d+\. .+\n?)+)/gm, b => {
+        const items = b.split('\n').filter(l => l.trim()).map(l => `<li>${l.replace(/^\d+\. /, '')}</li>`).join('');
+        return `<ol>${items}</ol>`;
+      });
+      s = s.split(/\n{2,}/).map(p => {
+        p = p.trim();
+        if (!p) return '';
+        if (/^<(h[1-6]|ul|ol|pre|blockquote|hr)/.test(p)) return p;
+        return `<p>${p.replace(/\n/g, '<br>')}</p>`;
+      }).join('\n');
+      return s;
+    }
+
+    // ── Right sidebar ─────────────────────────────────────────────────
+    function setText(id, val) { const el = document.getElementById(id); if (el) el.textContent = val; }
+    function esc(s) { return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;'); }
+
+    function updateSidebar(state) {
+      const pw = state.portfolio_weights;
+      if (pw && Object.keys(pw).length) renderDonut(pw);
+
+      const ss = state.sentiment_summary || {};
+      if (ss.overall_sentiment) {
+        const s = ss.overall_sentiment.toLowerCase();
+        const cls = s.includes('positive') ? 'sent-positive' : s.includes('negative') ? 'sent-negative' : 'sent-neutral';
+        document.getElementById('sentBadgeWrap').innerHTML = `<span class="sent-badge ${cls}">${ss.overall_sentiment}</span>`;
+      }
+      setText('st-sentOverall', ss.overall_sentiment ?? '—');
+      setText('st-sentStrength', ss.strength ?? '—');
+      setText('st-sentScore', state.sentiment_score != null ? parseFloat(state.sentiment_score).toFixed(3) : '—');
+      setText('st-tickers', (state.tickers || []).join(', ') || '—');
+
+      setText('st-auditScore', state.audit_score != null ? parseFloat(state.audit_score).toFixed(2) : '—');
+      setText('st-verified', state.verified_count ?? '—');
+      setText('st-hallucinations', state.hallucination_count ?? '—');
+      setText('st-loops', state.audit_iteration_count ?? '—');
+
+      const ragas = state.ragas_metrics || {};
+      [['faith', 'faithfulness'], ['rel', 'answer_relevancy'], ['prec', 'context_precision'], ['rec', 'context_recall']].forEach(([k, key]) => {
+        const v = ragas[key];
+        if (v != null) {
+          setText('rm-' + k, parseFloat(v).toFixed(2));
+          const rb = document.getElementById('rb-' + k);
+          if (rb) rb.style.width = (parseFloat(v) * 100).toFixed(0) + '%';
+        }
+      });
+    }
+
+    // ── Monitor ───────────────────────────────────────────────────────
+    function updateMonitor(state) {
+      const ragas = state.ragas_metrics || {};
+      [['faith', 'faithfulness'], ['rel', 'answer_relevancy'], ['prec', 'context_precision'], ['rec', 'context_recall']].forEach(([k, key]) => {
+        const v = ragas[key];
+        if (v != null) {
+          setText('rm2-' + k, parseFloat(v).toFixed(2));
+          const rb = document.getElementById('rb2-' + k);
+          if (rb) rb.style.width = (parseFloat(v) * 100).toFixed(0) + '%';
+        }
+      });
+      setText('st2-auditScore', state.audit_score != null ? parseFloat(state.audit_score).toFixed(2) : '—');
+      setText('st2-verified', state.verified_count ?? '—');
+      setText('st2-hallucinations', state.hallucination_count ?? '—');
+      setText('st2-unsubst', state.unsubstantiated_count ?? '—');
+      setText('st2-loops', state.audit_iteration_count ?? '—');
+      setText('st2-isHall', state.is_hallucinating != null ? (state.is_hallucinating ? 'Yes' : 'No') : '—');
+      const ss = state.sentiment_summary || {};
+      setText('st2-sentOverall', ss.overall_sentiment ?? '—');
+      setText('st2-sentStrength', ss.strength ?? '—');
+      setText('st2-sentCwns', ss.cwns ?? '—');
+      setText('st2-sentScore', state.sentiment_score != null ? parseFloat(state.sentiment_score).toFixed(3) : '—');
+      setText('st2-tickers', (state.tickers || []).join(', ') || '—');
+
+      const pw = state.portfolio_weights;
+      const pwEl = document.getElementById('portfolioWeights');
+      if (pw && Object.keys(pw).length) {
+        pwEl.innerHTML = Object.entries(pw).map(([k, v]) =>
+          `<div class="stat-row"><span class="stat-lbl">${k}</span><span class="stat-val">${(parseFloat(v) * 100).toFixed(1)}%</span></div>`
+        ).join('');
+      }
+
+      const findings = state.audit_findings;
+      const afEl = document.getElementById('auditFindings');
+      if (findings && findings.length) {
+        afEl.innerHTML = findings.map(f => {
+          const status = (f.status || f.verdict || '').toLowerCase();
+          const dotCls = status.includes('verif') ? 'd-ok' : status.includes('hall') || status.includes('fail') ? 'd-err' : 'd-warn';
+          const claim = f.claim || f.statement || f.text || JSON.stringify(f);
+          const src = f.source || f.chunk_id || '';
+          const score = f.score != null ? ` · score: ${parseFloat(f.score).toFixed(2)}` : '';
+          return `<div class="finding-row"><div class="finding-dot ${dotCls}"></div><div><div class="finding-text">${esc(claim)}</div>${src || score ? `<div class="finding-meta">${esc(src)}${score}</div>` : ''}</div></div>`;
+        }).join('');
+      }
+    }
+
+    // ── Report ────────────────────────────────────────────────────────
+    function showReport(state) {
+      const report = state.final_report || state.draft_report || '';
+      if (!report) return;
+
+      const pills = [
+        { label: 'Sentiment', val: state.sentiment_score != null ? parseFloat(state.sentiment_score).toFixed(2) : '—', cls: parseFloat(state.sentiment_score) > 0 ? 'pos' : parseFloat(state.sentiment_score) < 0 ? 'neg' : 'neu' },
+        { label: 'Audit Score', val: state.audit_score != null ? parseFloat(state.audit_score).toFixed(2) : '—', cls: 'neu' },
+        { label: 'Faithfulness', val: state.ragas_metrics?.faithfulness != null ? parseFloat(state.ragas_metrics.faithfulness).toFixed(2) : '—', cls: 'neu' },
+        { label: 'Hallucinations', val: state.hallucination_count ?? '—', cls: (state.hallucination_count || 0) > 0 ? 'neg' : 'pos' },
+        { label: 'Verified', val: state.verified_count ?? '—', cls: 'pos' },
+      ];
+      document.getElementById('metricsStrip').innerHTML = pills.map(p =>
+        `<div class="metric-pill"><div class="metric-lbl">${p.label}</div><div class="metric-val ${p.cls}">${p.val}</div></div>`
+      ).join('');
+
+      const badge = document.getElementById('auditBadge');
+      if (state.is_hallucinating) {
+        badge.textContent = 'Hallucination Detected';
+        badge.className = 'audit-badge fail';
+      } else {
+        badge.textContent = 'Audit Passed';
+        badge.className = 'audit-badge';
+      }
+
+      document.getElementById('reportBody').innerHTML = renderMd(report);
+      const card = document.getElementById('reportCard');
+      card.classList.add('visible');
+      setTimeout(() => card.scrollIntoView({ behavior: 'smooth', block: 'start' }), 100);
+    }
+
+    // ── SSE handler ───────────────────────────────────────────────────
+    function handleSSE(evt) {
+      const { type } = evt;
+
+      if (type === 'node_start') {
+        STATE.nodeStartTimes[evt.node] = Date.now();
+        setStepStatus(evt.node, 'running');
+        startStepTimer(evt.node);
+        const p = NODE_PANEL[evt.node];
+        if (p) appendLog(p, `⏳ ${evt.label} started…`, 'll-run');
+      }
+      else if (type === 'node_complete') {
+        STATE.nodeEndTimes[evt.node] = Date.now();
+        stopStepTimer(evt.node);
+        setStepStatus(evt.node, 'done');
+        const elapsed = STATE.nodeStartTimes[evt.node]
+          ? ((Date.now() - STATE.nodeStartTimes[evt.node]) / 1000).toFixed(1) + 's'
+          : '';
+        const p = NODE_PANEL[evt.node];
+        if (p) appendLog(p, `✅ ${evt.label} complete${elapsed ? ' · ' + elapsed : ''}`, 'll-ok');
+        if (evt.state) Object.assign(STATE.lastRunState, evt.state);
+        updateSidebar(STATE.lastRunState);
+
+        const s = evt.state || {};
+        if (evt.node === 'sentiment_agent') {
+          const ss = s.sentiment_summary || {};
+          if (ss.overall_sentiment) {
+            appendLog('sentiment', `--- sentiment summary ---`, 'll-hi');
+            appendLog('sentiment', `overall=${ss.overall_sentiment}  strength=${ss.strength || '?'}`, 'll-hi');
+          }
+          if (s.sentiment_score != null) appendLog('sentiment', `composite_score=${parseFloat(s.sentiment_score).toFixed(3)}`, 'll-hi');
+        }
+        if (evt.node === 'auditor_agent') {
+          if (s.audit_score != null) appendLog('audit', `audit_score=${parseFloat(s.audit_score).toFixed(2)}`, 'll-hi');
+          if (s.hallucination_count != null) appendLog('audit', `hallucinations=${s.hallucination_count}  verified=${s.verified_count ?? '?'}`, 'll-hi');
+          if (s.is_hallucinating) appendLog('audit', `⚠ hallucination detected — triggering re-analysis`, 'll-warn');
+          if (s.ragas_metrics) appendLog('audit', `faithfulness=${(s.ragas_metrics.faithfulness || 0).toFixed(2)}  relevancy=${(s.ragas_metrics.answer_relevancy || 0).toFixed(2)}`, 'll-info');
+        }
+        if (evt.node === 'market_context_agent' && s.live_data_context) {
+          appendLog('market', `live_context="${s.live_data_context.slice(0, 120).replace(/\n/g, ' ')}…"`, 'll-dim');
+        }
+      }
+      else if (type === 'agent_log') {
+        appendLog(NODE_PANEL[evt.node] || 'market', evt.message, classifyLog(evt.message));
+      }
+      else if (type === 'complete') {
+        finishRun();
+      }
+      else if (type === 'error') {
+        finishRun();
+        appendLog('audit', `❌ Error: ${evt.message}`, 'll-err');
+      }
+    }
+
+    function finishRun() {
+      STATE.running = false;
+      if (_timerInterval) { clearInterval(_timerInterval); _timerInterval = null; }
+      Object.keys(_stepTimers).forEach(stopStepTimer);
+      document.getElementById('progressFill').style.width = '100%';
+      setTimeout(() => {
+        document.getElementById('progressTrack').classList.remove('visible');
+        document.getElementById('progressFill').style.width = '0%';
+      }, 800);
+
+      const btn = document.getElementById('runBtn');
+      btn.disabled = false;
+      document.getElementById('runBtnIcon').textContent = '▶';
+      document.getElementById('runBtnText').textContent = 'Analyze';
+
+      // Hide stepper, show portfolio + logs (which are always visible below)
+      setTimeout(() => {
+        document.getElementById('stepperCard').classList.remove('visible');
+      }, 1200);
+
+      updateMonitor(STATE.lastRunState);
+      updateSidebar(STATE.lastRunState);
+      showReport(STATE.lastRunState);
+      appendLog('market', '✅ Pipeline complete.', 'll-ok');
+    }
+
+    // ── SSE parser ────────────────────────────────────────────────────
+    function parseSSE(chunk, buf) {
+      buf += chunk;
+      const lines = buf.split('\n');
+      const tail = lines.pop();
+      const events = [];
+      for (const line of lines) {
+        const t = line.trim();
+        if (t.startsWith('data: ')) {
+          try { events.push(JSON.parse(t.slice(6))); } catch { }
+        }
+      }
+      return { events, buf: tail };
+    }
+
+    // ── Run pipeline ──────────────────────────────────────────────────
+    async function runPipeline() {
+      if (STATE.running) return;
+      const prompt = document.getElementById('promptInput').value.trim();
+      const tickers = extractTickers(prompt);
+      if (!prompt) return;
+
+      // Reset state
+      STATE.running = true;
+      STATE.lastRunState = {};
+      STATE.nodeStartTimes = {};
+      STATE.nodeEndTimes = {};
+      STATE.nodeStatuses = {};
+
+      // Reset UI
+      clearLogs();
+      document.getElementById('reportCard').classList.remove('visible');
+      document.getElementById('metricsStrip').innerHTML = '';
+      document.getElementById('reportBody').innerHTML = '';
+
+      // Show stepper
+      buildStepList();
+      document.getElementById('stepperTitle').textContent = prompt.length > 60 ? prompt.slice(0, 57) + '…' : prompt;
+      document.getElementById('etaMain').textContent = `Preparing pipeline…`;
+      document.getElementById('etaSub').textContent = `Sequential workflow · ~${fmtMs(TOTAL_EST_MS)} total`;
+      document.getElementById('etaElapsed').textContent = '0:00';
+      document.getElementById('stepperCard').classList.add('visible');
+      document.getElementById('progressTrack').classList.add('visible');
+      document.getElementById('progressFill').style.width = '0%';
+
+      // Start global timer
+      _runStart = Date.now();
+      _timerInterval = setInterval(updateGlobalTimer, 500);
+
+      // Button state
+      const btn = document.getElementById('runBtn');
+      btn.disabled = true;
+      document.getElementById('runBtnIcon').innerHTML = '<span class="spin-ring" style="width:12px;height:12px;border-width:1.5px"></span>';
+      document.getElementById('runBtnText').textContent = 'Running';
+
+      appendLog('market', `prompt="${prompt}"`, 'll-dim');
+      if (tickers.length) appendLog('market', `tickers: [${tickers.join(', ')}]`, 'll-info');
+
+      try {
+        const response = await fetch(API + '/api/analyze', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ message: prompt, tickers }),
+        });
+        if (!response.ok) {
+          appendLog('audit', `❌ HTTP ${response.status}: ${await response.text()}`, 'll-err');
+          finishRun(); return;
+        }
+        const reader = response.body.getReader();
+        const decoder = new TextDecoder();
+        let sseBuf = '';
+        while (true) {
+          const { done, value } = await reader.read();
+          if (done) break;
+          const { events, buf } = parseSSE(decoder.decode(value, { stream: true }), sseBuf);
+          sseBuf = buf;
+          events.forEach(handleSSE);
+        }
+        if (sseBuf.trim()) parseSSE('\n', sseBuf).events.forEach(handleSSE);
+        if (STATE.running) {
+          finishRun();
+          appendLog('market', '⚠ Stream ended.', 'll-warn');
+          if (Object.keys(STATE.lastRunState).length) showReport(STATE.lastRunState);
+        }
+      } catch (err) {
+        finishRun();
+        appendLog('audit', `❌ Network error: ${err.message}`, 'll-err');
+        document.getElementById('healthDot').className = 'status-dot error';
+        document.getElementById('healthLabel').textContent = 'Unreachable';
+      }
+    }
+
+    document.getElementById('promptInput').addEventListener('keydown', e => {
+      if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); runPipeline(); }
+    });
+
+    // ── Static portfolio charts ────────────────────────────────────────
+    (function () {
+      // P&L line chart
+      const plData = [6.20, 6.28, 6.35, 6.42, 6.38, 6.55, 6.68, 6.52, 6.62, 6.72, 6.75, 6.65, 6.80];
+      const plLabels = ['Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec', 'Jan', 'Feb', 'Mar'];
+      const svgEl = document.getElementById('plChart');
+      if (svgEl) {
+        const W = svgEl.parentElement.clientWidth - 32 || 380;
+        const H = 160;
+        svgEl.setAttribute('height', H);
+        svgEl.setAttribute('viewBox', `0 0 ${W} ${H}`);
+        const pL = 46, pT = 8, pR = 6, pB = 24;
+        const cW = W - pL - pR, cH = H - pT - pB;
+        const minV = 6.1, maxV = 6.9, rng = maxV - minV;
+        const n = plData.length;
+        const px = i => pL + (i / (n - 1)) * cW, py = v => pT + cH - ((v - minV) / rng) * cH;
+        const pts = plData.map((v, i) => ({ x: px(i), y: py(v) }));
+        let h = '';
+        [6.2, 6.4, 6.6, 6.8].forEach(t => {
+          const y = py(t).toFixed(1);
+          h += `<line x1="${pL}" y1="${y}" x2="${pL + cW}" y2="${y}" stroke="rgba(0,0,0,0.05)" stroke-width="1"/>`;
+          h += `<text x="${pL - 5}" y="${(+y + 3.5).toFixed(1)}" font-size="9" fill="#86868B" text-anchor="end" font-family="-apple-system,sans-serif">S$${t}M</text>`;
+        });
+        const grad = `<defs><linearGradient id="plGrad" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#007AFF" stop-opacity="0.15"/><stop offset="100%" stop-color="#007AFF" stop-opacity="0.01"/></linearGradient></defs>`;
+        const aD = `M ${pts[0].x.toFixed(1)},${pts[0].y.toFixed(1)} `
+          + pts.slice(1).map(p => `L ${p.x.toFixed(1)},${p.y.toFixed(1)}`).join(' ')
+          + ` L ${pts[n - 1].x.toFixed(1)},${(pT + cH).toFixed(1)} L ${pts[0].x.toFixed(1)},${(pT + cH).toFixed(1)} Z`;
+        h += grad + `<path d="${aD}" fill="url(#plGrad)"/>`;
+        const lD = pts.map((p, i) => `${i === 0 ? 'M' : 'L'} ${p.x.toFixed(1)},${p.y.toFixed(1)}`).join(' ');
+        h += `<path d="${lD}" fill="none" stroke="#007AFF" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"/>`;
+        pts.forEach((p, i) => {
+          h += `<circle cx="${p.x.toFixed(1)}" cy="${p.y.toFixed(1)}" r="3" fill="#007AFF" stroke="white" stroke-width="1.5"/>`;
+          h += `<text x="${p.x.toFixed(1)}" y="${H - 4}" font-size="9" fill="#86868B" text-anchor="middle" font-family="-apple-system,sans-serif">${plLabels[i]}</text>`;
+        });
+        svgEl.innerHTML = h;
+      }
+
+      // Correlation heatmap
+      const tickers = ['MSFT', 'AAPL', 'NVDA', 'JNJ', 'AGG', 'GLD'];
+      const corr = [
+        [1.00, 0.82, 0.71, 0.21, -0.18, 0.04],
+        [0.82, 1.00, 0.68, 0.19, -0.22, 0.06],
+        [0.71, 0.68, 1.00, 0.14, -0.25, -0.03],
+        [0.21, 0.19, 0.14, 1.00, 0.11, 0.28],
+        [-0.18, -0.22, -0.25, 0.11, 1.00, 0.31],
+        [0.04, 0.06, -0.03, 0.28, 0.31, 1.00],
+      ];
+      const heatEl = document.getElementById('corrHeatmap');
+      if (heatEl) {
+        const bg = v => v >= 0
+          ? `rgba(0,122,255,${(0.1 + v * 0.85).toFixed(2)})`
+          : `rgba(255,59,48,${(0.1 + (-v) * 0.85).toFixed(2)})`;
+        const fg = v => Math.abs(v) > 0.45 ? '#fff' : '#1D1D1F';
+        let t = '<table class="corr-table"><thead><tr><th></th>';
+        tickers.forEach(tk => { t += `<th>${tk}</th>`; });
+        t += '</tr></thead><tbody>';
+        corr.forEach((row, i) => {
+          t += `<tr><td class="corr-th-row">${tickers[i]}</td>`;
+          row.forEach(v => { t += `<td class="corr-cell" style="background:${bg(v)};color:${fg(v)}">${v.toFixed(2)}</td>`; });
+          t += '</tr>';
+        });
+        t += '</tbody></table>';
+        heatEl.innerHTML = t;
+      }
+    })();
+  </script>
+</body>
+
+</html>

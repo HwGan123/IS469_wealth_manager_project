@@ -1,0 +1,470 @@
+"""
+graph/architecture_experiment/orchestrator_workflow.py
+=======================================================
+Orchestrator-Worker workflow architecture variant.
+
+Topology — hub-and-spoke
+-------------------------
+  START
+    │
+    ▼
+  orchestrator_agent  ◄─────────────────────────────────────────────────────┐
+    │                                                                         │
+    │  (conditional: state["next_worker"])                                    │
+    ├─► market_context_agent       ──────────────────────────────────────────┤
+    ├─► sentiment_agent            ──────────────────────────────────────────┤
+    ├─► investment_analyst_agent   ──────────────────────────────────────────┤
+    ├─► auditor_agent              ──────────────────────────────────────────┘
+    │
+    └─► report_generator_agent  ─► END
+
+How it works
+------------
+1. The orchestrator_agent is called first.  It uses an LLM (gpt-4o-mini) to
+   inspect the user query and decide which specialist worker to invoke.
+2. After any worker finishes its task, control returns to orchestrator_agent.
+3. The orchestrator re-reads the updated state (what has already been done,
+   what the auditor found, whether hallucination was detected) and decides the
+   next action — which could be another worker, a re-run, or the final report.
+4. This repeats until orchestrator_agent dispatches report_generator_agent,
+   which ends the workflow.
+
+Key differences from sequential / conditional
+----------------------------------------------
+* The orchestrator has full visibility of the state after every worker run
+  and can adapt its plan dynamically (e.g. retry analyst if hallucinating,
+  skip sentiment if not requested, skip auditor for simple queries).
+* Worker order is not fixed in the graph — the LLM decides.
+* A safety cap (MAX_ORCHESTRATOR_ITERATIONS) prevents runaway loops.
+
+create_orchestrator_graph() accepts an optional node_overrides dict so the
+experiment harness can inject timing/token-tracking wrappers.
+"""
+
+from __future__ import annotations
+
+import sys
+import textwrap
+from pathlib import Path
+from typing import Callable, Dict, List, Optional
+
+# ── Ensure project root is importable when this file is run directly ──────────
+_PROJECT_ROOT = Path(__file__).resolve().parents[2]
+if str(_PROJECT_ROOT) not in sys.path:
+    sys.path.insert(0, str(_PROJECT_ROOT))
+
+from dotenv import load_dotenv
+load_dotenv()
+
+from langgraph.graph import StateGraph, START, END
+
+from graph.architecture_experiment.state import ArchExperimentState
+from agents.market_context import market_context_node
+from agents.analyst import analyst_node
+from agents.sentiment_agent import sentiment_node
+from agents.auditor import auditor_node
+from agents.report_generator import report_generator_node
+
+
+# ── Constants ─────────────────────────────────────────────────────────────────
+
+MAX_ORCHESTRATOR_ITERATIONS: int = 8
+"""
+Safety cap on total orchestrator iterations per run.
+The orchestrator forces a route to report_generator_agent when this is reached.
+Set high enough to allow: market_context + analyst + sentiment + auditor
++ one potential re-run of each (4 + 4 = 8 iterations with orchestrator calls).
+"""
+
+_VALID_WORKERS: frozenset = frozenset({
+    "market_context_agent",
+    "sentiment_agent",
+    "investment_analyst_agent",
+    "auditor_agent",
+    "report_generator_agent",
+})
+
+
+# ── LLM prompts ───────────────────────────────────────────────────────────────
+
+_SYSTEM_PROMPT = textwrap.dedent("""
+    You are the central orchestrator of a wealth management AI system.
+
+    Your role is to understand the user's request and dynamically coordinate
+    specialist workers — one at a time — until the user's question is fully
+    answered.  After each worker completes, you will be called again with the
+    updated state so you can decide what to do next.
+
+    AVAILABLE WORKERS
+    -----------------
+    market_context_agent
+        Fetches live market data via external tools:
+        recent news, earnings, analyst ratings, SEC 10-K / 10-Q filings.
+        Use when the query involves specific stock tickers or needs current data.
+
+    sentiment_agent
+        Runs FinBERT sentiment analysis on news headlines for the tickers.
+        Use when the query asks about market sentiment, bullish/bearish signals,
+        or when you want sentiment to inform the investment analysis.
+
+    investment_analyst_agent
+        Writes a comprehensive investment analysis report using both RAG
+        (historical 10-K context) and any market data already gathered.
+        This is required before auditor_agent can run.
+
+    auditor_agent
+        Fact-checks the investment analysis against 10-K context and computes
+        RAGAS metrics.  Only run this after investment_analyst_agent.
+        If hallucination is detected, you may re-run market_context_agent or
+        investment_analyst_agent to correct the analysis (within iteration limits).
+
+    report_generator_agent
+        Formats and delivers the final report to the user.
+        Call this LAST — once analysis (and ideally auditing) is complete.
+        Choosing this worker ends the entire workflow.
+
+    DECISION RULES
+    --------------
+    1. Never call a worker that has already completed successfully and does not
+       need to be re-run (use the completed_workers list as your guide).
+    2. Call market_context_agent before investment_analyst_agent when live data
+       will improve the analysis (i.e. when tickers are present).
+    3. Call sentiment_agent when the user asks about sentiment or when richer
+       sentiment context is valuable for the analysis.
+    4. Always call investment_analyst_agent before auditor_agent.
+    5. If the auditor detected hallucination AND the iteration count is still
+       low, consider re-running market_context_agent (for fresh data) or
+       investment_analyst_agent (to rewrite the report with better grounding).
+    6. Call report_generator_agent when you are satisfied with the analysis
+       quality — or when the iteration cap is near.
+
+    Respond with ONLY the exact worker name, nothing else.
+    Valid responses: market_context_agent | sentiment_agent |
+                     investment_analyst_agent | auditor_agent |
+                     report_generator_agent
+""").strip()
+
+_HUMAN_PROMPT = textwrap.dedent("""
+    USER QUERY   : {query}
+    TICKERS      : {tickers}
+    ITERATION    : {iteration} / {max_iter}
+
+    COMPLETED WORKERS : {completed}
+
+    CURRENT STATE
+    -------------
+    Live market data gathered : {has_market_context}
+    Sentiment analysis done   : {has_sentiment}
+    Draft report written      : {has_draft}
+    Audit completed           : {has_audit}
+    Hallucination detected    : {is_hallucinating}
+    Audit score               : {audit_score}
+
+    Which worker should run next?
+""").strip()
+
+
+# ── Orchestrator agent node ───────────────────────────────────────────────────
+
+def orchestrator_agent_node(state: ArchExperimentState) -> dict:
+    """
+    Central orchestrator — called at the start and after every worker finishes.
+
+    Inspects the current state to determine what has already been done, then
+    uses GPT-4o-mini to decide which worker to invoke next.  The decision is
+    written to state["next_worker"] and the conditional edge routes there.
+
+    Falls back to deterministic logic if the LLM call fails.
+    """
+    print("--- AGENT: ORCHESTRATOR (dynamic planner) ---")
+
+    iteration: int = state.get("orchestrator_iteration", 0) + 1
+
+    # ── Safety cap: force final report when close to limit ────────────────────
+    if iteration > MAX_ORCHESTRATOR_ITERATIONS:
+        print(f"  Iteration cap ({MAX_ORCHESTRATOR_ITERATIONS}) reached — finalising.")
+        return {
+            "next_worker":            "report_generator_agent",
+            "orchestrator_iteration": iteration,
+            "messages":               [f"Orchestrator: cap reached — routing to reporter."],
+        }
+
+    # ── Build a human-readable state summary for the LLM ─────────────────────
+    completed: List[str] = []
+    if state.get("market_context"):
+        completed.append("market_context_agent")
+    if state.get("sentiment_summary"):
+        completed.append("sentiment_agent")
+    if state.get("draft_report"):
+        completed.append("investment_analyst_agent")
+    if state.get("audit_score", 0.0) > 0.0:
+        completed.append("auditor_agent")
+
+    messages: list = state.get("messages", [])
+    query: str = str(messages[0]) if messages else ""
+    tickers: List[str] = state.get("tickers", [])
+
+    human_text = _HUMAN_PROMPT.format(
+        query=query,
+        tickers=", ".join(tickers) if tickers else "(none)",
+        iteration=iteration,
+        max_iter=MAX_ORCHESTRATOR_ITERATIONS,
+        completed=", ".join(completed) if completed else "none",
+        has_market_context=bool(state.get("market_context")),
+        has_sentiment=bool(state.get("sentiment_summary")),
+        has_draft=bool(state.get("draft_report")),
+        has_audit=state.get("audit_score", 0.0) > 0.0,
+        is_hallucinating=state.get("is_hallucinating", False),
+        audit_score=round(state.get("audit_score", 0.0), 2),
+    )
+
+    # ── LLM call ──────────────────────────────────────────────────────────────
+    next_worker: str = _fallback_decision(state, completed)
+    reason: str = "fallback"
+
+    try:
+        from langchain_openai import ChatOpenAI  # noqa: E402
+        from langchain_core.messages import SystemMessage, HumanMessage  # noqa: E402
+
+        llm = ChatOpenAI(model="gpt-4o-mini", temperature=0)
+        response = llm.invoke([
+            SystemMessage(content=_SYSTEM_PROMPT),
+            HumanMessage(content=human_text),
+        ])
+        candidate: str = response.content.strip().lower().replace(" ", "_")
+
+        if candidate in _VALID_WORKERS:
+            next_worker = candidate
+            reason = "llm"
+        else:
+            print(f"  [warn] LLM returned unknown worker '{candidate}' — using fallback.")
+
+    except Exception as exc:
+        print(f"  [warn] Orchestrator LLM call failed ({exc}) — using fallback decision.")
+
+    print(f"  → Iteration {iteration}: dispatching {next_worker} (reason={reason})")
+
+    return {
+        "next_worker":            next_worker,
+        "orchestrator_iteration": iteration,
+        "messages":               [f"Orchestrator (iter {iteration}): → {next_worker}"],
+        "trace": [{
+            "agent":     "orchestrator",
+            "decision":  next_worker,
+            "iteration": iteration,
+            "reason":    reason,
+        }],
+    }
+
+
+def _fallback_decision(state: dict, completed: List[str]) -> str:
+    """
+    Rule-based fallback used when the LLM call fails.
+    Mirrors the logic that a well-behaved LLM should follow.
+    """
+    tickers = state.get("tickers", [])
+
+    # 1. Fetch live data first if tickers present
+    if tickers and "market_context_agent" not in completed:
+        return "market_context_agent"
+
+    # 2. Sentiment after market context, before analyst
+    if "sentiment_agent" not in completed:
+        return "sentiment_agent"
+
+    # 3. Write the investment analysis
+    if "investment_analyst_agent" not in completed:
+        return "investment_analyst_agent"
+
+    # 4. Audit the draft if not yet audited
+    if "auditor_agent" not in completed:
+        return "auditor_agent"
+
+    # 4. Re-run analyst if hallucinating and room allows
+    if state.get("is_hallucinating") and state.get("orchestrator_iteration", 0) < 6:
+        return "investment_analyst_agent"
+
+    # 5. Finish
+    return "report_generator_agent"
+
+
+# ── Routing function ──────────────────────────────────────────────────────────
+
+def _dispatch_route(state: ArchExperimentState) -> str:
+    """Read next_worker from state; default to report_generator on unknown value."""
+    worker = state.get("next_worker", "report_generator_agent")
+    if worker not in _VALID_WORKERS:
+        print(f"  [warn] Unknown next_worker='{worker}' — defaulting to reporter.")
+        return "report_generator_agent"
+    return worker
+
+
+# ── Graph factory ─────────────────────────────────────────────────────────────
+
+def create_orchestrator_graph(
+    node_overrides: Optional[Dict[str, Callable]] = None,
+):
+    """
+    Build and compile the orchestrator-worker hub-and-spoke LangGraph.
+
+    Parameters
+    ----------
+    node_overrides:
+        Optional dict mapping node names to replacement callables.  Used by
+        the experiment harness to inject per-node timing and token-tracking
+        wrappers without modifying this file.
+
+        Valid keys:
+          "orchestrator_agent", "market_context_agent",
+          "investment_analyst_agent", "sentiment_agent",
+          "auditor_agent", "report_generator_agent"
+
+    Returns
+    -------
+    A compiled ``CompiledGraph`` ready to call with ``.invoke()`` or
+    ``.stream()``.
+
+    Example
+    -------
+    >>> app = create_orchestrator_graph()
+    >>> initial = make_initial_state("Analyze AAPL and MSFT", tickers=["AAPL", "MSFT"])
+    >>> result = app.invoke(initial)
+    >>> print(result["final_report"])
+    """
+    nodes: Dict[str, Callable] = {
+        "orchestrator_agent":         orchestrator_agent_node,
+        "market_context_agent":       market_context_node,
+        "investment_analyst_agent":   analyst_node,
+        "sentiment_agent":            sentiment_node,
+        "auditor_agent":              auditor_node,
+        "report_generator_agent":     report_generator_node,
+    }
+    if node_overrides:
+        nodes.update(node_overrides)
+
+    workflow = StateGraph(ArchExperimentState)
+
+    # ── Register all nodes ────────────────────────────────────────────────────
+    for name, fn in nodes.items():
+        workflow.add_node(name, fn)
+
+    # ── Entry: always start at orchestrator ───────────────────────────────────
+    workflow.add_edge(START, "orchestrator_agent")
+
+    # ── Orchestrator dispatches to any worker ─────────────────────────────────
+    workflow.add_conditional_edges(
+        "orchestrator_agent",
+        _dispatch_route,
+        {
+            "market_context_agent":     "market_context_agent",
+            "sentiment_agent":          "sentiment_agent",
+            "investment_analyst_agent": "investment_analyst_agent",
+            "auditor_agent":            "auditor_agent",
+            "report_generator_agent":   "report_generator_agent",
+        },
+    )
+
+    # ── Workers return to orchestrator (hub-and-spoke) ────────────────────────
+    workflow.add_edge("market_context_agent",       "orchestrator_agent")
+    workflow.add_edge("sentiment_agent",            "orchestrator_agent")
+    workflow.add_edge("investment_analyst_agent",   "orchestrator_agent")
+    workflow.add_edge("auditor_agent",              "orchestrator_agent")
+
+    # ── Report generator is terminal ──────────────────────────────────────────
+    workflow.add_edge("report_generator_agent", END)
+
+    return workflow.compile()
+
+
+# ── Initial-state factory ─────────────────────────────────────────────────────
+
+def make_initial_state(
+    query: str,
+    tickers: List[str],
+    ground_truth: str = "",
+    portfolio_weights: dict = None,
+) -> dict:
+    """
+    Build a fully-initialised state dict for one orchestrator-worker run.
+
+    Parameters
+    ----------
+    query:
+        The user's natural-language investment question / request.
+    tickers:
+        Pre-extracted ticker symbols.  Passed to the orchestrator so it can
+        decide whether live market data is needed (no separate router node).
+    ground_truth:
+        Optional reference answer for RAGAS context-recall.
+    portfolio_weights:
+        Optional ticker→weight mapping for portfolio-aware analysis.
+    """
+    return {
+        # ── Input ──────────────────────────────────────────────────────────────
+        "messages":              [query],
+        "tickers":               list(tickers),
+        "route_target":          "",   # unused in this variant
+
+        # ── Orchestrator state ──────────────────────────────────────────────────
+        "next_worker":           "",
+        "orchestrator_iteration": 0,
+
+        # ── Market context ──────────────────────────────────────────────────────
+        "market_context":        {},
+        "live_data_context":     "",
+
+        # ── Analyst ─────────────────────────────────────────────────────────────
+        "retrieved_context":     "",
+        "draft_report":          "",
+        "portfolio_weights":     portfolio_weights or {},
+
+        # ── Sentiment ───────────────────────────────────────────────────────────
+        "news_articles":         [],
+        "sentiment_results":     [],
+        "sentiment_summary":     {},
+        "sentiment_score":       0.0,
+
+        # ── Auditor ─────────────────────────────────────────────────────────────
+        "audit_score":           0.0,
+        "audit_findings":        [],
+        "is_hallucinating":      False,
+        "hallucination_count":   0,
+        "verified_count":        0,
+        "unsubstantiated_count": 0,
+        "ragas_metrics":         {},
+        "ground_truth":          ground_truth,
+        "audit_iteration_count": 0,
+
+        # ── Report ───────────────────────────────────────────────────────────────
+        "final_report":          "",
+
+        # ── Trace (appended by every agent node) ──────────────────────────────
+        "trace":                 [],
+    }
+
+
+# ── Node registry (exported for experiment instrumentation) ──────────────────
+
+ORCHESTRATOR_NODES: Dict[str, Callable] = {
+    "orchestrator_agent":           orchestrator_agent_node,
+    "market_context_agent":         market_context_node,
+    "investment_analyst_agent":     analyst_node,
+    "sentiment_agent":              sentiment_node,
+    "auditor_agent":                auditor_node,
+    "report_generator_agent":       report_generator_node,
+}
+"""
+Ordered dict of {node_name: callable} for all nodes in this workflow.
+Imported by the experiment harness to wrap nodes for timing/token tracking
+without duplicating the node list in two places.
+"""
+
+
+# ── Quick smoke-test (run directly: python orchestrator_workflow.py) ──────────
+
+if __name__ == "__main__":
+    print("Building orchestrator-worker workflow graph ...")
+    app = create_orchestrator_graph()
+    print("Graph compiled successfully.")
+    print("\nMermaid diagram:")
+    print(app.get_graph().draw_mermaid())

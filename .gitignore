@@ -1,0 +1,68 @@
+# Virtual environment
+.venv/
+
+# Environment variables (contains API keys)
+.env
+
+# Claude Code settings
+.claude/
+
+# Python cache
+__pycache__/
+*.py[cod]
+*.pyo
+
+# Jupyter
+.ipynb_checkpoints/
+*.ipynb_checkpoints
+
+# Model training outputs & adapters (large binary files)
+outputs/
+qlora_adapters/
+
+# Saved model weights (host on Hugging Face instead)
+experiments/sentiment_agent/saved_models/
+
+# Training data (downloaded at runtime)
+Sentences_75Agree.txt
+
+# Generated plots
+fpb_class_imbalance.png
+gold_class_distribution.png
+
+# uv lock (optional — remove this line if you want to commit it)
+# uv.lock
+.venv/
+venv/
+.venv_rag/
+__pycache__/
+*.pyc
+
+# Local secrets
+.env
+.env.*
+!.env.example
+
+# RAG generated artifacts
+chroma_db/
+# apple
+rag/aapl_10k_embeddings.json
+rag/aapl_10k_chunks.jsonl
+rag/aapl_10k_2025.htm
+# amazon
+rag/amzn_10k_embeddings.json
+rag/amzn_10k_chunks.jsonl
+rag/amzn_10k_2025.htm
+# google
+rag/goog_10k_embeddings.json
+rag/goog_10k_chunks.jsonl
+rag/goog_10k_2025.htm
+# microsoft
+rag/msft_10k_embeddings.json
+rag/msft_10k_chunks.jsonl
+rag/msft_10k_2025.htm
+# nvidia
+rag/nvda_10k_embeddings.json
+rag/nvda_10k_chunks.jsonl
+rag/nvda_10k_2025.htm
+

@@ -1,0 +1,4 @@
+Context Type,Total Questions,Hallucinations Detected,Detection Rate (%),Avg Hallucinations per Question,Quality Score (higher is better)
+10K Only,50,2,4.0%,1.00,96.0
+10K Live,50,2,4.0%,1.00,96.0
+Live Only,50,0,0.0%,0.00,100.0

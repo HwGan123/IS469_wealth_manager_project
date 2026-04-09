@@ -1,0 +1,19 @@
+Metric,Variant A (Agentic),Variant B (Parallel),Variant C (No Agent)
+Latency (s),80.69,57.55,49.85
+Total Tokens (Breakdown),Anthropic: 10072 | OpenAI: 46252,Anthropic: 0 | OpenAI: 31791,Anthropic: 0 | OpenAI: 23446
+Anthropic Tokens,10072,0,0
+OpenAI Tokens,46252,31791,23446
+Combined Input Tokens,51587,28793,20465
+Combined Output Tokens,4737,2998,2981
+Relevance,YES (0/0),YES (0/0),YES (0/0)
+Tools Fetched,Smart Selection,6/6,None
+,,,
+Judge: Coherence,5,5,4
+Judge: Completeness,4,4,4
+Judge: Financial Accuracy,4,4,3
+Judge: Analysis Depth,4,4,4
+Judge: Portfolio Relevance,4,4,4
+Judge: Data Recency,4,4,2
+Judge: Market Context Integration,4,4,2
+Judge: Execution Efficiency,4,2,1
+Judge: Overall Quality (avg),4.12,3.88,3.0

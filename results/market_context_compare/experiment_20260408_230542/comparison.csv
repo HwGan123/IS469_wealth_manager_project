@@ -1,0 +1,15 @@
+Metric,Variant A (Central),Variant B (No Tools),Variant C (Distributed)
+Latency (s),162.34,31.00,39.65
+Audit Score (0-100),0.9,0.3,0.3
+Verified Claims,4,0,0
+Unsubstantiated Claims,6,4,6
+Freshness,YES (4/10),NO (0/4),NO (0/6)
+Relevance,YES (2/2),YES (2/2),YES (2/2)
+Tools Called,All tools (upfront),None,0 tools
+,,,
+Judge: Coherence,4,4,4
+Judge: Completeness,4,3,3
+Judge: Financial Accuracy,2,3,3
+Judge: Analysis Depth,3,2,2
+Judge: Portfolio Relevance,4,2,2
+Judge: Overall Quality (avg),3.4,2.8,2.8

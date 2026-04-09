@@ -1,0 +1,15 @@
+Metric,Variant A (Agentic),Variant E (Parallel),Variant B (No Tools)
+Latency (s),136.80,57.36,42.25
+Audit Score (0-100),0.9,0.3,0.3
+Verified Claims,2,0,0
+Unsubstantiated Claims,8,10,7
+Freshness,PARTIAL (2/10),NO (0/10),NO (0/7)
+Relevance,YES (2/2),YES (2/2),YES (2/2)
+Tools Fetched,Smart Selection,6/6,None
+,,,
+Judge: Coherence,5,4,4
+Judge: Completeness,5,4,3
+Judge: Financial Accuracy,3,2,3
+Judge: Analysis Depth,4,2,2
+Judge: Portfolio Relevance,4,3,2
+Judge: Overall Quality (avg),4.2,3.0,2.8

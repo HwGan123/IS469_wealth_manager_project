@@ -1,0 +1,130 @@
+{
+  "timestamp": "2026-04-09T13:52:05.788062",
+  "prompt": "Provide comprehensive financial analysis for AAPL, NVDA with investment recommendations.",
+  "tickers": [
+    "AAPL",
+    "NVDA"
+  ],
+  "variants": {
+    "A_agentic": {
+      "latency_seconds": 101.4748022556305,
+      "token_usage": {
+        "anthropic_market_context": {
+          "input_tokens": 27981,
+          "output_tokens": 4625
+        },
+        "openai_agents": {
+          "input_tokens": 28801,
+          "output_tokens": 2957
+        }
+      },
+      "costs": {
+        "anthropic_market_context": 0.0511,
+        "openai_agents": 0.2474,
+        "total": 0.2985
+      },
+      "relevance": "YES (2/2)",
+      "judge_scores": {
+        "coherence": 5,
+        "completeness": 4,
+        "financial_accuracy": 4,
+        "analysis_depth": 4,
+        "portfolio_relevance": 4,
+        "data_recency": 4,
+        "market_context_integration": 4,
+        "overall_quality": 4.14,
+        "feedback": "The report is well-structured and maintains a professional tone throughout, providing a comprehensive analysis of both companies. However, it lacks some specific portfolio weights and has a few unsubstantiated claims that could be better supported with data."
+      },
+      "report_preview": "# Final Wealth Manager Report\n\n## Agent Summary\n- Tickers: AAPL, NVDA\n- Sentiment score: -0.20\n- Audit score: 0.35\n- Audit verdict: REVIEW REQUIRED\n\n## Investment Analysis\n# Investment Report\n\n## Executive Summary\nThis report provides a comprehensive analysis of the current investment landscape for Apple Inc. (AAPL) and NVIDIA Corporation (NVDA) within the context of a bearish sentiment score of -0.2. Despite recent positive developments, both companies face significant risks and headwinds that ..."
+    },
+    "B_parallel": {
+      "latency_seconds": 49.69061470031738,
+      "parallel_fetch_latency": 2.8942370414733887,
+      "token_usage": {
+        "anthropic_market_context": {
+          "input_tokens": 0,
+          "output_tokens": 0
+        },
+        "openai_agents": {
+          "input_tokens": 28874,
+          "output_tokens": 3073
+        }
+      },
+      "costs": {
+        "anthropic_market_context": 0.0,
+        "openai_agents": 0.2507,
+        "total": 0.2507
+      },
+      "relevance": "YES (2/2)",
+      "tools_fetched": 6,
+      "execution_mode": "Parallel (all 6 tools)",
+      "judge_scores": {
+        "coherence": 5,
+        "completeness": 4,
+        "financial_accuracy": 4,
+        "analysis_depth": 4,
+        "portfolio_relevance": 4,
+        "data_recency": 4,
+        "market_context_integration": 4,
+        "overall_quality": 4.14,
+        "feedback": "The report is well-structured and maintains a professional tone throughout, providing a coherent analysis of both companies. While it covers most key metrics and offers actionable insights, it could benefit from more detailed substantiation of claims and a clearer specification of portfolio weights."
+      },
+      "report_preview": "# Final Wealth Manager Report\n\n## Agent Summary\n- Tickers: AAPL, NVDA\n- Sentiment score: -0.20\n- Audit score: 0.35\n- Audit verdict: REVIEW REQUIRED\n\n## Investment Analysis\n# Investment Report\n\n## Executive Summary\nThis report provides an analysis of the current investment landscape for Apple Inc. (AAPL) and NVIDIA Corporation (NVDA) amidst a bearish sentiment score of -0.2. The analysis synthesizes insights from both historical 10-K data and recent market developments, highlighting risks and hea..."
+    },
+    "C_no_agent": {
+      "latency_seconds": 47.12525129318237,
+      "token_usage": {
+        "anthropic_market_context": {
+          "input_tokens": 0,
+          "output_tokens": 0
+        },
+        "openai_agents": {
+          "input_tokens": 20507,
+          "output_tokens": 2971
+        }
+      },
+      "costs": {
+        "anthropic_market_context": 0.0,
+        "openai_agents": 0.1972,
+        "total": 0.1972
+      },
+      "relevance": "YES (2/2)",
+      "judge_scores": {
+        "coherence": 4,
+        "completeness": 4,
+        "financial_accuracy": 3,
+        "analysis_depth": 4,
+        "portfolio_relevance": 4,
+        "data_recency": 3,
+        "market_context_integration": 3,
+        "overall_quality": 3.57,
+        "feedback": "The report is well-structured and maintains a professional tone, though it could benefit from clearer organization in some sections. While it covers key elements and provides actionable insights, the financial accuracy and integration of recent market developments could be improved for a more robust analysis."
+      },
+      "report_preview": "# Final Wealth Manager Report\n\n## Agent Summary\n- Tickers: AAPL, NVDA\n- Sentiment score: -0.20\n- Audit score: 0.35\n- Audit verdict: REVIEW REQUIRED\n\n## Investment Analysis\n# Investment Report\n\n## Executive Summary\nThe current sentiment surrounding the portfolio, which includes AAPL and NVDA, is bearish with a sentiment score of -0.2. This report synthesizes insights from the latest 10-K filings and highlights potential risks and headwinds that could impact the performance of these stocks. Given ..."
+    }
+  },
+  "comparison": {
+    "A_vs_C": {
+      "latency_delta_seconds": 54.34955096244812,
+      "latency_percent_change": 115.3299971268501,
+      "token_delta": 40886,
+      "cost_delta": 0.1013,
+      "quality_score_delta": 0.5699999999999998
+    },
+    "B_vs_C": {
+      "latency_delta_seconds": 2.5653634071350098,
+      "latency_percent_change": 5.443712949507692,
+      "token_delta": 8469,
+      "cost_delta": 0.05349999999999999,
+      "quality_score_delta": 0.5699999999999998
+    },
+    "A_vs_B": {
+      "latency_delta_seconds": 51.78418755531311,
+      "latency_percent_change": 104.21321585096501,
+      "token_delta": 32417,
+      "cost_delta": 0.04780000000000001,
+      "quality_score_delta": 0.0,
+      "parallel_fetch_time": 2.8942370414733887
+    }
+  }
+}

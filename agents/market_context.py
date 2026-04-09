@@ -8,20 +8,57 @@ available to all downstream agents via the shared state.
 Claude autonomously decides which tools to call based on the user's request and
 portfolio tickers, eliminating redundant API calls and ensuring all agents work
 with consistent, up-to-date market context.
+
+Uses Model Context Protocol (MCP) with Anthropic SDK for proper tool integration.
 """
 
 import os
 import json
+import subprocess
+import time
+import asyncio
 import anthropic
 from dotenv import load_dotenv
 from graph.state import WealthManagerState
-from mcp_news import get_mcp_tools, dispatch_mcp_tool
 import logging
 
 # Load environment variables
 load_dotenv()
 
 logger = logging.getLogger(__name__)
+
+# Global MCP server process
+_mcp_server_process = None
+
+
+def _start_mcp_server():
+    """
+    Start the MCP server as a subprocess.
+    
+    Returns:
+        subprocess.Popen: The server process
+    """
+    global _mcp_server_process
+    
+    if _mcp_server_process and _mcp_server_process.poll() is None:
+        logger.info("MCP server already running")
+        return _mcp_server_process
+    
+    logger.info("Starting MCP server...")
+    try:
+        _mcp_server_process = subprocess.Popen(
+            ["python", "mcp_server.py"],
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+            text=True,
+            cwd=os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+        )
+        time.sleep(2)  # Give server time to start
+        logger.info("✓ MCP server started (PID: {})".format(_mcp_server_process.pid))
+        return _mcp_server_process
+    except Exception as e:
+        logger.error(f"Failed to start MCP server: {e}")
+        raise
 
 
 def _summarize_tool_result(tool_name: str, result: dict) -> dict:

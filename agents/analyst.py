@@ -39,7 +39,7 @@ retriever = vectorstore.as_retriever(search_kwargs={"k": 3})
 
 
 # Setup the Analyst LLM
-analyst_llm = ChatOpenAI(model="gpt-4o", temperature=0.2)
+analyst_llm = ChatOpenAI(model="gpt-4o-mini", temperature=0.2)
 
 # Setup Anthropic client for MCP-based live data fetching (used only if USE_MCP_TOOLS=True)
 anthropic_client = anthropic.Anthropic(api_key=os.environ.get("ANTHROPIC_API_KEY"))

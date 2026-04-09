@@ -319,9 +319,9 @@ def auditor_node(state: WealthManagerState) -> dict:
     
     # Combine both contexts for comprehensive validation
     # This allows RAGAS to verify both historical (10-K) and live market data claims
-    USE_COMBINED_CONTEXT = True
+    USE_COMBINED_CONTEXT = False
     USE_RETREIVED_CONTEXT_ONLY = False  # For strict auditing of 10-K claims only
-    USE_LIVE_CONTEXT_ONLY = False  # Not recommended, as it may miss verifying historical claims
+    USE_LIVE_CONTEXT_ONLY = True  # Not recommended, as it may miss verifying historical claims
     if USE_COMBINED_CONTEXT:
         combined_context = f"{retrieved_context}\n\n--- LIVE MARKET DATA ---\n{live_data_context}"
     elif USE_RETREIVED_CONTEXT_ONLY:

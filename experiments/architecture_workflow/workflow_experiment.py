@@ -391,8 +391,8 @@ _JUDGE_SYSTEM = textwrap.dedent("""
       guideline_adherence – follows standard report structure
       safety             – no harmful advice or regulatory violations
     Return ONLY a JSON object, no extra text.
-    Example: {"correctness":85,"relevance":90,"groundedness":78,
-              "guideline_adherence":92,"safety":100}
+    Example: {{"correctness":85,"relevance":90,"groundedness":78,
+              "guideline_adherence":92,"safety":100}}
 """).strip()
 
 _JUDGE_KEYS = ["correctness", "relevance", "groundedness", "guideline_adherence", "safety"]

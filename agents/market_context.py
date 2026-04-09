@@ -9,56 +9,22 @@ Claude autonomously decides which tools to call based on the user's request and
 portfolio tickers, eliminating redundant API calls and ensuring all agents work
 with consistent, up-to-date market context.
 
-Uses Model Context Protocol (MCP) with Anthropic SDK for proper tool integration.
+Uses Model Context Protocol (MCP) with official MCP Python SDK for proper integration.
 """
 
 import os
 import json
-import subprocess
-import time
+from anthropic import Anthropic
 import asyncio
-import anthropic
 from dotenv import load_dotenv
 from graph.state import WealthManagerState
 import logging
+import httpx
 
 # Load environment variables
 load_dotenv()
 
 logger = logging.getLogger(__name__)
-
-# Global MCP server process
-_mcp_server_process = None
-
-
-def _start_mcp_server():
-    """
-    Start the MCP server as a subprocess.
-    
-    Returns:
-        subprocess.Popen: The server process
-    """
-    global _mcp_server_process
-    
-    if _mcp_server_process and _mcp_server_process.poll() is None:
-        logger.info("MCP server already running")
-        return _mcp_server_process
-    
-    logger.info("Starting MCP server...")
-    try:
-        _mcp_server_process = subprocess.Popen(
-            ["python", "mcp_server.py"],
-            stdout=subprocess.PIPE,
-            stderr=subprocess.PIPE,
-            text=True,
-            cwd=os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-        )
-        time.sleep(2)  # Give server time to start
-        logger.info("✓ MCP server started (PID: {})".format(_mcp_server_process.pid))
-        return _mcp_server_process
-    except Exception as e:
-        logger.error(f"Failed to start MCP server: {e}")
-        raise
 
 
 def _summarize_tool_result(tool_name: str, result: dict) -> dict:
@@ -128,13 +94,9 @@ def _summarize_tool_result(tool_name: str, result: dict) -> dict:
 
 def market_context_node(state: WealthManagerState) -> dict:
     """
-    Fetch and cache market context data for the portfolio companies using MCP.
+    Fetch and cache market context data using official MCP Python SDK.
     
-    Uses the Model Context Protocol with Anthropic SDK:
-    - Starts MCP server as subprocess
-    - Connects via MCPClient (Option 1: proper MCP integration)
-    - Fetches tools from MCP server
-    - Claude autonomously decides which tools to call
+    Connects to MCP server via stdio and uses Claude with MCP tools autonomously.
     
     Args:
         state: Current workflow state containing portfolio tickers, user messages, config
@@ -162,51 +124,94 @@ def market_context_node(state: WealthManagerState) -> dict:
             "audit_iteration_count": state.get("audit_iteration_count", 0)
         }
     
-    # Start MCP server
+    # Run the async MCP operation
     try:
-        _start_mcp_server()
+        market_context_result = asyncio.run(_fetch_market_context_with_mcp(state, api_key))
+        return market_context_result
     except Exception as e:
-        logger.warning(f"Could not start MCP server: {e}. Falling back to direct mode.")
+        logger.error(f"Error running market context with MCP: {e}")
+        return {
+            "market_context": {"error": str(e)},
+            "audit_iteration_count": state.get("audit_iteration_count", 0)
+        }
+
+
+async def _fetch_market_context_with_mcp(state: WealthManagerState, api_key: str) -> dict:
+    """
+    Async helper to fetch market context using HTTP calls to MCP server.
     
-    logger.info(f"Market Context Agent (MCP): Gathering market data for {tickers}")
-    
-    client = anthropic.Anthropic(api_key=api_key)
+    Connects to MCP server via HTTP, fetches tools, and runs Claude agentic loop.
+    """
+    tickers = state.get("tickers", [])
     messages = state.get("messages", ["Analyze portfolio"])
     user_request = messages[0] if isinstance(messages, list) else str(messages)
     
-    # Check if anthropic SDK has MCPClient (Option 1: Recommended)
-    try:
-        from anthropic.mcp import MCPClient
-        logger.info("✓ Using Anthropic SDK's MCPClient (proper MCP integration)")
-        
-        # Create MCP client pointing to our server
-        # The MCP server is running on stdio, so we use it directly
-        mcp_client = MCPClient(
-            server="stdio",
-            command=["python", "mcp_server.py"],
-            cwd=os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-        )
-        
-        # Fetch tools from MCP server
-        tools = []
-        try:
-            tools_from_server = asyncio.run(mcp_client.get_tools())
-            tools = tools_from_server if tools_from_server else []
-            logger.info(f"  Fetched {len(tools)} tools from MCP server")
-        except Exception as e:
-            logger.warning(f"Could not fetch tools from MCP server: {e}")
-            tools = []
-        
-        use_mcp_client = True
-    except (ImportError, Exception) as e:
-        logger.info(f"⚠ MCPClient not available: {e}. Using direct dispatch mode")
-        # Fall back to direct mode (old behavior)
-        from mcp_news import get_mcp_tools, dispatch_mcp_tool
-        tools = get_mcp_tools()
-        use_mcp_client = False
-        mcp_client = None
+    logger.info(f"Market Context Agent (HTTP): Gathering market data for {tickers}")
     
-    # Build prompt for Claude
+    # Connect to MCP server via HTTP
+    mcp_server_url = "http://localhost:3000"
+    
+    try:
+        logger.info(f"Connecting to MCP server at {mcp_server_url}...")
+        
+        async with httpx.AsyncClient(timeout=60.0) as client:
+            # Check server health
+            logger.info("Step 1: Checking server health...")
+            health_resp = await client.get(f"{mcp_server_url}/health")
+            if health_resp.status_code != 200:
+                raise Exception(f"Server health check failed: {health_resp.status_code}")
+            logger.info("  ✓ Server is healthy")
+            
+            # List available tools
+            logger.info("Step 2: Fetching available tools...")
+            tools_resp = await client.get(f"{mcp_server_url}/tools")
+            tools_resp.raise_for_status()
+            tools_data = tools_resp.json()
+            
+            # Extract tools from response
+            if isinstance(tools_data, dict) and "tools" in tools_data:
+                tools = tools_data["tools"]
+            else:
+                tools = tools_data if isinstance(tools_data, list) else []
+            
+            logger.info(f"  ✓ Found {len(tools)} tools: {', '.join([t['name'] for t in tools])}")
+            
+            logger.info("Step 3: Starting Claude agentic loop...")
+            # Run Claude agentic loop
+            market_context = await _run_claude_with_mcp_http(
+                client, mcp_server_url, api_key, tickers, user_request, tools
+            )
+            
+            logger.info("Step 4: Claude loop completed")
+            market_context["_mcp_enabled"] = True
+            market_context["_mcp_transport"] = "HTTP"
+            return {
+                "market_context": market_context,
+                "audit_iteration_count": state.get("audit_iteration_count", 0)
+            }
+        
+    except Exception as e:
+        logger.error(f"Failed to connect to MCP server at {mcp_server_url}: {e}", exc_info=True)
+        logger.info("Make sure to start the MCP HTTP server in a separate terminal:")
+        logger.info("  python mcp_http_server.py")
+        raise
+
+
+async def _run_claude_with_mcp_http(
+    http_client: httpx.AsyncClient,
+    mcp_url: str,
+    api_key: str,
+    tickers: list,
+    user_request: str,
+    tools: list
+) -> dict:
+    """
+    Run Claude agentic loop with HTTP-based MCP tool calls.
+    
+    Claude autonomously decides which tools to call via HTTP.
+    """
+    client = Anthropic(api_key=api_key)
+    
     prompt = f"""You are a comprehensive financial research agent. Your task is to gather detailed 
 market context and financial data for investment analysis.
 
@@ -224,8 +229,6 @@ Use the available tools strategically:
 Decide which tools are most relevant. Fetch data efficiently. Synthesize into a clear summary."""
     
     messages_list = [{"role": "user", "content": prompt}]
-    
-    # Agentic loop
     market_context = {}
     tools_used = []
     max_iterations = 3
@@ -235,69 +238,115 @@ Decide which tools are most relevant. Fetch data efficiently. Synthesize into a 
     
     while iteration < max_iterations:
         iteration += 1
-        logger.info(f"  Iteration {iteration}: Calling Claude...")
+        logger.info(f"  → Claude iteration {iteration}/{max_iterations}")
         
-        response = client.messages.create(
-            model="claude-haiku-4-5-20251001",
-            max_tokens=4096,
-            tools=tools,
-            messages=messages_list
-        )
-        
-        input_tokens = response.usage.input_tokens
-        output_tokens = response.usage.output_tokens
-        total_input_tokens += input_tokens
-        total_output_tokens += output_tokens
-        logger.info(f"    Tokens: {input_tokens} input, {output_tokens} output")
-        
-        if response.stop_reason == "end_turn":
-            for block in response.content:
-                if hasattr(block, 'text'):
-                    market_context["summary"] = block.text
-            logger.info(f"  ✓ Market data gathering complete ({iteration} iterations)")
-            if tools_used:
-                logger.info(f"  → Tools used: {', '.join(tools_used)}")
-            break
-        
-        if response.stop_reason == "tool_use":
-            messages_list.append({"role": "assistant", "content": response.content})
-            tool_results = []
+        try:
+            # Call Claude with timeout
+            response = client.messages.create(
+                model="claude-haiku-4-5-20251001",
+                max_tokens=4096,
+                tools=tools,
+                messages=messages_list,
+                timeout=30.0
+            )
             
-            for block in response.content:
-                if block.type == "tool_use":
-                    tool_name = block.name
-                    tool_input = block.input
-                    
-                    logger.info(f"    → Calling {tool_name}")
-                    
-                    if tool_name not in tools_used:
-                        tools_used.append(tool_name)
-                    
-                    # Execute tool
-                    if use_mcp_client:
+            logger.info(f"    → Response: stop_reason={response.stop_reason}")
+            
+            input_tokens = response.usage.input_tokens
+            output_tokens = response.usage.output_tokens
+            total_input_tokens += input_tokens
+            total_output_tokens += output_tokens
+            logger.info(f"    → Tokens: {input_tokens}in + {output_tokens}out")
+            
+            if response.stop_reason == "end_turn":
+                logger.info("    → Claude finished")
+                for block in response.content:
+                    if hasattr(block, 'text'):
+                        market_context["summary"] = block.text
+                        logger.info(f"    → Summary ({len(block.text)} chars)")
+                logger.info(f"  ✓ Complete in {iteration} iteration(s)")
+                if tools_used:
+                    logger.info(f"  → Tools called: {', '.join(tools_used)}")
+                break
+            
+            if response.stop_reason == "tool_use":
+                logger.info(f"    → Processing tool calls...")
+                messages_list.append({"role": "assistant", "content": response.content})
+                tool_results = []
+                
+                for block in response.content:
+                    if block.type == "tool_use":
+                        tool_name = block.name
+                        tool_input = block.input
+                        
+                        logger.info(f"    → Calling {tool_name}...")
+                        
+                        if tool_name not in tools_used:
+                            tools_used.append(tool_name)
+                        
+                        # Call tool via HTTP with timeout
                         try:
-                            result = asyncio.run(mcp_client.call_tool(tool_name, tool_input))
+                            result_resp = await asyncio.wait_for(
+                                http_client.post(
+                                    f"{mcp_url}/call",
+                                    json={"name": tool_name, "arguments": tool_input},
+                                    timeout=20.0
+                                ),
+                                timeout=25.0
+                            )
+                            result_resp.raise_for_status()
+                            result_data = result_resp.json()
+                            
+                            # Extract result from HTTP response
+                            if not result_data.get("success"):
+                                error_msg = result_data.get("error", "Unknown error")
+                                logger.error(f"      ✗ {tool_name} failed: {error_msg}")
+                                tool_results.append({
+                                    "type": "tool_result",
+                                    "tool_use_id": block.id,
+                                    "content": json.dumps({"error": error_msg})
+                                })
+                                continue
+                            
+                            # Get the result dict
+                            result_dict = result_data.get("result", {})
+                            logger.info(f"      ✓ {tool_name} returned successfully")
+                            
+                            if tool_name not in market_context:
+                                market_context[tool_name] = result_dict
+                            
+                            # Summarize for Claude
+                            summarized = _summarize_tool_result(tool_name, result_dict)
+                            
+                            tool_results.append({
+                                "type": "tool_result",
+                                "tool_use_id": block.id,
+                                "content": json.dumps(summarized) if isinstance(summarized, dict) else str(summarized)
+                            })
+                        except asyncio.TimeoutError:
+                            logger.error(f"      ✗ {tool_name} timed out")
+                            tool_results.append({
+                                "type": "tool_result",
+                                "tool_use_id": block.id,
+                                "content": json.dumps({"error": f"Tool timed out"})
+                            })
                         except Exception as e:
-                            logger.error(f"MCP tool execution failed: {e}")
-                            result = {"error": str(e)}
-                    else:
-                        result = dispatch_mcp_tool(tool_name, tool_input)
-                    
-                    if tool_name not in market_context:
-                        market_context[tool_name] = result
-                    
-                    summarized_result = _summarize_tool_result(tool_name, result)
-                    
-                    tool_results.append({
-                        "type": "tool_result",
-                        "tool_use_id": block.id,
-                        "content": json.dumps(summarized_result)
-                    })
-            
-            messages_list.append({"role": "user", "content": tool_results})
-        else:
-            logger.warning(f"Unexpected stop reason: {response.stop_reason}")
-            break
+                            logger.error(f"      ✗ {tool_name} failed: {e}")
+                            tool_results.append({
+                                "type": "tool_result",
+                                "tool_use_id": block.id,
+                                "content": json.dumps({"error": str(e)})
+                            })
+                
+                logger.info(f"    → Sending {len(tool_results)} results back to Claude")
+                messages_list.append({"role": "user", "content": tool_results})
+            else:
+                logger.warning(f"    → Unexpected stop reason: {response.stop_reason}")
+                break
+                
+        except Exception as e:
+            logger.error(f"  ✗ Claude call failed at iteration {iteration}: {e}", exc_info=True)
+            raise
     
     market_context["_token_usage"] = {
         "input_tokens": total_input_tokens,
@@ -305,13 +354,9 @@ Decide which tools are most relevant. Fetch data efficiently. Synthesize into a 
         "total_tokens": total_input_tokens + total_output_tokens
     }
     market_context["_tools_used"] = tools_used
-    market_context["_mcp_enabled"] = use_mcp_client
     
     if tools_used:
-        print(f"  → Tools used: {', '.join(tools_used)}")
-    print(f"  → MCP mode: {'Enabled' if use_mcp_client else 'Fallback (direct dispatch)'}")
+        logger.info(f"✓ Tools successfully called: {', '.join(tools_used)}")
+    logger.info(f"✓ MCP HTTP mode enabled")
     
-    return {
-        "market_context": market_context,
-        "audit_iteration_count": state.get("audit_iteration_count", 0)
-    }
+    return market_context

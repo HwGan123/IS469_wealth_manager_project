@@ -279,8 +279,10 @@ def _fallback_audit(draft: str, context: str) -> dict:
     faithfulness = 0.35 if is_hallucinating else 0.85
     answer_relevancy = 0.6 if context_text else 0.3
     context_recall = 0.7 if has_context_overlap else 0.2
-    
-    score = 0.35 if is_hallucinating else 0.9
+
+    llm_base = 0.35 if is_hallucinating else 0.90
+    ragas_avg = (faithfulness + answer_relevancy + context_recall) / 3
+    score = round(0.7 * llm_base + 0.3 * ragas_avg, 2)
 
     notes = (
         "Draft includes unsupported certainty language or weak grounding. "
@@ -353,12 +355,23 @@ def auditor_node(state: WealthManagerState) -> dict:
         # Force approval on final iteration to prevent infinite loops
         if iteration_count >= 2:
             is_hallucinating = False
-            score = 0.9
             status_msg = "APPROVED (forced - max iterations reached)"
         else:
-            is_hallucinating = report.status != "APPROVED"
-            score = 0.35 if is_hallucinating else 0.9
+            # Base re-analysis solely on actual hallucination count.
+            # Low faithfulness (common when retrieved_context is empty on
+            # market-only paths) must not trigger a spurious correction loop.
+            is_hallucinating = report.hallucination_count > 0
             status_msg = report.status
+
+        # Composite score: 60% LLM verdict + 40% mean RAGAS metrics.
+        # Avoids the paradox of a 0.90 score when faithfulness is near zero.
+        llm_base = 0.35 if is_hallucinating else 0.90
+        ragas_avg = (
+            report.ragas_metrics.faithfulness
+            + report.ragas_metrics.answer_relevancy
+            + report.ragas_metrics.context_recall
+        ) / 3
+        score = round(0.7 * llm_base + 0.3 * ragas_avg, 2)
 
         # Format findings for state
         findings_list = [

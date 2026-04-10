@@ -27,6 +27,14 @@ load_dotenv()
 logger = logging.getLogger(__name__)
 
 
+def _create_anthropic_client(api_key: str) -> Anthropic:
+    """Create an Anthropic client, optionally targeting a compatible custom API base URL."""
+    base_url = os.environ.get("ANTHROPIC_BASE_URL")
+    if base_url:
+        return Anthropic(api_key=api_key, base_url=base_url)
+    return Anthropic(api_key=api_key)
+
+
 def _summarize_tool_result(tool_name: str, result: dict) -> dict:
     """
     Summarize tool results to reduce context window bloat in agentic loops.
@@ -210,7 +218,8 @@ async def _run_claude_with_mcp_http(
     
     Claude autonomously decides which tools to call via HTTP.
     """
-    client = Anthropic(api_key=api_key)
+    client = _create_anthropic_client(api_key)
+    model_name = os.environ.get("ANTHROPIC_MODEL", "claude-haiku-4-5-20251001")
     
     prompt = f"""You are a comprehensive financial research agent. Your task is to gather detailed 
 market context and financial data for investment analysis.
@@ -243,11 +252,11 @@ Decide which tools are most relevant. Fetch data efficiently. Synthesize into a 
         try:
             # Call Claude with timeout
             response = client.messages.create(
-                model="claude-haiku-4-5-20251001",
+                model=model_name,
                 max_tokens=4096,
                 tools=tools,
                 messages=messages_list,
-                timeout=30.0
+                timeout=120.0
             )
             
             logger.info(f"    → Response: stop_reason={response.stop_reason}")

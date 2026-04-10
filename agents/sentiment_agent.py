@@ -38,7 +38,12 @@ _DEFAULT_MODEL_PATH = str(
     / "llama_3.2_3b_instruct_saved"
 )
 
-MODEL_PATH: str = os.getenv("LLAMA_SENTIMENT_MODEL_PATH", _DEFAULT_MODEL_PATH)
+
+# Resolved lazily inside _load_model_bundle() so .env is always respected
+def _get_model_path() -> str:
+    return os.getenv("LLAMA_SENTIMENT_MODEL_PATH", _DEFAULT_MODEL_PATH)
+
+
 MAX_NEW_TOKENS_CLASSIFY: int = int(os.getenv("SENTIMENT_MAX_NEW_TOKENS_CLASSIFY", "30"))
 CLASSIFY_BATCH_SIZE: int = int(os.getenv("SENTIMENT_CLASSIFY_BATCH_SIZE", "16"))
 MAX_NEW_TOKENS_THEME: int = int(os.getenv("SENTIMENT_MAX_NEW_TOKENS_THEME", "256"))
@@ -125,6 +130,10 @@ def _load_model_bundle() -> dict[str, Any]:
     Returns a bundle dict with keys: ready, device, tokenizer, model, error.
     When loading fails the bundle marks ready=False; inference will use fallbacks.
     """
+    model_path = _get_model_path()
+    hf_token = os.getenv("HF_TOKEN") or None  # None means public repo, no auth needed
+    print(f"[sentiment] Loading model from: {model_path}")
+
     device = _select_device()
     bundle: dict[str, Any] = {
         "ready": False,
@@ -134,7 +143,9 @@ def _load_model_bundle() -> dict[str, Any]:
         "error": None,
     }
     try:
-        tokenizer = AutoTokenizer.from_pretrained(MODEL_PATH, use_fast=True)
+        tokenizer = AutoTokenizer.from_pretrained(
+            model_path, use_fast=True, token=hf_token
+        )
         if tokenizer.pad_token is None:
             tokenizer.pad_token = tokenizer.eos_token
         # Left-padding is correct for decoder-only models: the last real token
@@ -158,32 +169,68 @@ def _load_model_bundle() -> dict[str, Any]:
         }
         if device.type == "cuda":
             common_kwargs["device_map"] = "auto"
+        if hf_token:
+            common_kwargs["token"] = hf_token
         try:
             model = AutoModelForCausalLM.from_pretrained(
-                MODEL_PATH,
+                model_path,
                 attn_implementation="sdpa",
                 **common_kwargs,
             )
             print("[sentiment] Using sdpa attention.")
         except Exception:
-            model = AutoModelForCausalLM.from_pretrained(MODEL_PATH, **common_kwargs)
+            model = AutoModelForCausalLM.from_pretrained(model_path, **common_kwargs)
         if device.type != "cuda":
             model.to(device)
         model.eval()
 
-        # torch.compile adds significant warmup on first call — skip unless on CUDA
-        # where the persistent kernel cache makes it worth the cost.
+        # torch.compile: CUDA uses inductor (reduce-overhead); MPS uses aot_eager
+        # (full inductor is not yet stable on Apple Silicon).
         if device.type == "cuda":
             try:
-                model = torch.compile(model)
-                print("[sentiment] torch.compile applied.")
+                model = torch.compile(model, mode="reduce-overhead")
+                print("[sentiment] torch.compile (inductor, reduce-overhead) applied.")
             except Exception:
                 pass
+        elif device.type == "mps":
+            try:
+                model = torch.compile(model, backend="aot_eager")
+                print("[sentiment] torch.compile (aot_eager) applied for MPS.")
+            except Exception:
+                pass
+        elif device.type == "cpu":
+            # Pin PyTorch to all physical cores; default is often 1.
+            n_threads = os.cpu_count() or 1
+            torch.set_num_threads(n_threads)
+            print(f"[sentiment] CPU inference: using {n_threads} threads.")
+
+        # Pre-compute label token IDs once so _classify_batch never recomputes them.
+        label_tok_indices = _compute_label_tok_indices(tokenizer)
+
+        # Warmup pass: triggers any JIT / kernel-compilation work before real requests.
+        try:
+            _dummy = tokenizer(
+                "warmup", return_tensors="pt", truncation=True, max_length=16
+            )
+            _dummy = {k: v.to(device) for k, v in _dummy.items()}
+            with torch.inference_mode():
+                model(**_dummy, use_cache=False)
+            if device.type == "cuda":
+                torch.cuda.synchronize()
+            print("[sentiment] Warmup pass complete.")
+        except Exception:
+            pass
 
         bundle.update(
-            {"ready": True, "tokenizer": tokenizer, "model": model, "dtype": dtype}
+            {
+                "ready": True,
+                "tokenizer": tokenizer,
+                "model": model,
+                "dtype": dtype,
+                "label_tok_indices": label_tok_indices,
+            }
         )
-        print(f"[sentiment] Loaded '{MODEL_PATH}' on {device} ({dtype}).")
+        print(f"[sentiment] Loaded '{model_path}' on {device} ({dtype}).")
     except Exception as exc:
         bundle["error"] = str(exc)
         print(f"[sentiment] Model load failed, using fallbacks: {exc}")
@@ -234,6 +281,7 @@ def _generate(
             **inputs,
             max_new_tokens=max_new_tokens,
             do_sample=False,
+            repetition_penalty=1.1,   # prevents token-loop stalls on CPU
             pad_token_id=tokenizer.eos_token_id,
         )
 
@@ -241,20 +289,23 @@ def _generate(
     return tokenizer.decode(new_tokens, skip_special_tokens=True).strip()
 
 
-def _label_token_ids() -> dict[str, int]:
-    """Return the first token ID for each label as generated after '{"label": "'.
+def _compute_label_tok_indices(tokenizer: AutoTokenizer) -> list[int]:
+    """Pre-compute [pos_id, neu_id, neg_id] once at load time.
 
-    We prime the prompt with that prefix so the very first generated token is the
-    start of the label word — this lets us read real logit confidence from scores[0].
+    The classify prompt is primed with '{"label": "' so the very first generated
+    token is the start of the label word.  We read logit confidence directly from
+    that position — no autoregressive generation needed.
+
+    Returns a list aligned with label_order = ["positive", "neutral", "negative"].
+    Called once inside _load_model_bundle and stored in bundle["label_tok_indices"].
     """
-    tokenizer: AutoTokenizer = _get_model_bundle()["tokenizer"]
     prefix = '{"label": "'
     prefix_ids = tokenizer.encode(prefix, add_special_tokens=False)
-    ids = {}
+    indices = []
     for label in ("positive", "neutral", "negative"):
         full_ids = tokenizer.encode(prefix + label, add_special_tokens=False)
-        ids[label] = full_ids[len(prefix_ids)]  # first token of the label word
-    return ids
+        indices.append(full_ids[len(prefix_ids)])
+    return indices
 
 
 # ---------------------------------------------------------------------------
@@ -637,8 +688,8 @@ def _classify_batch(
     tokenizer: AutoTokenizer = bundle["tokenizer"]
     model: AutoModelForCausalLM = bundle["model"]
     device: torch.device = bundle["device"]
-    tok_ids = _label_token_ids()
-    label_tok_indices = [tok_ids[lbl] for lbl in label_order]
+    # Use pre-computed token indices from the bundle (computed once at load time).
+    label_tok_indices: list[int] = bundle["label_tok_indices"]
 
     total_input_tokens = 0
 
@@ -853,6 +904,111 @@ def _empty_output(ticker: str) -> SentimentOutput:
 
 
 # ---------------------------------------------------------------------------
+# Auditor-facing formatters
+# ---------------------------------------------------------------------------
+
+
+def _format_sentiment_as_draft(
+    tickers: list[str],
+    all_results: list[SentimentOutput],
+    all_scored: list[ScoredNewsItem],
+    overall_sentiment: str,
+    strength: str,
+    avg_cwns: float,
+    article_counts: dict,
+) -> str:
+    """Convert sentiment pipeline output into auditable prose for auditor_agent.
+
+    Produces a structured markdown report whose claims (headline titles, CWNS,
+    distribution percentages, themes) can be verified by the auditor against
+    the live_data_context returned by _format_scored_items_as_context().
+    """
+    total = len(all_scored)
+    pct_pos = round(article_counts["positive"] / total * 100) if total else 0
+    pct_neu = round(article_counts["neutral"] / total * 100) if total else 0
+    pct_neg = round(article_counts["negative"] / total * 100) if total else 0
+    ticker_str = ", ".join(tickers)
+    primary = all_results[0] if all_results else None
+
+    lines = [
+        f"# Market Sentiment Report: {ticker_str}",
+        "",
+        "## Sentiment Summary",
+        f"- **Tickers:** {ticker_str}",
+        f"- **Overall Sentiment:** {overall_sentiment} ({strength})",
+        f"- **Confidence-Weighted Net Sentiment (CWNS):** {avg_cwns:+.3f}",
+        (
+            f"- **Article Breakdown:** {pct_pos}% positive, {pct_neu}% neutral,"
+            f" {pct_neg}% negative ({total} articles analysed)"
+        ),
+        "",
+    ]
+
+    if len(all_results) > 1:
+        lines.append("## Per-Ticker Sentiment")
+        for r in all_results:
+            lines.append(
+                f"- **{r.ticker}:** {r.overall_sentiment} ({r.strength}),"
+                f" CWNS={r.cwns:+.3f}"
+            )
+        lines.append("")
+
+    if primary:
+        if primary.themes.doing_well_in:
+            lines.append("## Bullish Themes")
+            for theme in primary.themes.doing_well_in:
+                lines.append(f"- {theme}")
+            lines.append("")
+
+        if primary.themes.bearish_concerns:
+            lines.append("## Bearish Concerns")
+            for concern in primary.themes.bearish_concerns:
+                lines.append(f"- {concern}")
+            lines.append("")
+
+        lines += [
+            "## Market Tone",
+            primary.themes.market_tone_summary,
+            "",
+            "## Analysis",
+            primary.broad_explanation,
+            "",
+        ]
+
+    # Top 5 articles by confidence — these are the concrete, verifiable claims
+    top_items = sorted(all_scored, key=lambda x: x.confidence, reverse=True)[:5]
+    if top_items:
+        lines.append("## Key Headlines")
+        for item in top_items:
+            lines.append(
+                f'- [{item.label.upper()} {item.confidence:.0%}]'
+                f' "{item.title}" — {item.reason}'
+            )
+        lines.append("")
+
+    return "\n".join(lines)
+
+
+def _format_scored_items_as_context(all_scored: list[ScoredNewsItem]) -> str:
+    """Serialise scored news items as a flat text block for auditor verification.
+
+    The auditor's faithfulness check compares claims in draft_report against
+    this context.  Listing every headline + label + reason gives it a direct
+    lookup table for the Key Headlines section of the draft.
+    """
+    if not all_scored:
+        return "No news articles available."
+
+    lines = ["## Scored News Articles (verification source)"]
+    for item in all_scored:
+        lines.append(
+            f'- [{item.label.upper()} {item.confidence:.0%}]'
+            f' "{item.title}" — {item.reason}'
+        )
+    return "\n".join(lines)
+
+
+# ---------------------------------------------------------------------------
 # LangGraph node
 # ---------------------------------------------------------------------------
 
@@ -871,7 +1027,7 @@ def sentiment_node(state: WealthManagerState) -> dict:
         sentiment_results   — same list (backward-compatible alias)
         messages            — one status line with per-ticker breakdown
     """
-    print("--- AGENT: SENTIMENT ANALYSIS (Llama-3.2-3B-Instruct) ---")
+    print("--- AGENT: SENTIMENT ANALYSIS (Llama-3.2-3B-Instruct) ---", flush=True)
 
     tickers = state.get("tickers") or []
     if not tickers:
@@ -894,7 +1050,7 @@ def sentiment_node(state: WealthManagerState) -> dict:
 
     def _log(message: str) -> None:
         sentiment_logs.append(message)
-        print(message)
+        print(message, flush=True)
         if log_queue is not None:
             try:
                 item = {"node": "sentiment_agent", "message": message}
@@ -960,7 +1116,14 @@ def sentiment_node(state: WealthManagerState) -> dict:
         f"{r.ticker} {r.overall_sentiment} ({r.cwns:+.3f})" for r in all_results
     )
 
-    return {
+    # On market_only paths (e.g. NVDA sentiment query) the investment_analyst
+    # never runs, so draft_report and live_data_context are never set — the
+    # auditor would have nothing to check.  Write them here as a fallback.
+    #
+    # Guard: if draft_report is already populated (sequential runs analyst
+    # before sentiment; market_analysis runs analyst after) do NOT overwrite.
+    # The analyst's richer version should always reach the auditor.
+    base_return: dict = {
         "sentiment_result": result_dict,
         "sentiment_summary": result_dict,
         "sentiment_logs": sentiment_logs,
@@ -977,6 +1140,20 @@ def sentiment_node(state: WealthManagerState) -> dict:
             f"Per-ticker: [{per_ticker_summary}]."
         ],
     }
+
+    if not state.get("draft_report"):
+        base_return["draft_report"] = _format_sentiment_as_draft(
+            tickers=tickers,
+            all_results=all_results,
+            all_scored=all_scored,
+            overall_sentiment=overall_sentiment,
+            strength=strength,
+            avg_cwns=avg_cwns,
+            article_counts=article_counts,
+        )
+        base_return["live_data_context"] = _format_scored_items_as_context(all_scored)
+
+    return base_return
 
 
 # ---------------------------------------------------------------------------

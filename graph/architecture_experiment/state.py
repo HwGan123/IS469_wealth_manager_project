@@ -24,16 +24,10 @@ from __future__ import annotations
 import operator
 from typing import Annotated, Dict, List
 
-
-# ── Custom reducers ───────────────────────────────────────────────────────────
-
-def take_max(a, b):  # noqa: ANN001
-    """Reducer that keeps the higher of two values; handles None safely."""
-    if a is None:
-        return b
-    if b is None:
-        return a
-    return max(a, b)
+# Reuse the same take_max function object as WealthManagerState so that
+# LangGraph does not treat audit_iteration_count as having conflicting reducers
+# when both state classes are registered in the same graph.
+from graph.state import take_max  # noqa: F401
 
 
 # ── State class ───────────────────────────────────────────────────────────────
@@ -123,3 +117,9 @@ class ArchExperimentState(Dict):
     orchestrator_iteration: Annotated[int, take_max]
     """How many times the orchestrator agent has been called in this run.
     Uses take_max so the counter only moves forward even on merge."""
+
+    # ── Experiment trace (populated by the harness instrumentation layer) ──────
+    trace: Annotated[list, operator.add]
+    """Ordered list of per-node trace entries injected by the experiment
+    harness wrappers.  Uses operator.add so each node's entry is *appended*
+    rather than replaced, giving the full execution path in final_state."""

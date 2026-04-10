@@ -61,7 +61,7 @@ from langgraph.graph import StateGraph, START, END
 from graph.architecture_experiment.state import ArchExperimentState
 from agents.market_context import market_context_node
 from agents.analyst import analyst_node
-from agents.sentiment import sentiment_node
+from agents.sentiment_agent import sentiment_node
 from agents.auditor import auditor_node
 from agents.report_generator import report_generator_node
 
@@ -84,6 +84,12 @@ _VALID_WORKERS: frozenset = frozenset({
     "report_generator_agent",
 })
 
+# Tickers whose 10-K filings are indexed in the local ChromaDB VDB.
+# If ALL tickers are in this set the orchestrator may use investment_analyst
+# with RAG retrieval.  If any ticker is outside, it must rely on
+# market_context_agent for external/live data retrieval.
+_VDB_TICKERS: frozenset = frozenset({"NVDA", "AMZN", "AAPL", "GOOGL", "MSFT"})
+
 
 # ── LLM prompts ───────────────────────────────────────────────────────────────
 
@@ -98,45 +104,73 @@ _SYSTEM_PROMPT = textwrap.dedent("""
     AVAILABLE WORKERS
     -----------------
     market_context_agent
-        Fetches live market data via external tools:
-        recent news, earnings, analyst ratings, SEC 10-K / 10-Q filings.
-        Use when the query involves specific stock tickers or needs current data.
+        Fetches live/current market data via external tools:
+        recent news, earnings, analyst ratings, and SEC 10-K filings.
+        Use when the query needs current prices, news, sentiment, OR when
+        a ticker is NOT in the local vector database (see VDB TICKERS below).
 
     sentiment_agent
-        Runs FinBERT sentiment analysis on news headlines for the tickers.
+        Runs fine-tuned sentiment analysis on news headlines for the tickers.
         Use when the query asks about market sentiment, bullish/bearish signals,
-        or when you want sentiment to inform the investment analysis.
+        OR as a step before investment_analyst_agent when market data is the
+        primary source (ticker not in VDB, or live-data query).
 
     investment_analyst_agent
-        Writes a comprehensive investment analysis report using both RAG
-        (historical 10-K context) and any market data already gathered.
-        This is required before auditor_agent can run.
+        Writes a comprehensive investment analysis report using RAG retrieval
+        from the local 10-K vector database AND any market data already in state.
+        MUST run before auditor_agent.
 
     auditor_agent
-        Fact-checks the investment analysis against 10-K context and computes
-        RAGAS metrics.  Only run this after investment_analyst_agent.
-        If hallucination is detected, you may re-run market_context_agent or
-        investment_analyst_agent to correct the analysis (within iteration limits).
+        Fact-checks the investment analysis and computes RAGAS metrics.
+        ONLY run this AFTER investment_analyst_agent has produced a draft.
+        If hallucination is detected, re-run market_context_agent (for live-data
+        queries) or investment_analyst_agent (for docs-only queries) before the
+        final report.
 
     report_generator_agent
-        Formats and delivers the final report to the user.
-        Call this LAST — once analysis (and ideally auditing) is complete.
-        Choosing this worker ends the entire workflow.
+        Formats and delivers the final report.  Call this LAST — once
+        analysis (and auditing) is complete.  Ends the entire workflow.
 
-    DECISION RULES
-    --------------
-    1. Never call a worker that has already completed successfully and does not
-       need to be re-run (use the completed_workers list as your guide).
-    2. Call market_context_agent before investment_analyst_agent when live data
-       will improve the analysis (i.e. when tickers are present).
-    3. Call sentiment_agent when the user asks about sentiment or when richer
-       sentiment context is valuable for the analysis.
-    4. Always call investment_analyst_agent before auditor_agent.
-    5. If the auditor detected hallucination AND the iteration count is still
-       low, consider re-running market_context_agent (for fresh data) or
-       investment_analyst_agent (to rewrite the report with better grounding).
-    6. Call report_generator_agent when you are satisfied with the analysis
-       quality — or when the iteration cap is near.
+    VDB TICKERS (local 10-K filings are only available for these tickers)
+    ----------------------------------------------------------------------
+    NVDA, AMZN, AAPL, GOOGL, MSFT
+
+    If the query involves a ticker NOT in this list (e.g. TSLA, META, AMD),
+    there are no local filings — use market_context_agent for data retrieval.
+
+    ROUTING PATTERNS
+    ----------------
+    Follow the pattern that best matches the user query:
+
+    Pattern A — docs_only (ticker in VDB, fundamental/filing query)
+      Keywords: 10K, annual report, risk factors, business model, fundamentals,
+                revenue, valuation
+      Sequence: investment_analyst_agent → auditor_agent → report_generator_agent
+
+    Pattern B — market_only (live/sentiment query, NO investment analysis needed)
+      Keywords: current, latest, today, recent, news, market, price,
+                sentiment, bullish, bearish
+      Sequence: market_context_agent → sentiment_agent → report_generator_agent
+
+    Pattern C — market_analysis (ticker NOT in VDB, OR comprehensive report)
+      Condition: any ticker outside VDB list, or query needs full analysis
+      Keywords: comprehensive, risks, recommendations, financial report
+      Sequence: market_context_agent → sentiment_agent
+                  → investment_analyst_agent → auditor_agent → report_generator_agent
+
+    Pattern D — hybrid_analysis (ticker in VDB, needs BOTH live + fundamentals)
+      Keywords: long-term investment, investment potential, should I invest,
+                recommendation, compare for investment
+      Sequence: market_context_agent → investment_analyst_agent
+                  → auditor_agent → report_generator_agent
+
+    HARD RULES
+    ----------
+    1. NEVER call a worker that already completed successfully unless a re-run
+       is needed (hallucination detected, iteration still low).
+    2. NEVER call auditor_agent before investment_analyst_agent has run.
+    3. Call report_generator_agent only when analysis (+ audit) is complete,
+       or when the iteration cap is near.
 
     Respond with ONLY the exact worker name, nothing else.
     Valid responses: market_context_agent | sentiment_agent |
@@ -147,6 +181,8 @@ _SYSTEM_PROMPT = textwrap.dedent("""
 _HUMAN_PROMPT = textwrap.dedent("""
     USER QUERY   : {query}
     TICKERS      : {tickers}
+    TICKERS IN VDB  : {tickers_in_vdb}
+    TICKERS OUT VDB : {tickers_out_vdb}
     ITERATION    : {iteration} / {max_iter}
 
     COMPLETED WORKERS : {completed}
@@ -203,10 +239,15 @@ def orchestrator_agent_node(state: ArchExperimentState) -> dict:
     messages: list = state.get("messages", [])
     query: str = str(messages[0]) if messages else ""
     tickers: List[str] = state.get("tickers", [])
+    tickers_upper = [t.upper() for t in tickers]
+    in_vdb = [t for t in tickers_upper if t in _VDB_TICKERS]
+    out_vdb = [t for t in tickers_upper if t not in _VDB_TICKERS]
 
     human_text = _HUMAN_PROMPT.format(
         query=query,
         tickers=", ".join(tickers) if tickers else "(none)",
+        tickers_in_vdb=", ".join(in_vdb) if in_vdb else "(none)",
+        tickers_out_vdb=", ".join(out_vdb) if out_vdb else "(none)",
         iteration=iteration,
         max_iter=MAX_ORCHESTRATOR_ITERATIONS,
         completed=", ".join(completed) if completed else "none",
@@ -251,28 +292,72 @@ def orchestrator_agent_node(state: ArchExperimentState) -> dict:
 
 def _fallback_decision(state: dict, completed: List[str]) -> str:
     """
-    Rule-based fallback used when the LLM call fails.
-    Mirrors the logic that a well-behaved LLM should follow.
-    """
-    tickers = state.get("tickers", [])
+    Rule-based fallback used when the LLM call fails or returns an invalid
+    worker name.  Mirrors the four routing patterns in the system prompt.
 
-    # 1. Fetch live data first if tickers present
-    if tickers and "market_context_agent" not in completed:
+    Pattern A (docs_only):   no live data needed → analyst → auditor → report
+    Pattern B (market_only): live-data/sentiment → market → sentiment → report
+    Pattern C (market_analysis): ticker out of VDB → market → sentiment → analyst → auditor
+    Pattern D (hybrid_analysis): ticker in VDB, hybrid → market → analyst → auditor
+    """
+    tickers = [t.upper() for t in state.get("tickers", [])]
+    messages = state.get("messages", [])
+    query = " ".join(str(m) for m in messages).lower()
+
+    any_out_vdb = any(t not in _VDB_TICKERS for t in tickers) if tickers else False
+    is_sentiment_query = any(
+        kw in query for kw in ("sentiment", "bullish", "bearish", "current",
+                               "latest", "today", "recent", "news", "price")
+    )
+    needs_analysis = any(
+        kw in query for kw in ("risk", "risks", "recommendation", "recommendations",
+                               "fundamentals", "10k", "annual", "valuation",
+                               "comprehensive", "investment potential",
+                               "long-term", "should i invest")
+    )
+
+    # ── Pattern B: pure sentiment / market-only query ─────────────────────────
+    # No analyst needed; fetch market data, run sentiment, then audit the draft.
+    is_market_only = is_sentiment_query and not needs_analysis and not any_out_vdb
+
+    if is_market_only:
+        if "market_context_agent" not in completed:
+            return "market_context_agent"
+        if "sentiment_agent" not in completed:
+            return "sentiment_agent"
+        if "auditor_agent" not in completed:
+            return "auditor_agent"
+        return "report_generator_agent"
+
+    # ── Patterns C & D / A: analyst + auditor required ───────────────────────
+    # Fetch live data first for out-of-VDB tickers (C) or hybrid queries (D).
+    # Docs-only queries (A) can skip market_context entirely.
+    needs_market_context = any_out_vdb or (
+        not any_out_vdb and needs_analysis and is_sentiment_query
+    ) or (
+        tickers and not needs_analysis  # hybrid default when tickers present
+    )
+
+    if needs_market_context and "market_context_agent" not in completed:
         return "market_context_agent"
 
-    # 2. Write the report if market context available but no draft yet
+    # Run sentiment between market_context and analyst only for market_analysis (C)
+    if any_out_vdb and "sentiment_agent" not in completed and \
+            "market_context_agent" in completed:
+        return "sentiment_agent"
+
     if "investment_analyst_agent" not in completed:
         return "investment_analyst_agent"
 
-    # 3. Audit the draft if not yet audited
     if "auditor_agent" not in completed:
         return "auditor_agent"
 
-    # 4. Re-run analyst if hallucinating and room allows
+    # Re-run on hallucination if budget allows
     if state.get("is_hallucinating") and state.get("orchestrator_iteration", 0) < 6:
+        if any_out_vdb:
+            return "market_context_agent"
         return "investment_analyst_agent"
 
-    # 5. Finish
     return "report_generator_agent"
 
 
@@ -425,6 +510,9 @@ def make_initial_state(
 
         # ── Report ───────────────────────────────────────────────────────────────
         "final_report":          "",
+
+        # ── Experiment trace (accumulated by harness wrappers) ─────────────────
+        "trace":                 [],
     }
 
 

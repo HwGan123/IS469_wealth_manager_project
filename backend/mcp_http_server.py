@@ -14,9 +14,13 @@ Then access tools via:
 
 import json
 import sys
+import os
 from dotenv import load_dotenv
 from typing import Dict, Any
 import logging
+
+# Add project root to Python path
+sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 load_dotenv()
 

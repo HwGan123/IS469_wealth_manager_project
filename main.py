@@ -8,7 +8,7 @@ load_dotenv()
 from graph.workflow import create_wealth_manager_graph
 
 def main():
-    print("--- 🚀 Initializing AI Wealth Manager System ---")
+    print("--- Initializing AI Wealth Manager System ---")
     
     # Compile the Graph
     app = create_wealth_manager_graph()

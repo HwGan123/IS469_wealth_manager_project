@@ -136,7 +136,7 @@ Required keys:
 | `OPENAI_API_KEY` | Orchestrator, auditor, HyDE RAG |
 | `FINNHUB_API_KEY` | Live financial news |
 | `NEWS_API_KEY` | Supplementary news feed |
-| `LLAMA_SENTIMENT_MODEL_PATH` | HuggingFace repo or local path (default: `lunn1212/llama3.2`) |
+| `LLAMA_SENTIMENT_MODEL_PATH` | HuggingFace repo or local path |
 
 Optional:
 
@@ -146,10 +146,34 @@ Optional:
 | `GROQ_API_KEY` | Alternative LLM provider |
 | `COHERE_API_KEY` | Cohere reranker |
 
-### 4. Run the web interface
+### 4. Start the MCP Server
+
+Open a new terminal and run:
 
 ```bash
-# Start backend (from project root)
+# Terminal 1: Start MCP HTTP server (for financial data tools)
+python backend/mcp_http_server.py
+```
+
+Expected output:
+```
+2026-04-09 17:51:46,401 - mcp-http-server - INFO - Starting MCP HTTP Server
+2026-04-09 17:51:46,401 - mcp-http-server - INFO - Available tools (6):
+  - fetch_news
+  - fetch_earnings
+  - fetch_analyst_ratings
+  - fetch_10k_content
+  - fetch_10q_content
+  - fetch_xbrl_financials
+2026-04-09 17:51:46,402 - mcp-http-server - INFO - Uvicorn running on http://127.0.0.1:3000
+```
+
+### 5. Run the web interface
+
+In another terminal, start the backend API:
+
+```bash
+# Terminal 2: Start backend
 uv run uvicorn backend.server:app --reload --port 8000
 
 # Open frontend in browser
@@ -158,9 +182,12 @@ open frontend/index.html
 
 The frontend connects to `http://localhost:8000`. Enter a query like *"Should I invest in AAPL and NVDA?"* and watch the agents run in real time.
 
-### 5. Run CLI mode
+### 6. Run CLI mode
+
+In another terminal, run:
 
 ```bash
+# Terminal 2 or 3: Run workflow (with MCP server from step 4 still running)
 uv run python main.py
 # or against a running LangGraph dev server:
 uv run python main.py remote

@@ -849,13 +849,29 @@
       line-height: 1.7;
       color: #C9C9C7;
       padding: 10px 14px;
-      min-height: 130px;
-      max-height: 200px;
+      min-height: 240px;
+      max-height: 420px;
       overflow-y: auto;
       scrollbar-width: thin;
       scrollbar-color: #2C2C2E #111114;
       white-space: pre-wrap;
       word-break: break-all;
+    }
+
+    .log-cursor {
+      display: inline-block;
+      width: 7px;
+      height: 13px;
+      background: #64AEFF;
+      vertical-align: text-bottom;
+      margin-left: 2px;
+      border-radius: 1px;
+      animation: cursorBlink 1.1s step-end infinite;
+    }
+
+    @keyframes cursorBlink {
+      0%, 100% { opacity: 1; }
+      50%       { opacity: 0; }
     }
 
     .log-body::-webkit-scrollbar {
@@ -1840,14 +1856,14 @@
         <div class="stepper-card" id="stepperCard">
           <div class="stepper-header">
             <div class="stepper-title" id="stepperTitle">Analyzing…</div>
-            <div class="stepper-subtitle">Sequential Workflow · 6-agent pipeline</div>
+            <div class="stepper-subtitle">Conditional Router · 6-agent pipeline</div>
           </div>
 
           <!-- ETA row -->
           <div class="eta-row">
             <div>
               <div class="eta-main" id="etaMain">Preparing pipeline…</div>
-              <div class="eta-sub" id="etaSub">Sequential workflow · ~8 min total</div>
+              <div class="eta-sub" id="etaSub">Conditional router · ~8 min total</div>
             </div>
             <div class="eta-elapsed" id="etaElapsed">0:00</div>
           </div>
@@ -2006,7 +2022,7 @@
                   <div class="dot dot-y"></div>
                   <div class="dot dot-g"></div>
                 </div>
-                <div class="log-bar-title">market_context + orchestrator</div>
+                <div class="log-bar-title">market_context + router</div>
               </div>
               <div class="log-body" id="log-market"><span class="ll-dim">waiting for run…</span></div>
             </div>
@@ -2017,7 +2033,7 @@
                   <div class="dot dot-y"></div>
                   <div class="dot dot-g"></div>
                 </div>
-                <div class="log-bar-title">sentiment_agent · FinBERT</div>
+                <div class="log-bar-title">sentiment_agent · Llama-3.2-3B</div>
               </div>
               <div class="log-body" id="log-sentiment"><span class="ll-dim">waiting for run…</span></div>
             </div>
@@ -2157,10 +2173,9 @@
       <!-- Winner banner -->
       <div class="winner-banner mb-24">
         <div class="winner-left">
-          <div class="winner-eyebrow">🏆 Recommended Architecture</div>
-          <div class="winner-name">Sequential Workflow</div>
-          <div class="winner-desc">Fastest end-to-end latency, lowest token consumption, and matching quality to the
-            more complex orchestration variant. The optimal choice for production use.</div>
+          <div class="winner-eyebrow">🏆 Deployed Architecture</div>
+          <div class="winner-name">Conditional Workflow</div>
+          <div class="winner-desc">Rule-based router skips unnecessary agents per query type — docs-only, market-only, hybrid, or full-analysis paths — delivering the right agents for each request.</div>
         </div>
         <div class="winner-right">
           <div class="winner-stats">
@@ -2345,7 +2360,7 @@
             <div class="fnode blue">
               <div class="fnode-icon">▦</div>
               <div class="fnode-label">Sentiment</div>
-              <div class="fnode-sub">FinBERT headlines</div>
+              <div class="fnode-sub">Llama-3.2-3B headlines</div>
             </div>
             <div class="flow-arr">→</div>
             <div class="fnode blue">
@@ -2387,9 +2402,9 @@
         <div class="agent-card">
           <div class="agent-icon">▦</div>
           <div class="agent-name">Sentiment Agent</div>
-          <div class="agent-role">Scores news headlines per ticker using FinBERT. Aggregates into portfolio-level and
+          <div class="agent-role">Scores news headlines per ticker using Llama-3.2-3B-Instruct. Aggregates into portfolio-level and
             per-ticker sentiment scores.</div>
-          <div class="tag-row"><span class="tag">FinBERT</span><span class="tag">HuggingFace</span><span
+          <div class="tag-row"><span class="tag">Llama-3.2-3B</span><span class="tag">HuggingFace</span><span
               class="tag">local</span></div>
           <div class="agent-io"><strong>Reads:</strong> tickers, live_data_context<br><strong>Writes:</strong>
             sentiment_score, sentiment_summary</div>
@@ -2439,7 +2454,7 @@
         <div class="card">
           <div class="card-title">Models &amp; Inference</div>
           <div class="stack-row">GPT-4o-mini (OpenAI)<span class="stack-badge b-open">API</span></div>
-          <div class="stack-row">FinBERT (ProsusAI)<span class="stack-badge b-local">Local</span></div>
+          <div class="stack-row">Llama-3.2-3B-Instruct<span class="stack-badge b-local">Local</span></div>
           <div class="stack-row">sentence-transformers<span class="stack-badge b-local">Local</span></div>
         </div>
         <div class="card">
@@ -2557,8 +2572,9 @@
 
     // ── Node pipeline definition ─────────────────────────────────────
     const PIPELINE_NODES = [
+      { id: 'conditional_router', label: 'Router', desc: 'Rule-based routing · no LLM call', est_ms: 200, icon: '⊗' },
       { id: 'market_context_agent', label: 'Market Context', desc: 'Fetching live data · MCP scraper', est_ms: 43000, icon: '◎' },
-      { id: 'sentiment_agent', label: 'Sentiment Analysis', desc: 'FinBERT headline scoring · local model', est_ms: 397000, icon: '▦' },
+      { id: 'sentiment_agent', label: 'Sentiment Analysis', desc: 'Llama-3.2-3B headline scoring · local model', est_ms: 397000, icon: '▦' },
       { id: 'investment_analyst_agent', label: 'Investment Analyst', desc: 'RAG retrieval · writing draft report', est_ms: 13000, icon: '⊡' },
       { id: 'auditor_agent', label: 'Auditor', desc: 'LLM-as-Judge · RAGAS evaluation', est_ms: 46000, icon: '◈' },
       { id: 'report_generator_agent', label: 'Report Generator', desc: 'Synthesising final report', est_ms: 1000, icon: '▤' },
@@ -2567,7 +2583,7 @@
     const TOTAL_EST_MS = PIPELINE_NODES.reduce((s, n) => s + n.est_ms, 0); // ~500s
 
     const NODE_PANEL = {
-      orchestrator_agent: 'market',
+      conditional_router: 'market',
       market_context_agent: 'market',
       sentiment_agent: 'sentiment',
       investment_analyst_agent: 'analyst',
@@ -2615,12 +2631,39 @@
     }
 
     const BLOCKED = new Set([
-      'AND', 'THE', 'FOR', 'WITH', 'FROM', 'THIS', 'THAT', 'WILL', 'SHOULD', 'ABOUT',
-      'CHECK', 'PLEASE', 'GIVEN', 'LAURA', 'PORTFOLIO', 'AGENT', 'AGENTS', 'RUN',
-      'RESEARCH', 'REBALANCE', 'AI', 'IS', 'IN', 'TO', 'OF', 'ON', 'AT', 'AS', 'BE',
-      'BY', 'DO', 'GO', 'UP', 'WE', 'IT', 'AN', 'IF', 'OR', 'SO', 'HAS', 'HAD', 'NOT',
-      'ARE', 'WAS', 'ALL', 'CAN', 'GET', 'ITS', 'NEW', 'OUR', 'OUT', 'USE', 'WAY',
-      'WHO', 'WHY', 'HOW', 'INCREASE', 'GIVEN', 'SECTOR', 'OUTLOOK',
+      // ── articles / prepositions / conjunctions ────────────────────────
+      'A', 'AN', 'THE', 'AND', 'OR', 'BUT', 'NOR', 'SO', 'YET', 'FOR',
+      'IN', 'ON', 'AT', 'TO', 'OF', 'AS', 'BY', 'UP', 'IF',
+      'INTO', 'ONTO', 'FROM', 'WITH', 'THAN', 'THEN', 'WHEN', 'THAT',
+      'THIS', 'THESE', 'THOSE', 'SUCH', 'EACH', 'BOTH', 'BEEN', 'ALSO',
+      // ── pronouns ──────────────────────────────────────────────────────
+      'I', 'ME', 'MY', 'WE', 'OUR', 'YOU', 'YOUR', 'HE', 'HIS', 'SHE',
+      'HER', 'IT', 'ITS', 'THEY', 'THEIR', 'THEM', 'WHO', 'WHOM', 'WHICH',
+      // ── common verbs ──────────────────────────────────────────────────
+      'IS', 'ARE', 'WAS', 'WERE', 'BE', 'BEEN', 'BEING', 'DO', 'DOES',
+      'DID', 'HAVE', 'HAS', 'HAD', 'WILL', 'WOULD', 'SHALL', 'SHOULD',
+      'MAY', 'MIGHT', 'MUST', 'CAN', 'COULD', 'GET', 'GIVE', 'GAVE',
+      'MAKE', 'MADE', 'TAKE', 'TOOK', 'COME', 'CAME', 'KNOW', 'KNEW',
+      'LOOK', 'FIND', 'WANT', 'NEED', 'WENT', 'KEEP', 'MOVE', 'SHOW',
+      'SHOW', 'SEEM', 'TELL', 'TOLD', 'CALL', 'HELP', 'TURN', 'RUN',
+      'ANALYZE', 'ANALYSE', 'CHECK', 'USE', 'USED', 'GO',
+      // ── common adjectives / adverbs ───────────────────────────────────
+      'NOT', 'NO', 'ALL', 'SOME', 'MORE', 'MOST', 'ONLY', 'JUST', 'VERY',
+      'WELL', 'ALSO', 'NOW', 'EVEN', 'BACK', 'OVER', 'UNDER', 'STILL',
+      'LAST', 'NEXT', 'MANY', 'MUCH', 'GOOD', 'BEST', 'HIGH', 'LOW',
+      'LONG', 'TERM', 'SHORT', 'SAME', 'SURE', 'TRUE', 'REAL', 'LARGE',
+      'GREAT', 'FIRST', 'EVERY', 'WHILE', 'WHERE', 'THERE', 'HERE',
+      // ── finance / domain words that aren't tickers ────────────────────
+      'AI', 'NEW', 'OLD', 'OUT', 'OWN', 'WAY', 'PART', 'YEAR', 'YEARS',
+      'RISK', 'RISKS', 'RATE', 'RETURN', 'RETURNS', 'PRICE', 'TREND',
+      'MARKET', 'STOCK', 'SHARE', 'FUND', 'BOND', 'CASH', 'DEBT',
+      'DATA', 'INFO', 'REPORT', 'PLAN', 'BASED', 'GIVEN', 'BELOW',
+      'ABOVE', 'ABOUT', 'AFTER', 'UNTIL', 'SINCE', 'THREE', 'THEIR',
+      'COULD', 'GOING', 'DOING', 'BEING', 'FOUND', 'UNDER', 'WHICH',
+      'WOULD', 'AGAIN',
+      // ── project-specific ─────────────────────────────────────────────
+      'LAURA', 'PORTFOLIO', 'AGENT', 'AGENTS', 'REBALANCE', 'INCREASE',
+      'RESEARCH', 'SECTOR', 'OUTLOOK', 'PLEASE', 'SENTIMENT', 'RECENT',
     ]);
     function extractTickers(text) {
       const matches = text.toUpperCase().match(/\b[A-Z]{1,5}\b/g) || [];
@@ -2762,21 +2805,46 @@
     }
 
     // ── Logs ──────────────────────────────────────────────────────────
+    let _cursor = null;   // single blinking cursor, moved between panels
+
+    function _getCursor() {
+      if (!_cursor) {
+        _cursor = document.createElement('span');
+        _cursor.className = 'log-cursor';
+      }
+      return _cursor;
+    }
+
+    function moveCursorTo(panel) {
+      const el = document.getElementById('log-' + panel);
+      if (!el) return;
+      el.appendChild(_getCursor());
+      el.scrollTop = el.scrollHeight;
+    }
+
+    function hideCursor() {
+      if (_cursor && _cursor.parentNode) _cursor.parentNode.removeChild(_cursor);
+    }
+
     function clearLogs() {
       ['market', 'sentiment', 'analyst', 'audit'].forEach(p => {
         document.getElementById('log-' + p).innerHTML = '<span class="ll-dim">starting…</span>';
       });
+      hideCursor();
     }
 
     function appendLog(panel, msg, cls = '') {
       const el = document.getElementById('log-' + panel);
       if (!el) return;
       if (el.querySelector('.ll-dim')) el.innerHTML = '';
+      // Detach cursor before appending so it stays at the very end
+      hideCursor();
       const line = document.createElement('div');
       if (cls) line.className = cls;
       line.textContent = msg;
       el.appendChild(line);
-      el.scrollTop = el.scrollHeight;
+      if (STATE.running) moveCursorTo(panel);
+      else el.scrollTop = el.scrollHeight;
     }
 
     function classifyLog(msg) {
@@ -2978,7 +3046,10 @@
         setStepStatus(evt.node, 'running');
         startStepTimer(evt.node);
         const p = NODE_PANEL[evt.node];
-        if (p) appendLog(p, `⏳ ${evt.label} started…`, 'll-run');
+        if (p) {
+          appendLog(p, `⏳ ${evt.label} started…`, 'll-run');
+          moveCursorTo(p);
+        }
       }
       else if (type === 'node_complete') {
         STATE.nodeEndTimes[evt.node] = Date.now();
@@ -3025,6 +3096,7 @@
 
     function finishRun() {
       STATE.running = false;
+      hideCursor();
       if (_timerInterval) { clearInterval(_timerInterval); _timerInterval = null; }
       Object.keys(_stepTimers).forEach(stopStepTimer);
       document.getElementById('progressFill').style.width = '100%';
@@ -3088,7 +3160,7 @@
       buildStepList();
       document.getElementById('stepperTitle').textContent = prompt.length > 60 ? prompt.slice(0, 57) + '…' : prompt;
       document.getElementById('etaMain').textContent = `Preparing pipeline…`;
-      document.getElementById('etaSub').textContent = `Sequential workflow · ~${fmtMs(TOTAL_EST_MS)} total`;
+      document.getElementById('etaSub').textContent = `Conditional router · ~${fmtMs(TOTAL_EST_MS)} total`;
       document.getElementById('etaElapsed').textContent = '0:00';
       document.getElementById('stepperCard').classList.add('visible');
       document.getElementById('progressTrack').classList.add('visible');

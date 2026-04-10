@@ -1,0 +1,117 @@
+question_id,question,variant,answered,answer
+Q1,What are the major risk factors Apple reports related to supply chain and operations?,baseline,True,"The major risk factors Apple reports related to supply chain and operations include:
+
+1. **Disruptions in Operations**: Apple faces risks from disruptions in its operations, supply chain, and sales and distribution channels, which can lead to interruptions in the supply of current products and delays in the production of new products and services.
+
+2. **Reliance on Limited Sources**: The company relies on single or limited sources for the supply and manufacture of many critical components. Any business interruption affecting these sources could exacerbate negative consequences for Apple.
+
+3. **Supply Shortages and Price Increases**: Apple is subject to significant risks of supply shortages and price increases that can materially adversely affect its business, results of operations, financial condition, and stock price.
+
+4. **Design and Manufacturing Defects**: The company’s products and services may be affected by design and manufacturing defects, which could harm its reputation and adversely affect its business.
+
+5. **Component Defects**: Defects in components and products purchased from third parties could make Apple’s products unsafe and create additional risks.
+
+These factors collectively highlight the vulnerabilities in Apple's supply chain and operational processes."
+Q1,What are the major risk factors Apple reports related to supply chain and operations?,hyde,True,"The major risk factors Apple reports related to supply chain and operations include:
+
+1. **Supply Shortages and Price Increases**: Apple is subject to significant risks of supply shortages and price increases that can adversely affect its business, results of operations, financial condition, and stock price.
+
+2. **Design and Manufacturing Defects**: The company's products and services may be impacted by design and manufacturing defects, which could harm its reputation and business.
+
+3. **Dependence on Third-Party Components**: Apple relies on single or limited sources for many critical components. Interruptions affecting these sources can exacerbate negative consequences for the company.
+
+4. **Operational Disruptions**: Events affecting the global economy, such as public safety measures, can disrupt operations, supply chains, and sales channels, leading to interruptions in product supply and delays in production.
+
+5. **Supplier Limitations**: There is a risk that Apple may not be able to extend or renew agreements for component supply on favorable terms, or may face challenges in obtaining sufficient quantities from suppliers or alternative sources.
+
+6. **Consolidation of Suppliers**: Component suppliers may fail, consolidate within the industry, or shift focus to common components, limiting Apple's ability to obtain customized components.
+
+7. **Geographic Concentration**: A significant portion of Apple's hardware products is manufactured by outsourcing partners located primarily in specific countries, which may pose additional risks related to geopolitical and economic factors in those regions."
+Q1,What are the major risk factors Apple reports related to supply chain and operations?,hybrid,True,"The major risk factors Apple reports related to supply chain and operations include:
+
+1. **Natural Disasters**: Operations, retail stores, and facilities are located in areas prone to earthquakes and other natural disasters, which can disrupt manufacturing and delivery.
+
+2. **Climate Change**: Increased frequency and intensity of natural disasters due to climate change can adversely affect operations.
+
+3. **Industrial Accidents**: Risks of industrial accidents at suppliers and contract manufacturers can lead to serious injuries, business disruptions, and reputational harm.
+
+4. **Public Health Issues**: Major public health crises, such as pandemics, can negatively impact the global economy, demand for products, and operational capabilities.
+
+5. **Cybersecurity Threats**: Risks from ransomware and other cybersecurity attacks can disrupt operations.
+
+6. **Supply Chain Dependencies**: Reliance on single or limited sources for critical components means that disruptions in these sources can exacerbate negative consequences.
+
+7. **Macroeconomic Conditions**: Adverse economic conditions, such as recession, inflation, and currency fluctuations, can impact consumer confidence and spending, affecting demand for products.
+
+8. **Logistical Challenges**: Protective public safety measures can impose restrictions on employee travel and freight services, disrupting supply chains and sales channels.
+
+These factors can lead to delays, increased costs, and interruptions in product supply and service offerings."
+Q1,What are the major risk factors Apple reports related to supply chain and operations?,finance,True,"The major risk factors Apple reports related to supply chain and operations include:
+
+1. **Supply Shortages and Price Increases**: Apple faces significant risks of supply shortages and price increases that can adversely affect its business, results of operations, financial condition, and stock price.
+
+2. **Design and Manufacturing Defects**: The company's products and services may be impacted by design and manufacturing defects, which can harm its reputation and business.
+
+3. **Component Defects**: Defects in components purchased from third parties can make products unsafe and pose risks of environmental or property damage and personal injury.
+
+4. **Quality Issues and Service Outages**: Apple's service offerings can experience quality issues, outages, slowdowns, or errors, which may not meet customer expectations.
+
+5. **Technological Risks**: The introduction of new and complex technologies can increase safety risks and expose users to harmful or inaccurate content.
+
+6. **Product Liability Claims**: The company may face product liability claims, recalls, and significant warranty expenses, which can adversely affect its reputation and financial condition.
+
+7. **Inventory Write-downs**: Apple is exposed to the risk of write-downs on the value of its inventory and other assets.
+
+8. **Competition and Market Dynamics**: The highly volatile and competitive nature of the markets requires Apple to manage frequent product introductions and transitions, which can impact its business if not executed successfully.
+
+These factors collectively highlight the complexities and risks associated with Apple's supply chain and operational strategies."
+Q1,What are the major risk factors Apple reports related to supply chain and operations?,baseline+rerank,True,"The major risk factors related to supply chain and operations that Apple reports include the risk of supply shortages and price increases, potential design and manufacturing defects in products and services, disruptions in operations, supply chain, and sales channels due to global economic factors and public safety measures, and the potential for substantial recovery time and significant expenditures in the event of a business interruption."
+Q1,What are the major risk factors Apple reports related to supply chain and operations?,hyde+rerank,True,"The major risk factors Apple reports related to supply chain and operations include supply shortages, price increases, design and manufacturing defects, potential financial instability of suppliers and partners, adverse economic conditions, political events, trade disputes, geopolitical tensions, conflict, terrorism, natural disasters, and disruptions in operations, supply chain, and distribution channels."
+Q1,What are the major risk factors Apple reports related to supply chain and operations?,hybrid+rerank,False,Insufficient evidence.
+Q1,What are the major risk factors Apple reports related to supply chain and operations?,finance+rerank,False,Insufficient evidence is provided to determine the major risk factors Apple reports related to supply chain and operations.
+Q2,What does Apple report in Management’s Discussion and Analysis about revenue performance?,baseline,False,"The retrieved context does not provide specific information about Apple's revenue performance as discussed in Management’s Discussion and Analysis. Therefore, I cannot answer the question based on the available evidence."
+Q2,What does Apple report in Management’s Discussion and Analysis about revenue performance?,hyde,True,"The retrieved context provides some insights into Apple's revenue performance as discussed in Management’s Discussion and Analysis. Specifically, it notes that:
+
+- Mac net sales increased in 2025 compared to 2024, primarily due to higher net sales of laptops and desktops.
+- iPad net sales also increased in 2025 compared to 2024, driven by higher sales of iPad Air, iPad mini, and iPad, although this was partially offset by lower sales of iPad Pro.
+- Services net sales increased in 2025 compared to 2024, primarily due to higher sales from advertising, the App Store, and cloud services.
+- However, Wearables, Home and Accessories net sales decreased in 2025 compared to 2024, primarily due to lower sales of Accessories and Wearables.
+
+Overall, the context indicates a mixed revenue performance across different product categories, with increases in Mac, iPad, and Services, but a decrease in Wearables, Home and Accessories."
+Q2,What does Apple report in Management’s Discussion and Analysis about revenue performance?,hybrid,False,"The retrieved context does not provide specific information about Apple's revenue performance as discussed in Management’s Discussion and Analysis. Therefore, I cannot answer the question based on the available evidence."
+Q2,What does Apple report in Management’s Discussion and Analysis about revenue performance?,finance,False,"The retrieved context does not provide specific information about Apple's revenue performance as reported in Management’s Discussion and Analysis. Therefore, I cannot answer the question based on the available evidence."
+Q2,What does Apple report in Management’s Discussion and Analysis about revenue performance?,baseline+rerank,False,insufficient evidence to provide specific details about what Apple reports in Management's Discussion and Analysis about revenue performance.
+Q2,What does Apple report in Management’s Discussion and Analysis about revenue performance?,hyde+rerank,False,"The Management's Discussion and Analysis section of Apple's 2025 Form 10-K report provides information on the net sales performance of different product categories, including iPhone, Mac, iPad, Wearables, Home and Accessories, and Services. It shows the net sales figures for 2025, 2024, and 2023, along with the percentage change between the years. The report highlights that iPhone net sales increased in 2025 compared to 2024 due to higher sales of Pro models, while Mac net sales increased primarily due to higher laptop sales. Additionally, Services net sales saw a significant increase in 2025. However, specific details about revenue performance and analysis are not provided in the retrieved context."
+Q2,What does Apple report in Management’s Discussion and Analysis about revenue performance?,hybrid+rerank,False,Insufficient evidence provided to answer the question about what Apple reports in Management's Discussion and Analysis about revenue performance.
+Q2,What does Apple report in Management’s Discussion and Analysis about revenue performance?,finance+rerank,True,The information provided does not specifically address what Apple reports in Management's Discussion and Analysis about revenue performance.
+Q3,What cybersecurity disclosures are included in the 10-K?,baseline,False,"The 10-K includes disclosures related to cybersecurity risks in Item 1A under the heading ""Risk Factors."" It discusses the Company's cybersecurity risks, the potential for malicious attacks, and the regular reviews conducted by the Audit Committee regarding these risks. Additionally, it mentions the involvement of various management roles in these discussions, including the Head of Corporate Information Security and the General Counsel. However, specific details about the nature of the cybersecurity incidents or the effectiveness of the security measures are not provided in the retrieved context."
+Q3,What cybersecurity disclosures are included in the 10-K?,hyde,True,"The context provided does not specify the exact cybersecurity disclosures included in the 10-K. It mentions that the Audit Committee reviews cybersecurity risks and incidents, and that there is a discussion of cybersecurity-related risks in Item 1A under ""Risk Factors."" However, it does not detail the specific disclosures or information included in the 10-K regarding cybersecurity. Therefore, the evidence is insufficient to answer the question about the specific cybersecurity disclosures in the 10-K."
+Q3,What cybersecurity disclosures are included in the 10-K?,hybrid,True,"The 10-K includes disclosures related to cybersecurity in the following areas:
+
+1. **Enterprise Risk Management**: The company's program is designed to identify, assess, and monitor business risks, including cybersecurity risks.
+2. **Audit Committee Oversight**: The Audit Committee regularly reviews and discusses cybersecurity risks with management and receives updates on cybersecurity incidents.
+3. **Reporting to the Board**: The Chair of the Audit Committee reports the substance of these reviews and discussions to the Board and recommends actions as necessary.
+4. **Risk Factors**: For a detailed discussion of the company's cybersecurity-related risks, it refers to Item 1A under the heading ""Risk Factors.""
+
+These elements collectively provide insight into how the company manages and discloses its cybersecurity risks in the 10-K."
+Q3,What cybersecurity disclosures are included in the 10-K?,finance,False,"The context does not provide specific details about the cybersecurity disclosures included in the 10-K. It mentions the Company's cybersecurity risks and the oversight by the Audit Committee, but does not enumerate specific disclosures or sections within the 10-K related to cybersecurity. Therefore, the evidence is insufficient to answer the question explicitly."
+Q3,What cybersecurity disclosures are included in the 10-K?,baseline+rerank,True,"The cybersecurity disclosures included in the 10-K report mention that the Audit Committee regularly reviews and discusses the company's cybersecurity risks with management, including key personnel such as the Head of Corporate Information Security. The Chair of the Audit Committee reports these discussions to the Board and recommends appropriate actions. For a more detailed discussion of cybersecurity-related risks, refer to Item 1A under the heading ""Risk Factors."""
+Q3,What cybersecurity disclosures are included in the 10-K?,hyde+rerank,True,"Evidence is insufficient to provide specific details on the cybersecurity disclosures included in the 10-K. The information provided mentions that the Audit Committee regularly reviews and discusses cybersecurity risks with management, and there is a discussion of cybersecurity-related risks under the ""Risk Factors"" section of the Form 10-K. For more detailed information on cybersecurity disclosures, further examination of the Form 10-K document is required."
+Q3,What cybersecurity disclosures are included in the 10-K?,hybrid+rerank,False,"Insufficient evidence is provided to determine the specific cybersecurity disclosures included in the 10-K. The context mentions the company's enterprise risk management program assessing cybersecurity risks, regular reviews by the Audit Committee, and potential vulnerabilities such as hacking and ransomware attacks. However, specific details about cybersecurity disclosures in the 10-K are not explicitly stated."
+Q3,What cybersecurity disclosures are included in the 10-K?,finance+rerank,True,"ased on the provided context, the cybersecurity disclosures included in the 10-K report are related to the Company's enterprise risk management program, oversight and monitoring of cybersecurity matters by the Audit Committee, regular reviews and discussions of cybersecurity risks with management, updates on cybersecurity incidents, and the potential impact of malicious attacks on the Company's business, reputation, and financial condition. The report also mentions the Company's Information Security team, Supplier Trust team, and processes for addressing and escalating cybersecurity incidents. However, specific details about the cybersecurity measures implemented by the Company are not explicitly stated in the retrieved context."
+Q4,How much revenue did Apple generate from iPhone sales in the most recent fiscal year?,baseline,False,"The context provided does not include specific revenue figures for iPhone sales in the most recent fiscal year. Therefore, I cannot answer the question based on the retrieved context."
+Q4,How much revenue did Apple generate from iPhone sales in the most recent fiscal year?,hyde,False,"The context does not provide specific revenue figures for iPhone sales in the most recent fiscal year. Therefore, I cannot answer the question."
+Q4,How much revenue did Apple generate from iPhone sales in the most recent fiscal year?,hybrid,False,"The retrieved context does not provide specific revenue figures for iPhone sales in the most recent fiscal year. Therefore, I cannot answer the question based on the available information."
+Q4,How much revenue did Apple generate from iPhone sales in the most recent fiscal year?,finance,True,"Apple generated $209,586 million from iPhone sales in the most recent fiscal year (2025)."
+Q4,How much revenue did Apple generate from iPhone sales in the most recent fiscal year?,baseline+rerank,False,Insufficient evidence provided to determine the exact revenue generated from iPhone sales in the most recent fiscal year.
+Q4,How much revenue did Apple generate from iPhone sales in the most recent fiscal year?,hyde+rerank,False,Insufficient evidence provided to determine the exact revenue generated from iPhone sales in the most recent fiscal year.
+Q4,How much revenue did Apple generate from iPhone sales in the most recent fiscal year?,hybrid+rerank,False,Insufficient evidence provided to determine the exact revenue generated from iPhone sales in the most recent fiscal year.
+Q4,How much revenue did Apple generate from iPhone sales in the most recent fiscal year?,finance+rerank,False,Insufficient evidence provided to determine the exact revenue generated from iPhone sales in the most recent fiscal year.
+Q5,What geographic regions represent Apple's largest revenue sources?,baseline,True,"The geographic regions that represent Apple's largest revenue sources are the Americas and Greater China, which includes China mainland, Hong Kong, and Taiwan."
+Q5,What geographic regions represent Apple's largest revenue sources?,hyde,True,"The geographic regions that represent Apple's largest revenue sources are the Americas, Europe, Greater China, Japan, and the Rest of Asia Pacific. Specifically, the U.S. and China are highlighted as significant contributors to net sales."
+Q5,What geographic regions represent Apple's largest revenue sources?,hybrid,True,"The geographic regions that represent Apple's largest revenue sources are the Americas, Europe, Greater China, Japan, and Rest of Asia Pacific."
+Q5,What geographic regions represent Apple's largest revenue sources?,finance,True,"The geographic regions that represent Apple's largest revenue sources are the Americas, Europe, Greater China, Japan, and Rest of Asia Pacific. Specifically, the U.S. and China are highlighted as significant contributors to net sales."
+Q5,What geographic regions represent Apple's largest revenue sources?,baseline+rerank,True,"Based on the information provided, Apple's largest revenue sources come from the Americas, Europe, Greater China, Japan, and the Rest of Asia Pacific. The company's reportable segments are divided based on these geographic regions."
+Q5,What geographic regions represent Apple's largest revenue sources?,hyde+rerank,False,"Based on the information provided, Apple's largest revenue sources come from the Americas, Europe, Greater China, Japan, and the Rest of Asia Pacific. The Greater China segment includes China mainland, Hong Kong, and Taiwan, which suggests that Greater China is one of Apple's significant revenue sources. However, the specific breakdown of revenue from each geographic region is not provided in the context, so further information would be needed to determine the exact proportions of revenue from each region."
+Q5,What geographic regions represent Apple's largest revenue sources?,hybrid+rerank,True,"Apple's largest revenue sources come from the Americas, Europe, Greater China, Japan, and the Rest of Asia Pacific."
+Q5,What geographic regions represent Apple's largest revenue sources?,finance+rerank,True,"The geographic regions that represent Apple's largest revenue sources are the Americas, Europe, Greater China, Japan, and Rest of Asia Pacific."

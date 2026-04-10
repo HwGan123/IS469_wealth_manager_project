@@ -59,7 +59,7 @@ from langgraph.graph import StateGraph, START, END
 from graph.architecture_experiment.state import ArchExperimentState
 from agents.market_context import market_context_node
 from agents.analyst import analyst_node
-from agents.sentiment import sentiment_node
+from agents.sentiment_agent import sentiment_node
 from agents.auditor import auditor_node
 from agents.report_generator import report_generator_node
 
@@ -236,6 +236,9 @@ def make_initial_state(
 
         # ── Report (populated by report_generator_agent) ───────────────────────
         "final_report":          "",
+
+        # ── Experiment trace (accumulated by harness wrappers) ─────────────────
+        "trace":                 [],
     }
 
 

@@ -1,13 +1,13 @@
 [
   {
     "workflow": "sequential",
-    "query": "Analyze AAPL and MSFT for long-term investment potential.",
-    "total_latency_ms": 682101.06,
-    "total_tokens": 34649,
-    "total_input_tokens": 30124,
-    "total_output_tokens": 4525,
-    "avg_input_tok_per_node": 6024.8,
-    "avg_output_tok_per_node": 905.0,
+    "query": "Analyze AAPL for long-term investment potential.",
+    "total_latency_ms": 193537.07,
+    "total_tokens": 14590,
+    "total_input_tokens": 11948,
+    "total_output_tokens": 2642,
+    "avg_input_tok_per_node": 2389.6,
+    "avg_output_tok_per_node": 528.4,
     "node_failure_rate": 0.0,
     "tool_error_count": 0,
     "market_context_skipped": false,
@@ -25,17 +25,17 @@
     "nodes": [
       {
         "name": "market_context_agent",
-        "latency_ms": 50295.9,
-        "input_tokens": 30124,
-        "output_tokens": 4525,
-        "tool_calls": 6,
+        "latency_ms": 31972.57,
+        "input_tokens": 11948,
+        "output_tokens": 2642,
+        "tool_calls": 5,
         "tool_errors": 0,
         "success": true,
         "error": null
       },
       {
-        "name": "sentiment_agent",
-        "latency_ms": 567825.4,
+        "name": "investment_analyst_agent",
+        "latency_ms": 14340.27,
         "input_tokens": 0,
         "output_tokens": 0,
         "tool_calls": 0,
@@ -44,8 +44,8 @@
         "error": null
       },
       {
-        "name": "investment_analyst_agent",
-        "latency_ms": 11832.76,
+        "name": "sentiment_agent",
+        "latency_ms": 104038.75,
         "input_tokens": 0,
         "output_tokens": 0,
         "tool_calls": 0,
@@ -55,7 +55,265 @@
       },
       {
         "name": "auditor_agent",
-        "latency_ms": 52003.98,
+        "latency_ms": 42997.96,
+        "input_tokens": 0,
+        "output_tokens": 0,
+        "tool_calls": 0,
+        "tool_errors": 0,
+        "success": true,
+        "error": null
+      },
+      {
+        "name": "report_generator_agent",
+        "latency_ms": 0.28,
+        "input_tokens": 0,
+        "output_tokens": 0,
+        "tool_calls": 0,
+        "tool_errors": 0,
+        "success": true,
+        "error": null
+      }
+    ]
+  },
+  {
+    "workflow": "conditional",
+    "query": "Analyze AAPL for long-term investment potential.",
+    "total_latency_ms": 89683.86,
+    "total_tokens": 25707,
+    "total_input_tokens": 22979,
+    "total_output_tokens": 2728,
+    "avg_input_tok_per_node": 4595.8,
+    "avg_output_tok_per_node": 545.6,
+    "node_failure_rate": 0.0,
+    "tool_error_count": 0,
+    "market_context_skipped": false,
+    "orchestrator_iterations": 0,
+    "audit_retries": 1,
+    "judge_scores": {
+      "correctness": 0.9,
+      "relevance": 0.95,
+      "groundedness": 0.85,
+      "guideline_adherence": 0.92,
+      "safety": 1.0
+    },
+    "success": true,
+    "error": null,
+    "nodes": [
+      {
+        "name": "conditional_router",
+        "latency_ms": 0.92,
+        "input_tokens": 0,
+        "output_tokens": 0,
+        "tool_calls": 0,
+        "tool_errors": 0,
+        "success": true,
+        "error": null
+      },
+      {
+        "name": "market_context_agent",
+        "latency_ms": 32504.56,
+        "input_tokens": 22979,
+        "output_tokens": 2728,
+        "tool_calls": 5,
+        "tool_errors": 0,
+        "success": true,
+        "error": null
+      },
+      {
+        "name": "investment_analyst_agent",
+        "latency_ms": 12240.69,
+        "input_tokens": 0,
+        "output_tokens": 0,
+        "tool_calls": 0,
+        "tool_errors": 0,
+        "success": true,
+        "error": null
+      },
+      {
+        "name": "auditor_agent",
+        "latency_ms": 44516.57,
+        "input_tokens": 0,
+        "output_tokens": 0,
+        "tool_calls": 0,
+        "tool_errors": 0,
+        "success": true,
+        "error": null
+      },
+      {
+        "name": "report_generator_agent",
+        "latency_ms": 0.12,
+        "input_tokens": 0,
+        "output_tokens": 0,
+        "tool_calls": 0,
+        "tool_errors": 0,
+        "success": true,
+        "error": null
+      }
+    ]
+  },
+  {
+    "workflow": "orchestration_worker",
+    "query": "Analyze AAPL for long-term investment potential.",
+    "total_latency_ms": 109999.23,
+    "total_tokens": 20160,
+    "total_input_tokens": 16772,
+    "total_output_tokens": 3388,
+    "avg_input_tok_per_node": 2096.5,
+    "avg_output_tok_per_node": 423.5,
+    "node_failure_rate": 0.0,
+    "tool_error_count": 0,
+    "market_context_skipped": false,
+    "orchestrator_iterations": 4,
+    "audit_retries": 1,
+    "judge_scores": {
+      "correctness": 0.9,
+      "relevance": 0.95,
+      "groundedness": 0.85,
+      "guideline_adherence": 0.92,
+      "safety": 1.0
+    },
+    "success": true,
+    "error": null,
+    "nodes": [
+      {
+        "name": "orchestrator_agent",
+        "latency_ms": 825.36,
+        "input_tokens": 0,
+        "output_tokens": 0,
+        "tool_calls": 0,
+        "tool_errors": 0,
+        "success": true,
+        "error": null
+      },
+      {
+        "name": "market_context_agent",
+        "latency_ms": 38594.83,
+        "input_tokens": 16772,
+        "output_tokens": 3388,
+        "tool_calls": 6,
+        "tool_errors": 0,
+        "success": true,
+        "error": null
+      },
+      {
+        "name": "orchestrator_agent",
+        "latency_ms": 1032.82,
+        "input_tokens": 0,
+        "output_tokens": 0,
+        "tool_calls": 0,
+        "tool_errors": 0,
+        "success": true,
+        "error": null
+      },
+      {
+        "name": "investment_analyst_agent",
+        "latency_ms": 18334.03,
+        "input_tokens": 0,
+        "output_tokens": 0,
+        "tool_calls": 0,
+        "tool_errors": 0,
+        "success": true,
+        "error": null
+      },
+      {
+        "name": "orchestrator_agent",
+        "latency_ms": 814.59,
+        "input_tokens": 0,
+        "output_tokens": 0,
+        "tool_calls": 0,
+        "tool_errors": 0,
+        "success": true,
+        "error": null
+      },
+      {
+        "name": "auditor_agent",
+        "latency_ms": 49656.83,
+        "input_tokens": 0,
+        "output_tokens": 0,
+        "tool_calls": 0,
+        "tool_errors": 0,
+        "success": true,
+        "error": null
+      },
+      {
+        "name": "orchestrator_agent",
+        "latency_ms": 699.04,
+        "input_tokens": 0,
+        "output_tokens": 0,
+        "tool_calls": 0,
+        "tool_errors": 0,
+        "success": true,
+        "error": null
+      },
+      {
+        "name": "report_generator_agent",
+        "latency_ms": 0.02,
+        "input_tokens": 0,
+        "output_tokens": 0,
+        "tool_calls": 0,
+        "tool_errors": 0,
+        "success": true,
+        "error": null
+      }
+    ]
+  },
+  {
+    "workflow": "sequential",
+    "query": "What is the current market sentiment for NVDA?",
+    "total_latency_ms": 160694.53,
+    "total_tokens": 8533,
+    "total_input_tokens": 7347,
+    "total_output_tokens": 1186,
+    "avg_input_tok_per_node": 1469.4,
+    "avg_output_tok_per_node": 237.2,
+    "node_failure_rate": 0.0,
+    "tool_error_count": 0,
+    "market_context_skipped": false,
+    "orchestrator_iterations": 0,
+    "audit_retries": 1,
+    "judge_scores": {
+      "correctness": 0.9,
+      "relevance": 0.95,
+      "groundedness": 0.85,
+      "guideline_adherence": 0.92,
+      "safety": 1.0
+    },
+    "success": true,
+    "error": null,
+    "nodes": [
+      {
+        "name": "market_context_agent",
+        "latency_ms": 14616.64,
+        "input_tokens": 7347,
+        "output_tokens": 1186,
+        "tool_calls": 4,
+        "tool_errors": 0,
+        "success": true,
+        "error": null
+      },
+      {
+        "name": "investment_analyst_agent",
+        "latency_ms": 12284.58,
+        "input_tokens": 0,
+        "output_tokens": 0,
+        "tool_calls": 0,
+        "tool_errors": 0,
+        "success": true,
+        "error": null
+      },
+      {
+        "name": "sentiment_agent",
+        "latency_ms": 99762.79,
+        "input_tokens": 0,
+        "output_tokens": 0,
+        "tool_calls": 0,
+        "tool_errors": 0,
+        "success": true,
+        "error": null
+      },
+      {
+        "name": "auditor_agent",
+        "latency_ms": 33961.12,
         "input_tokens": 0,
         "output_tokens": 0,
         "tool_calls": 0,
@@ -77,23 +335,23 @@
   },
   {
     "workflow": "conditional",
-    "query": "Analyze AAPL and MSFT for long-term investment potential.",
-    "total_latency_ms": 744709.38,
-    "total_tokens": 38402,
-    "total_input_tokens": 34417,
-    "total_output_tokens": 3985,
-    "avg_input_tok_per_node": 5736.2,
-    "avg_output_tok_per_node": 664.2,
+    "query": "What is the current market sentiment for NVDA?",
+    "total_latency_ms": 295259.4,
+    "total_tokens": 8647,
+    "total_input_tokens": 7358,
+    "total_output_tokens": 1289,
+    "avg_input_tok_per_node": 1051.1,
+    "avg_output_tok_per_node": 184.1,
     "node_failure_rate": 0.0,
     "tool_error_count": 0,
     "market_context_skipped": false,
     "orchestrator_iterations": 0,
-    "audit_retries": 1,
+    "audit_retries": 2,
     "judge_scores": {
-      "correctness": 0.9,
-      "relevance": 0.95,
-      "groundedness": 0.85,
-      "guideline_adherence": 0.92,
+      "correctness": 0.85,
+      "relevance": 0.9,
+      "groundedness": 0.7,
+      "guideline_adherence": 0.8,
       "safety": 1.0
     },
     "success": true,
@@ -101,7 +359,7 @@
     "nodes": [
       {
         "name": "conditional_router",
-        "latency_ms": 0.03,
+        "latency_ms": 0.34,
         "input_tokens": 0,
         "output_tokens": 0,
         "tool_calls": 0,
@@ -111,211 +369,9 @@
       },
       {
         "name": "market_context_agent",
-        "latency_ms": 43572.6,
-        "input_tokens": 34417,
-        "output_tokens": 3985,
-        "tool_calls": 6,
-        "tool_errors": 0,
-        "success": true,
-        "error": null
-      },
-      {
-        "name": "sentiment_agent",
-        "latency_ms": 612858.05,
-        "input_tokens": 0,
-        "output_tokens": 0,
-        "tool_calls": 0,
-        "tool_errors": 0,
-        "success": true,
-        "error": null
-      },
-      {
-        "name": "investment_analyst_agent",
-        "latency_ms": 12086.53,
-        "input_tokens": 0,
-        "output_tokens": 0,
-        "tool_calls": 0,
-        "tool_errors": 0,
-        "success": true,
-        "error": null
-      },
-      {
-        "name": "auditor_agent",
-        "latency_ms": 75258.24,
-        "input_tokens": 0,
-        "output_tokens": 0,
-        "tool_calls": 0,
-        "tool_errors": 0,
-        "success": true,
-        "error": null
-      },
-      {
-        "name": "report_generator_agent",
-        "latency_ms": 0.04,
-        "input_tokens": 0,
-        "output_tokens": 0,
-        "tool_calls": 0,
-        "tool_errors": 0,
-        "success": true,
-        "error": null
-      }
-    ]
-  },
-  {
-    "workflow": "orchestration_worker",
-    "query": "Analyze AAPL and MSFT for long-term investment potential.",
-    "total_latency_ms": 758218.18,
-    "total_tokens": 34436,
-    "total_input_tokens": 30134,
-    "total_output_tokens": 4302,
-    "avg_input_tok_per_node": 3013.4,
-    "avg_output_tok_per_node": 430.2,
-    "node_failure_rate": 0.0,
-    "tool_error_count": 0,
-    "market_context_skipped": false,
-    "orchestrator_iterations": 5,
-    "audit_retries": 1,
-    "judge_scores": {
-      "correctness": 0.9,
-      "relevance": 0.95,
-      "groundedness": 0.85,
-      "guideline_adherence": 0.92,
-      "safety": 1.0
-    },
-    "success": true,
-    "error": null,
-    "nodes": [
-      {
-        "name": "orchestrator_agent",
-        "latency_ms": 1064.68,
-        "input_tokens": 0,
-        "output_tokens": 0,
-        "tool_calls": 0,
-        "tool_errors": 0,
-        "success": true,
-        "error": null
-      },
-      {
-        "name": "market_context_agent",
-        "latency_ms": 52215.24,
-        "input_tokens": 30134,
-        "output_tokens": 4302,
-        "tool_calls": 6,
-        "tool_errors": 0,
-        "success": true,
-        "error": null
-      },
-      {
-        "name": "orchestrator_agent",
-        "latency_ms": 1269.7,
-        "input_tokens": 0,
-        "output_tokens": 0,
-        "tool_calls": 0,
-        "tool_errors": 0,
-        "success": true,
-        "error": null
-      },
-      {
-        "name": "sentiment_agent",
-        "latency_ms": 644547.33,
-        "input_tokens": 0,
-        "output_tokens": 0,
-        "tool_calls": 0,
-        "tool_errors": 0,
-        "success": true,
-        "error": null
-      },
-      {
-        "name": "orchestrator_agent",
-        "latency_ms": 1647.94,
-        "input_tokens": 0,
-        "output_tokens": 0,
-        "tool_calls": 0,
-        "tool_errors": 0,
-        "success": true,
-        "error": null
-      },
-      {
-        "name": "investment_analyst_agent",
-        "latency_ms": 10158.77,
-        "input_tokens": 0,
-        "output_tokens": 0,
-        "tool_calls": 0,
-        "tool_errors": 0,
-        "success": true,
-        "error": null
-      },
-      {
-        "name": "orchestrator_agent",
-        "latency_ms": 777.89,
-        "input_tokens": 0,
-        "output_tokens": 0,
-        "tool_calls": 0,
-        "tool_errors": 0,
-        "success": true,
-        "error": null
-      },
-      {
-        "name": "auditor_agent",
-        "latency_ms": 45617.77,
-        "input_tokens": 0,
-        "output_tokens": 0,
-        "tool_calls": 0,
-        "tool_errors": 0,
-        "success": true,
-        "error": null
-      },
-      {
-        "name": "orchestrator_agent",
-        "latency_ms": 576.97,
-        "input_tokens": 0,
-        "output_tokens": 0,
-        "tool_calls": 0,
-        "tool_errors": 0,
-        "success": true,
-        "error": null
-      },
-      {
-        "name": "report_generator_agent",
-        "latency_ms": 0.89,
-        "input_tokens": 0,
-        "output_tokens": 0,
-        "tool_calls": 0,
-        "tool_errors": 0,
-        "success": true,
-        "error": null
-      }
-    ]
-  },
-  {
-    "workflow": "sequential",
-    "query": "What is the current market sentiment for NVDA?",
-    "total_latency_ms": 171112.77,
-    "total_tokens": 8227,
-    "total_input_tokens": 7158,
-    "total_output_tokens": 1069,
-    "avg_input_tok_per_node": 1431.6,
-    "avg_output_tok_per_node": 213.8,
-    "node_failure_rate": 0.0,
-    "tool_error_count": 0,
-    "market_context_skipped": false,
-    "orchestrator_iterations": 0,
-    "audit_retries": 1,
-    "judge_scores": {
-      "correctness": 0.9,
-      "relevance": 0.95,
-      "groundedness": 0.85,
-      "guideline_adherence": 0.92,
-      "safety": 1.0
-    },
-    "success": true,
-    "error": null,
-    "nodes": [
-      {
-        "name": "market_context_agent",
-        "latency_ms": 14268.42,
-        "input_tokens": 7158,
-        "output_tokens": 1069,
+        "latency_ms": 14907.6,
+        "input_tokens": 7358,
+        "output_tokens": 1289,
         "tool_calls": 4,
         "tool_errors": 0,
         "success": true,
@@ -323,17 +379,7 @@
       },
       {
         "name": "sentiment_agent",
-        "latency_ms": 110060.58,
-        "input_tokens": 0,
-        "output_tokens": 0,
-        "tool_calls": 0,
-        "tool_errors": 0,
-        "success": true,
-        "error": null
-      },
-      {
-        "name": "investment_analyst_agent",
-        "latency_ms": 10921.43,
+        "latency_ms": 91033.22,
         "input_tokens": 0,
         "output_tokens": 0,
         "tool_calls": 0,
@@ -343,83 +389,17 @@
       },
       {
         "name": "auditor_agent",
-        "latency_ms": 35015.01,
+        "latency_ms": 43647.99,
         "input_tokens": 0,
         "output_tokens": 0,
         "tool_calls": 0,
-        "tool_errors": 0,
-        "success": true,
-        "error": null
-      },
-      {
-        "name": "report_generator_agent",
-        "latency_ms": 1.13,
-        "input_tokens": 0,
-        "output_tokens": 0,
-        "tool_calls": 0,
-        "tool_errors": 0,
-        "success": true,
-        "error": null
-      }
-    ]
-  },
-  {
-    "workflow": "conditional",
-    "query": "What is the current market sentiment for NVDA?",
-    "total_latency_ms": 211951.39,
-    "total_tokens": 12008,
-    "total_input_tokens": 10599,
-    "total_output_tokens": 1409,
-    "avg_input_tok_per_node": 1766.5,
-    "avg_output_tok_per_node": 234.8,
-    "node_failure_rate": 0.0,
-    "tool_error_count": 0,
-    "market_context_skipped": false,
-    "orchestrator_iterations": 0,
-    "audit_retries": 1,
-    "judge_scores": {
-      "correctness": 0.9,
-      "relevance": 0.95,
-      "groundedness": 0.85,
-      "guideline_adherence": 0.92,
-      "safety": 1.0
-    },
-    "success": true,
-    "error": null,
-    "nodes": [
-      {
-        "name": "conditional_router",
-        "latency_ms": 0.03,
-        "input_tokens": 0,
-        "output_tokens": 0,
-        "tool_calls": 0,
-        "tool_errors": 0,
-        "success": true,
-        "error": null
-      },
-      {
-        "name": "market_context_agent",
-        "latency_ms": 19259.93,
-        "input_tokens": 10599,
-        "output_tokens": 1409,
-        "tool_calls": 5,
         "tool_errors": 0,
         "success": true,
         "error": null
       },
       {
         "name": "sentiment_agent",
-        "latency_ms": 147469.51,
-        "input_tokens": 0,
-        "output_tokens": 0,
-        "tool_calls": 0,
-        "tool_errors": 0,
-        "success": true,
-        "error": null
-      },
-      {
-        "name": "investment_analyst_agent",
-        "latency_ms": 7053.0,
+        "latency_ms": 109593.91,
         "input_tokens": 0,
         "output_tokens": 0,
         "tool_calls": 0,
@@ -429,7 +409,7 @@
       },
       {
         "name": "auditor_agent",
-        "latency_ms": 37916.02,
+        "latency_ms": 35879.19,
         "input_tokens": 0,
         "output_tokens": 0,
         "tool_calls": 0,
@@ -439,7 +419,7 @@
       },
       {
         "name": "report_generator_agent",
-        "latency_ms": 0.04,
+        "latency_ms": 0.32,
         "input_tokens": 0,
         "output_tokens": 0,
         "tool_calls": 0,
@@ -452,22 +432,22 @@
   {
     "workflow": "orchestration_worker",
     "query": "What is the current market sentiment for NVDA?",
-    "total_latency_ms": 196207.17,
-    "total_tokens": 8221,
-    "total_input_tokens": 7164,
-    "total_output_tokens": 1057,
-    "avg_input_tok_per_node": 716.4,
-    "avg_output_tok_per_node": 105.7,
+    "total_latency_ms": 187702.76,
+    "total_tokens": 26222,
+    "total_input_tokens": 22036,
+    "total_output_tokens": 4186,
+    "avg_input_tok_per_node": 1836.3,
+    "avg_output_tok_per_node": 348.8,
     "node_failure_rate": 0.0,
     "tool_error_count": 0,
     "market_context_skipped": false,
-    "orchestrator_iterations": 5,
+    "orchestrator_iterations": 6,
     "audit_retries": 1,
     "judge_scores": {
-      "correctness": 0.9,
-      "relevance": 0.95,
-      "groundedness": 0.85,
-      "guideline_adherence": 0.92,
+      "correctness": 0.85,
+      "relevance": 0.9,
+      "groundedness": 0.75,
+      "guideline_adherence": 0.8,
       "safety": 1.0
     },
     "success": true,
@@ -475,7 +455,7 @@
     "nodes": [
       {
         "name": "orchestrator_agent",
-        "latency_ms": 594.59,
+        "latency_ms": 734.94,
         "input_tokens": 0,
         "output_tokens": 0,
         "tool_calls": 0,
@@ -485,9 +465,9 @@
       },
       {
         "name": "market_context_agent",
-        "latency_ms": 21566.68,
-        "input_tokens": 7164,
-        "output_tokens": 1057,
+        "latency_ms": 15550.45,
+        "input_tokens": 7347,
+        "output_tokens": 1263,
         "tool_calls": 4,
         "tool_errors": 0,
         "success": true,
@@ -495,7 +475,7 @@
       },
       {
         "name": "orchestrator_agent",
-        "latency_ms": 843.86,
+        "latency_ms": 730.61,
         "input_tokens": 0,
         "output_tokens": 0,
         "tool_calls": 0,
@@ -505,7 +485,7 @@
       },
       {
         "name": "sentiment_agent",
-        "latency_ms": 118246.48,
+        "latency_ms": 100705.62,
         "input_tokens": 0,
         "output_tokens": 0,
         "tool_calls": 0,
@@ -515,27 +495,7 @@
       },
       {
         "name": "orchestrator_agent",
-        "latency_ms": 1089.38,
-        "input_tokens": 0,
-        "output_tokens": 0,
-        "tool_calls": 0,
-        "tool_errors": 0,
-        "success": true,
-        "error": null
-      },
-      {
-        "name": "investment_analyst_agent",
-        "latency_ms": 9394.13,
-        "input_tokens": 0,
-        "output_tokens": 0,
-        "tool_calls": 0,
-        "tool_errors": 0,
-        "success": true,
-        "error": null
-      },
-      {
-        "name": "orchestrator_agent",
-        "latency_ms": 594.34,
+        "latency_ms": 976.25,
         "input_tokens": 0,
         "output_tokens": 0,
         "tool_calls": 0,
@@ -545,7 +505,7 @@
       },
       {
         "name": "auditor_agent",
-        "latency_ms": 43036.65,
+        "latency_ms": 30034.07,
         "input_tokens": 0,
         "output_tokens": 0,
         "tool_calls": 0,
@@ -555,7 +515,47 @@
       },
       {
         "name": "orchestrator_agent",
-        "latency_ms": 577.39,
+        "latency_ms": 644.67,
+        "input_tokens": 0,
+        "output_tokens": 0,
+        "tool_calls": 0,
+        "tool_errors": 0,
+        "success": true,
+        "error": null
+      },
+      {
+        "name": "market_context_agent",
+        "latency_ms": 20229.62,
+        "input_tokens": 7347,
+        "output_tokens": 1561,
+        "tool_calls": 4,
+        "tool_errors": 0,
+        "success": true,
+        "error": null
+      },
+      {
+        "name": "orchestrator_agent",
+        "latency_ms": 757.65,
+        "input_tokens": 0,
+        "output_tokens": 0,
+        "tool_calls": 0,
+        "tool_errors": 0,
+        "success": true,
+        "error": null
+      },
+      {
+        "name": "market_context_agent",
+        "latency_ms": 16467.4,
+        "input_tokens": 7342,
+        "output_tokens": 1362,
+        "tool_calls": 4,
+        "tool_errors": 0,
+        "success": true,
+        "error": null
+      },
+      {
+        "name": "orchestrator_agent",
+        "latency_ms": 695.73,
         "input_tokens": 0,
         "output_tokens": 0,
         "tool_calls": 0,
@@ -565,7 +565,7 @@
       },
       {
         "name": "report_generator_agent",
-        "latency_ms": 1.45,
+        "latency_ms": 0.11,
         "input_tokens": 0,
         "output_tokens": 0,
         "tool_calls": 0,
@@ -578,12 +578,12 @@
   {
     "workflow": "sequential",
     "query": "Provide a comprehensive financial report on TSLA, including risks and recommendations.",
-    "total_latency_ms": 425805.32,
-    "total_tokens": 22229,
-    "total_input_tokens": 18246,
-    "total_output_tokens": 3983,
-    "avg_input_tok_per_node": 3649.2,
-    "avg_output_tok_per_node": 796.6,
+    "total_latency_ms": 237005.88,
+    "total_tokens": 19172,
+    "total_input_tokens": 15482,
+    "total_output_tokens": 3690,
+    "avg_input_tok_per_node": 3096.4,
+    "avg_output_tok_per_node": 738.0,
     "node_failure_rate": 0.0,
     "tool_error_count": 0,
     "market_context_skipped": false,
@@ -593,7 +593,7 @@
       "correctness": 0.85,
       "relevance": 0.9,
       "groundedness": 0.8,
-      "guideline_adherence": 0.88,
+      "guideline_adherence": 0.75,
       "safety": 1.0
     },
     "success": true,
@@ -601,17 +601,17 @@
     "nodes": [
       {
         "name": "market_context_agent",
-        "latency_ms": 44549.36,
-        "input_tokens": 18246,
-        "output_tokens": 3983,
+        "latency_ms": 41544.05,
+        "input_tokens": 15482,
+        "output_tokens": 3690,
         "tool_calls": 6,
         "tool_errors": 0,
         "success": true,
         "error": null
       },
       {
-        "name": "sentiment_agent",
-        "latency_ms": 320211.99,
+        "name": "investment_analyst_agent",
+        "latency_ms": 31979.57,
         "input_tokens": 0,
         "output_tokens": 0,
         "tool_calls": 0,
@@ -620,8 +620,8 @@
         "error": null
       },
       {
-        "name": "investment_analyst_agent",
-        "latency_ms": 15399.61,
+        "name": "sentiment_agent",
+        "latency_ms": 108094.19,
         "input_tokens": 0,
         "output_tokens": 0,
         "tool_calls": 0,
@@ -631,7 +631,7 @@
       },
       {
         "name": "auditor_agent",
-        "latency_ms": 45401.22,
+        "latency_ms": 55227.42,
         "input_tokens": 0,
         "output_tokens": 0,
         "tool_calls": 0,
@@ -641,7 +641,7 @@
       },
       {
         "name": "report_generator_agent",
-        "latency_ms": 0.35,
+        "latency_ms": 0.06,
         "input_tokens": 0,
         "output_tokens": 0,
         "tool_calls": 0,
@@ -654,102 +654,16 @@
   {
     "workflow": "conditional",
     "query": "Provide a comprehensive financial report on TSLA, including risks and recommendations.",
-    "total_latency_ms": 340719.46,
-    "total_tokens": 21918,
-    "total_input_tokens": 18248,
-    "total_output_tokens": 3670,
-    "avg_input_tok_per_node": 3041.3,
-    "avg_output_tok_per_node": 611.7,
+    "total_latency_ms": 241068.93,
+    "total_tokens": 20988,
+    "total_input_tokens": 16682,
+    "total_output_tokens": 4306,
+    "avg_input_tok_per_node": 2780.3,
+    "avg_output_tok_per_node": 717.7,
     "node_failure_rate": 0.0,
     "tool_error_count": 0,
     "market_context_skipped": false,
     "orchestrator_iterations": 0,
-    "audit_retries": 1,
-    "judge_scores": {
-      "correctness": 0.9,
-      "relevance": 0.95,
-      "groundedness": 0.85,
-      "guideline_adherence": 0.9,
-      "safety": 1.0
-    },
-    "success": true,
-    "error": null,
-    "nodes": [
-      {
-        "name": "conditional_router",
-        "latency_ms": 0.03,
-        "input_tokens": 0,
-        "output_tokens": 0,
-        "tool_calls": 0,
-        "tool_errors": 0,
-        "success": true,
-        "error": null
-      },
-      {
-        "name": "market_context_agent",
-        "latency_ms": 41612.52,
-        "input_tokens": 18248,
-        "output_tokens": 3670,
-        "tool_calls": 6,
-        "tool_errors": 0,
-        "success": true,
-        "error": null
-      },
-      {
-        "name": "sentiment_agent",
-        "latency_ms": 245937.74,
-        "input_tokens": 0,
-        "output_tokens": 0,
-        "tool_calls": 0,
-        "tool_errors": 0,
-        "success": true,
-        "error": null
-      },
-      {
-        "name": "investment_analyst_agent",
-        "latency_ms": 8307.39,
-        "input_tokens": 0,
-        "output_tokens": 0,
-        "tool_calls": 0,
-        "tool_errors": 0,
-        "success": true,
-        "error": null
-      },
-      {
-        "name": "auditor_agent",
-        "latency_ms": 44591.32,
-        "input_tokens": 0,
-        "output_tokens": 0,
-        "tool_calls": 0,
-        "tool_errors": 0,
-        "success": true,
-        "error": null
-      },
-      {
-        "name": "report_generator_agent",
-        "latency_ms": 0.03,
-        "input_tokens": 0,
-        "output_tokens": 0,
-        "tool_calls": 0,
-        "tool_errors": 0,
-        "success": true,
-        "error": null
-      }
-    ]
-  },
-  {
-    "workflow": "orchestration_worker",
-    "query": "Provide a comprehensive financial report on TSLA, including risks and recommendations.",
-    "total_latency_ms": 310839.07,
-    "total_tokens": 22355,
-    "total_input_tokens": 18248,
-    "total_output_tokens": 4107,
-    "avg_input_tok_per_node": 1824.8,
-    "avg_output_tok_per_node": 410.7,
-    "node_failure_rate": 0.0,
-    "tool_error_count": 0,
-    "market_context_skipped": false,
-    "orchestrator_iterations": 5,
     "audit_retries": 1,
     "judge_scores": {
       "correctness": 0.85,
@@ -762,8 +676,8 @@
     "error": null,
     "nodes": [
       {
-        "name": "orchestrator_agent",
-        "latency_ms": 675.85,
+        "name": "conditional_router",
+        "latency_ms": 0.39,
         "input_tokens": 0,
         "output_tokens": 0,
         "tool_calls": 0,
@@ -773,37 +687,17 @@
       },
       {
         "name": "market_context_agent",
-        "latency_ms": 44141.59,
-        "input_tokens": 18248,
-        "output_tokens": 4107,
+        "latency_ms": 49014.47,
+        "input_tokens": 16682,
+        "output_tokens": 4306,
         "tool_calls": 6,
         "tool_errors": 0,
         "success": true,
         "error": null
       },
       {
-        "name": "orchestrator_agent",
-        "latency_ms": 867.14,
-        "input_tokens": 0,
-        "output_tokens": 0,
-        "tool_calls": 0,
-        "tool_errors": 0,
-        "success": true,
-        "error": null
-      },
-      {
         "name": "sentiment_agent",
-        "latency_ms": 215832.71,
-        "input_tokens": 0,
-        "output_tokens": 0,
-        "tool_calls": 0,
-        "tool_errors": 0,
-        "success": true,
-        "error": null
-      },
-      {
-        "name": "orchestrator_agent",
-        "latency_ms": 1045.84,
+        "latency_ms": 127513.42,
         "input_tokens": 0,
         "output_tokens": 0,
         "tool_calls": 0,
@@ -813,17 +707,7 @@
       },
       {
         "name": "investment_analyst_agent",
-        "latency_ms": 10070.28,
-        "input_tokens": 0,
-        "output_tokens": 0,
-        "tool_calls": 0,
-        "tool_errors": 0,
-        "success": true,
-        "error": null
-      },
-      {
-        "name": "orchestrator_agent",
-        "latency_ms": 701.66,
+        "latency_ms": 17979.41,
         "input_tokens": 0,
         "output_tokens": 0,
         "tool_calls": 0,
@@ -833,17 +717,7 @@
       },
       {
         "name": "auditor_agent",
-        "latency_ms": 36548.27,
-        "input_tokens": 0,
-        "output_tokens": 0,
-        "tool_calls": 0,
-        "tool_errors": 0,
-        "success": true,
-        "error": null
-      },
-      {
-        "name": "orchestrator_agent",
-        "latency_ms": 663.07,
+        "latency_ms": 46385.96,
         "input_tokens": 0,
         "output_tokens": 0,
         "tool_calls": 0,
@@ -853,7 +727,521 @@
       },
       {
         "name": "report_generator_agent",
-        "latency_ms": 1.07,
+        "latency_ms": 0.04,
+        "input_tokens": 0,
+        "output_tokens": 0,
+        "tool_calls": 0,
+        "tool_errors": 0,
+        "success": true,
+        "error": null
+      }
+    ]
+  },
+  {
+    "workflow": "orchestration_worker",
+    "query": "Provide a comprehensive financial report on TSLA, including risks and recommendations.",
+    "total_latency_ms": 242671.25,
+    "total_tokens": 18594,
+    "total_input_tokens": 15228,
+    "total_output_tokens": 3366,
+    "avg_input_tok_per_node": 1903.5,
+    "avg_output_tok_per_node": 420.8,
+    "node_failure_rate": 0.0,
+    "tool_error_count": 0,
+    "market_context_skipped": false,
+    "orchestrator_iterations": 4,
+    "audit_retries": 1,
+    "judge_scores": {
+      "correctness": 0.7,
+      "relevance": 0.6,
+      "groundedness": 0.5,
+      "guideline_adherence": 0.8,
+      "safety": 1.0
+    },
+    "success": true,
+    "error": null,
+    "nodes": [
+      {
+        "name": "orchestrator_agent",
+        "latency_ms": 1337.24,
+        "input_tokens": 0,
+        "output_tokens": 0,
+        "tool_calls": 0,
+        "tool_errors": 0,
+        "success": true,
+        "error": null
+      },
+      {
+        "name": "market_context_agent",
+        "latency_ms": 35089.57,
+        "input_tokens": 15228,
+        "output_tokens": 3366,
+        "tool_calls": 6,
+        "tool_errors": 0,
+        "success": true,
+        "error": null
+      },
+      {
+        "name": "orchestrator_agent",
+        "latency_ms": 1207.38,
+        "input_tokens": 0,
+        "output_tokens": 0,
+        "tool_calls": 0,
+        "tool_errors": 0,
+        "success": true,
+        "error": null
+      },
+      {
+        "name": "sentiment_agent",
+        "latency_ms": 142176.46,
+        "input_tokens": 0,
+        "output_tokens": 0,
+        "tool_calls": 0,
+        "tool_errors": 0,
+        "success": true,
+        "error": null
+      },
+      {
+        "name": "orchestrator_agent",
+        "latency_ms": 1127.88,
+        "input_tokens": 0,
+        "output_tokens": 0,
+        "tool_calls": 0,
+        "tool_errors": 0,
+        "success": true,
+        "error": null
+      },
+      {
+        "name": "auditor_agent",
+        "latency_ms": 60887.79,
+        "input_tokens": 0,
+        "output_tokens": 0,
+        "tool_calls": 0,
+        "tool_errors": 0,
+        "success": true,
+        "error": null
+      },
+      {
+        "name": "orchestrator_agent",
+        "latency_ms": 646.58,
+        "input_tokens": 0,
+        "output_tokens": 0,
+        "tool_calls": 0,
+        "tool_errors": 0,
+        "success": true,
+        "error": null
+      },
+      {
+        "name": "report_generator_agent",
+        "latency_ms": 0.11,
+        "input_tokens": 0,
+        "output_tokens": 0,
+        "tool_calls": 0,
+        "tool_errors": 0,
+        "success": true,
+        "error": null
+      }
+    ]
+  },
+  {
+    "workflow": "sequential",
+    "query": "Based on AAPL's 10K, what are its main business risks?",
+    "total_latency_ms": 290807.18,
+    "total_tokens": 24117,
+    "total_input_tokens": 22754,
+    "total_output_tokens": 1363,
+    "avg_input_tok_per_node": 2528.2,
+    "avg_output_tok_per_node": 151.4,
+    "node_failure_rate": 0.0,
+    "tool_error_count": 0,
+    "market_context_skipped": false,
+    "orchestrator_iterations": 0,
+    "audit_retries": 2,
+    "judge_scores": {
+      "correctness": 0.9,
+      "relevance": 0.95,
+      "groundedness": 0.85,
+      "guideline_adherence": 0.92,
+      "safety": 1.0
+    },
+    "success": true,
+    "error": null,
+    "nodes": [
+      {
+        "name": "market_context_agent",
+        "latency_ms": 8928.54,
+        "input_tokens": 11385,
+        "output_tokens": 377,
+        "tool_calls": 3,
+        "tool_errors": 0,
+        "success": true,
+        "error": null
+      },
+      {
+        "name": "investment_analyst_agent",
+        "latency_ms": 11994.59,
+        "input_tokens": 0,
+        "output_tokens": 0,
+        "tool_calls": 0,
+        "tool_errors": 0,
+        "success": true,
+        "error": null
+      },
+      {
+        "name": "sentiment_agent",
+        "latency_ms": 126453.96,
+        "input_tokens": 0,
+        "output_tokens": 0,
+        "tool_calls": 0,
+        "tool_errors": 0,
+        "success": true,
+        "error": null
+      },
+      {
+        "name": "auditor_agent",
+        "latency_ms": 42768.06,
+        "input_tokens": 0,
+        "output_tokens": 0,
+        "tool_calls": 0,
+        "tool_errors": 0,
+        "success": true,
+        "error": null
+      },
+      {
+        "name": "market_context_agent",
+        "latency_ms": 14325.97,
+        "input_tokens": 11369,
+        "output_tokens": 986,
+        "tool_calls": 1,
+        "tool_errors": 0,
+        "success": true,
+        "error": null
+      },
+      {
+        "name": "investment_analyst_agent",
+        "latency_ms": 13884.6,
+        "input_tokens": 0,
+        "output_tokens": 0,
+        "tool_calls": 0,
+        "tool_errors": 0,
+        "success": true,
+        "error": null
+      },
+      {
+        "name": "sentiment_agent",
+        "latency_ms": 34787.13,
+        "input_tokens": 0,
+        "output_tokens": 0,
+        "tool_calls": 0,
+        "tool_errors": 0,
+        "success": true,
+        "error": null
+      },
+      {
+        "name": "auditor_agent",
+        "latency_ms": 37238.36,
+        "input_tokens": 0,
+        "output_tokens": 0,
+        "tool_calls": 0,
+        "tool_errors": 0,
+        "success": true,
+        "error": null
+      },
+      {
+        "name": "report_generator_agent",
+        "latency_ms": 0.37,
+        "input_tokens": 0,
+        "output_tokens": 0,
+        "tool_calls": 0,
+        "tool_errors": 0,
+        "success": true,
+        "error": null
+      }
+    ]
+  },
+  {
+    "workflow": "conditional",
+    "query": "Based on AAPL's 10K, what are its main business risks?",
+    "total_latency_ms": 100882.58,
+    "total_tokens": 0,
+    "total_input_tokens": 0,
+    "total_output_tokens": 0,
+    "avg_input_tok_per_node": 0.0,
+    "avg_output_tok_per_node": 0.0,
+    "node_failure_rate": 0.0,
+    "tool_error_count": 0,
+    "market_context_skipped": true,
+    "orchestrator_iterations": 0,
+    "audit_retries": 2,
+    "judge_scores": {
+      "correctness": 0.9,
+      "relevance": 0.95,
+      "groundedness": 0.85,
+      "guideline_adherence": 0.88,
+      "safety": 1.0
+    },
+    "success": true,
+    "error": null,
+    "nodes": [
+      {
+        "name": "conditional_router",
+        "latency_ms": 0.04,
+        "input_tokens": 0,
+        "output_tokens": 0,
+        "tool_calls": 0,
+        "tool_errors": 0,
+        "success": true,
+        "error": null
+      },
+      {
+        "name": "investment_analyst_agent",
+        "latency_ms": 7819.21,
+        "input_tokens": 0,
+        "output_tokens": 0,
+        "tool_calls": 0,
+        "tool_errors": 0,
+        "success": true,
+        "error": null
+      },
+      {
+        "name": "auditor_agent",
+        "latency_ms": 54252.8,
+        "input_tokens": 0,
+        "output_tokens": 0,
+        "tool_calls": 0,
+        "tool_errors": 0,
+        "success": true,
+        "error": null
+      },
+      {
+        "name": "investment_analyst_agent",
+        "latency_ms": 9358.52,
+        "input_tokens": 0,
+        "output_tokens": 0,
+        "tool_calls": 0,
+        "tool_errors": 0,
+        "success": true,
+        "error": null
+      },
+      {
+        "name": "auditor_agent",
+        "latency_ms": 29210.24,
+        "input_tokens": 0,
+        "output_tokens": 0,
+        "tool_calls": 0,
+        "tool_errors": 0,
+        "success": true,
+        "error": null
+      },
+      {
+        "name": "report_generator_agent",
+        "latency_ms": 0.04,
+        "input_tokens": 0,
+        "output_tokens": 0,
+        "tool_calls": 0,
+        "tool_errors": 0,
+        "success": true,
+        "error": null
+      }
+    ]
+  },
+  {
+    "workflow": "orchestration_worker",
+    "query": "Based on AAPL's 10K, what are its main business risks?",
+    "total_latency_ms": 130480.6,
+    "total_tokens": 75694,
+    "total_input_tokens": 71658,
+    "total_output_tokens": 4036,
+    "avg_input_tok_per_node": 3981.0,
+    "avg_output_tok_per_node": 224.2,
+    "node_failure_rate": 0.0,
+    "tool_error_count": 0,
+    "market_context_skipped": false,
+    "orchestrator_iterations": 9,
+    "audit_retries": 1,
+    "judge_scores": {
+      "correctness": 0.9,
+      "relevance": 0.95,
+      "groundedness": 0.85,
+      "guideline_adherence": 0.88,
+      "safety": 1.0
+    },
+    "success": true,
+    "error": null,
+    "nodes": [
+      {
+        "name": "orchestrator_agent",
+        "latency_ms": 889.47,
+        "input_tokens": 0,
+        "output_tokens": 0,
+        "tool_calls": 0,
+        "tool_errors": 0,
+        "success": true,
+        "error": null
+      },
+      {
+        "name": "investment_analyst_agent",
+        "latency_ms": 7261.8,
+        "input_tokens": 0,
+        "output_tokens": 0,
+        "tool_calls": 0,
+        "tool_errors": 0,
+        "success": true,
+        "error": null
+      },
+      {
+        "name": "orchestrator_agent",
+        "latency_ms": 1445.49,
+        "input_tokens": 0,
+        "output_tokens": 0,
+        "tool_calls": 0,
+        "tool_errors": 0,
+        "success": true,
+        "error": null
+      },
+      {
+        "name": "auditor_agent",
+        "latency_ms": 25300.73,
+        "input_tokens": 0,
+        "output_tokens": 0,
+        "tool_calls": 0,
+        "tool_errors": 0,
+        "success": true,
+        "error": null
+      },
+      {
+        "name": "orchestrator_agent",
+        "latency_ms": 1315.82,
+        "input_tokens": 0,
+        "output_tokens": 0,
+        "tool_calls": 0,
+        "tool_errors": 0,
+        "success": true,
+        "error": null
+      },
+      {
+        "name": "market_context_agent",
+        "latency_ms": 30313.96,
+        "input_tokens": 9713,
+        "output_tokens": 1061,
+        "tool_calls": 4,
+        "tool_errors": 0,
+        "success": true,
+        "error": null
+      },
+      {
+        "name": "orchestrator_agent",
+        "latency_ms": 1580.94,
+        "input_tokens": 0,
+        "output_tokens": 0,
+        "tool_calls": 0,
+        "tool_errors": 0,
+        "success": true,
+        "error": null
+      },
+      {
+        "name": "market_context_agent",
+        "latency_ms": 9648.84,
+        "input_tokens": 11375,
+        "output_tokens": 387,
+        "tool_calls": 3,
+        "tool_errors": 0,
+        "success": true,
+        "error": null
+      },
+      {
+        "name": "orchestrator_agent",
+        "latency_ms": 1166.97,
+        "input_tokens": 0,
+        "output_tokens": 0,
+        "tool_calls": 0,
+        "tool_errors": 0,
+        "success": true,
+        "error": null
+      },
+      {
+        "name": "market_context_agent",
+        "latency_ms": 9545.66,
+        "input_tokens": 11365,
+        "output_tokens": 388,
+        "tool_calls": 3,
+        "tool_errors": 0,
+        "success": true,
+        "error": null
+      },
+      {
+        "name": "orchestrator_agent",
+        "latency_ms": 707.12,
+        "input_tokens": 0,
+        "output_tokens": 0,
+        "tool_calls": 0,
+        "tool_errors": 0,
+        "success": true,
+        "error": null
+      },
+      {
+        "name": "market_context_agent",
+        "latency_ms": 18638.26,
+        "input_tokens": 15099,
+        "output_tokens": 1285,
+        "tool_calls": 4,
+        "tool_errors": 0,
+        "success": true,
+        "error": null
+      },
+      {
+        "name": "orchestrator_agent",
+        "latency_ms": 1509.44,
+        "input_tokens": 0,
+        "output_tokens": 0,
+        "tool_calls": 0,
+        "tool_errors": 0,
+        "success": true,
+        "error": null
+      },
+      {
+        "name": "market_context_agent",
+        "latency_ms": 9606.19,
+        "input_tokens": 11366,
+        "output_tokens": 479,
+        "tool_calls": 5,
+        "tool_errors": 0,
+        "success": true,
+        "error": null
+      },
+      {
+        "name": "orchestrator_agent",
+        "latency_ms": 1494.46,
+        "input_tokens": 0,
+        "output_tokens": 0,
+        "tool_calls": 0,
+        "tool_errors": 0,
+        "success": true,
+        "error": null
+      },
+      {
+        "name": "market_context_agent",
+        "latency_ms": 10034.43,
+        "input_tokens": 12740,
+        "output_tokens": 436,
+        "tool_calls": 4,
+        "tool_errors": 0,
+        "success": true,
+        "error": null
+      },
+      {
+        "name": "orchestrator_agent",
+        "latency_ms": 0.04,
+        "input_tokens": 0,
+        "output_tokens": 0,
+        "tool_calls": 0,
+        "tool_errors": 0,
+        "success": true,
+        "error": null
+      },
+      {
+        "name": "report_generator_agent",
+        "latency_ms": 0.01,
         "input_tokens": 0,
         "output_tokens": 0,
         "tool_calls": 0,

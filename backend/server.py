@@ -8,9 +8,15 @@ Run from the project root:
 """
 
 import asyncio
+import io
 import json
 import os
+import re
 import sys
+
+# Load .env BEFORE any project imports so model paths / API keys are available
+from dotenv import load_dotenv
+load_dotenv()
 
 # ── Make sure project root is on sys.path so agents/* can be imported ─────────
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -19,11 +25,17 @@ if ROOT not in sys.path:
 
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import StreamingResponse
+from fastapi.responses import StreamingResponse, FileResponse
 from pydantic import BaseModel
 from typing import List
 
-from graph.workflow import create_wealth_manager_graph
+FRONTEND_DIR = os.path.join(ROOT, "frontend")
+
+from graph.architecture_experiment.conditional_workflow import (
+    create_conditional_graph,
+    make_initial_state,
+)
+from graph.state import WealthManagerState
 
 # ─────────────────────────────────────────────────────────────────────────────
 app = FastAPI(title="WealthMind AI", version="1.0.0")
@@ -50,6 +62,7 @@ STREAM_FIELDS = {
     "hallucination_count",
     "verified_count",
     "unsubstantiated_count",
+    "audit_iteration_count",
     "ragas_metrics",
     "draft_report",
     "final_report",
@@ -60,7 +73,7 @@ STREAM_FIELDS = {
 
 # Node → friendly display name for the step indicator
 NODE_LABELS = {
-    "orchestrator_agent": "Orchestrator",
+    "conditional_router": "Router",
     "market_context_agent": "Market Context",
     "sentiment_agent": "Sentiment",
     "investment_analyst_agent": "Analyst",
@@ -81,6 +94,89 @@ def sse(payload: dict) -> str:
     return f"data: {json.dumps(payload)}\n\n"
 
 
+# ── Print capture — forwards print() output to the SSE log queue ──────────────
+class _PrintCapture(io.TextIOBase):
+    """
+    Replaces sys.stdout for the duration of a workflow run.
+    Each complete line is:
+      1. Still written to the real terminal.
+      2. Forwarded to log_queue as an agent_log item so the frontend shows it.
+
+    Node routing: each agent opens with a "--- AGENT: XXX ---" header that we
+    parse to keep track of which panel the subsequent lines belong to.
+    """
+
+    _AGENT_HEADER = re.compile(
+        r"-{2,}\s*(?:[\U0001F300-\U0001FFFF\u2600-\u27BF]\s*)*AGENT:\s*(.+?)\s*(?:\(.*\))?\s*-{2,}",
+        re.IGNORECASE,
+    )
+    _KEYWORD_TO_NODE = {
+        "ORCHESTRATOR": "orchestrator_agent",
+        "MARKET CONTEXT": "market_context_agent",
+        "MARKET": "market_context_agent",
+        "SENTIMENT": "sentiment_agent",
+        "INVESTMENT ANALYST": "investment_analyst_agent",
+        "ANALYST": "investment_analyst_agent",
+        "AUDITOR": "auditor_agent",
+        "REPORT GENERATOR": "report_generator_agent",
+        "PORTFOLIO": "orchestrator_agent",
+    }
+
+    def __init__(
+        self,
+        log_queue: asyncio.Queue,
+        sse_loop: asyncio.AbstractEventLoop,
+        real_stdout,
+    ):
+        self._queue = log_queue
+        self._loop = sse_loop
+        self._real = real_stdout
+        self._buf = ""
+        self._node = "orchestrator_agent"
+
+    # TextIOBase interface -------------------------------------------------
+    def write(self, text: str) -> int:
+        if not isinstance(text, str):
+            text = str(text)
+        self._real.write(text)
+        self._buf += text
+        while "\n" in self._buf:
+            line, self._buf = self._buf.split("\n", 1)
+            self._emit(line)
+        return len(text)
+
+    def flush(self):
+        self._real.flush()
+
+    @property
+    def encoding(self):
+        return getattr(self._real, "encoding", "utf-8")
+
+    # Internal -------------------------------------------------------------
+    def _emit(self, line: str) -> None:
+        stripped = line.strip()
+        if not stripped:
+            return
+
+        # Detect agent header → update active node
+        m = self._AGENT_HEADER.search(stripped)
+        if m:
+            label = m.group(1).upper()
+            for key, node in self._KEYWORD_TO_NODE.items():
+                if key in label:
+                    self._node = node
+                    break
+
+        item = {"node": self._node, "message": line.rstrip()}
+        try:
+            self._loop.call_soon_threadsafe(self._queue.put_nowait, item)
+        except Exception:
+            try:
+                self._queue.put_nowait(item)
+            except Exception:
+                pass
+
+
 # ── Core streaming generator ───────────────────────────────────────────────────
 async def stream_workflow(message: str, tickers: List[str]):
     """
@@ -90,47 +186,59 @@ async def stream_workflow(message: str, tickers: List[str]):
       - complete     : entire pipeline done
       - error        : something went wrong
     """
-    graph = create_wealth_manager_graph()
+    graph = create_conditional_graph(state_schema=WealthManagerState)
     sse_loop = asyncio.get_running_loop()
 
     log_queue: asyncio.Queue = asyncio.Queue()
     graph_queue: asyncio.Queue = asyncio.Queue()
 
-    initial_state = {
-        "messages": [message],
-        "tickers": tickers,
-        "news_articles": [],
-        "sentiment_results": [],
-        "sentiment_summary": {},
-        "sentiment_score": 0.0,
-        "portfolio_weights": {},
-        "retrieved_context": "",
-        "live_data_context": "",
-        "draft_report": "",
-        "audit_score": 0.0,
-        "is_hallucinating": False,
-        "__sse_log_queue": log_queue,
-        "__sse_loop": sse_loop,
-    }
+    initial_state = make_initial_state(message, tickers)
+    initial_state["__sse_log_queue"] = log_queue
+    initial_state["__sse_loop"] = sse_loop
 
     # Signal that the first node is about to start
     yield sse(
         {
             "type": "node_start",
-            "node": "orchestrator_agent",
-            "label": NODE_LABELS["orchestrator_agent"],
+            "node": "conditional_router",
+            "label": NODE_LABELS["conditional_router"],
         }
     )
 
-    # Map: once we see node N complete, we know the next likely node
-    # (exact next depends on conditional edges — we just broadcast node_start optimistically)
-    NEXT_NODE = {
-        "orchestrator_agent": "market_context_agent",
-        "market_context_agent": "sentiment_agent",
-        "sentiment_agent": "investment_analyst_agent",
-        "investment_analyst_agent": "auditor_agent",
-        "auditor_agent": "report_generator_agent",
-    }
+    # Track the route chosen by conditional_router so next-node prediction is accurate
+    _route_target: str = ""
+
+    def _predict_next_node(node_name: str, state_update: dict) -> str | None:
+        """Predict which node runs next based on conditional routing rules."""
+        if node_name == "conditional_router":
+            return (
+                "investment_analyst_agent"
+                if _route_target == "docs_only"
+                else "market_context_agent"
+            )
+        if node_name == "market_context_agent":
+            return (
+                "investment_analyst_agent"
+                if _route_target == "hybrid_analysis"
+                else "sentiment_agent"
+            )
+        if node_name == "sentiment_agent":
+            return (
+                "investment_analyst_agent"
+                if _route_target == "market_analysis"
+                else "auditor_agent"
+            )
+        if node_name == "investment_analyst_agent":
+            return "auditor_agent"
+        if node_name == "auditor_agent":
+            if state_update.get("is_hallucinating"):
+                if _route_target == "docs_only":
+                    return "investment_analyst_agent"
+                if _route_target == "market_only":
+                    return "sentiment_agent"
+                return "market_context_agent"
+            return "report_generator_agent"
+        return None
 
     async def _run_graph() -> None:
         try:
@@ -140,10 +248,15 @@ async def stream_workflow(message: str, tickers: List[str]):
         except Exception as exc:  # pragma: no cover
             await graph_queue.put({"kind": "error", "message": str(exc)})
 
+    # ── Redirect print() → log_queue for the duration of this run ────────────
+    _real_stdout = sys.stdout
+    sys.stdout = _PrintCapture(log_queue, sse_loop, _real_stdout)
+
     graph_task = asyncio.create_task(_run_graph())
 
     try:
         graph_done = False
+        _last_log_key: tuple | None = None  # dedup consecutive identical lines
         while True:
             get_log_task = asyncio.create_task(log_queue.get())
             get_graph_task = asyncio.create_task(graph_queue.get())
@@ -158,13 +271,16 @@ async def stream_workflow(message: str, tickers: List[str]):
             if get_log_task in done:
                 log_item = get_log_task.result()
                 if isinstance(log_item, dict):
-                    yield sse(
-                        {
-                            "type": "agent_log",
-                            "node": log_item.get("node", "sentiment_agent"),
-                            "message": str(log_item.get("message", "")),
-                        }
-                    )
+                    key = (log_item.get("node"), log_item.get("message"))
+                    if key != _last_log_key:  # skip exact back-to-back duplicates
+                        _last_log_key = key
+                        yield sse(
+                            {
+                                "type": "agent_log",
+                                "node": log_item.get("node", "sentiment_agent"),
+                                "message": str(log_item.get("message", "")),
+                            }
+                        )
                 continue
 
             graph_item = get_graph_task.result()
@@ -184,6 +300,10 @@ async def stream_workflow(message: str, tickers: List[str]):
             elif kind == "graph":
                 event = graph_item["event"]
                 for node_name, state_update in event.items():
+                    # Track route_target set by conditional_router
+                    if state_update.get("route_target"):
+                        _route_target = state_update["route_target"]
+
                     # Strip state to only fields the UI needs
                     state_snapshot = {
                         k: v
@@ -200,16 +320,9 @@ async def stream_workflow(message: str, tickers: List[str]):
                         }
                     )
 
-                    # Let the UI know what's running next
-                    next_node = NEXT_NODE.get(node_name)
+                    # Let the UI know what's running next (conditional prediction)
+                    next_node = _predict_next_node(node_name, state_update)
                     if next_node:
-                        # For auditor: check is_hallucinating to decide real next node
-                        if node_name == "auditor_agent":
-                            if state_update.get("is_hallucinating"):
-                                next_node = "investment_analyst_agent"
-                            else:
-                                next_node = "report_generator_agent"
-
                         yield sse(
                             {
                                 "type": "node_start",
@@ -226,6 +339,7 @@ async def stream_workflow(message: str, tickers: List[str]):
             await asyncio.sleep(0)
 
     finally:
+        sys.stdout = _real_stdout  # always restore, even on error
         if not graph_task.done():
             graph_task.cancel()
 
@@ -251,6 +365,12 @@ async def analyze(request: AnalyzeRequest):
 @app.get("/api/health")
 async def health():
     return {"status": "ok", "service": "WealthMind AI"}
+
+
+@app.get("/")
+async def serve_frontend():
+    """Serve the frontend single-page application."""
+    return FileResponse(os.path.join(FRONTEND_DIR, "index.html"))
 
 
 @app.get("/api/best-workflow")

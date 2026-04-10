@@ -41,8 +41,15 @@ retriever = vectorstore.as_retriever(search_kwargs={"k": 3})
 # Setup the Analyst LLM
 analyst_llm = ChatOpenAI(model="gpt-4o-mini", temperature=0.2)
 
-# Setup Anthropic client for MCP-based live data fetching (used only if USE_MCP_TOOLS=True)
-anthropic_client = anthropic.Anthropic(api_key=os.environ.get("ANTHROPIC_API_KEY"))
+
+
+def _create_anthropic_client() -> anthropic.Anthropic:
+    """Create an Anthropic client, optionally pointing at a compatible custom API base URL."""
+    api_key = os.environ.get("ANTHROPIC_API_KEY")
+    base_url = os.environ.get("ANTHROPIC_BASE_URL")
+    if base_url:
+        return anthropic.Anthropic(api_key=api_key, base_url=base_url)
+    return anthropic.Anthropic(api_key=api_key)
 
 
 def _format_market_context(market_context: dict) -> str:
@@ -171,6 +178,8 @@ def analyst_node(state: WealthManagerState):
         
         messages = [{"role": "user", "content": mcp_prompt}]
         tools = get_mcp_tools()
+        anthropic_client = _create_anthropic_client()
+        model_name = os.environ.get("ANTHROPIC_MODEL", "claude-haiku-4-5-20251001")
         
         # Agentic loop: Claude calls tools until it's done
         live_data_summary = ""
@@ -181,7 +190,7 @@ def analyst_node(state: WealthManagerState):
             iteration += 1
             
             response = anthropic_client.messages.create(
-                model="claude-haiku-4-5-20251001",
+                model=model_name,
                 max_tokens=4096,
                 tools=tools,
                 messages=messages

@@ -146,18 +146,18 @@ Optional:
 | `GROQ_API_KEY` | Alternative LLM provider |
 | `COHERE_API_KEY` | Cohere reranker |
 
-### 4. Start the MCP Server
+### 4. Start the MCP HTTP Server
 
-Open a new terminal and run:
+The MCP HTTP server exposes the six financial data tools over HTTP on port 3000. It must be running before starting either the CLI or the web backend.
 
 ```bash
-# Terminal 1: Start MCP HTTP server (for financial data tools)
-python backend/mcp_http_server.py
+# Terminal 1 — keep this running throughout the session
+uv run python backend/mcp_http_server.py
 ```
 
 Expected output:
 ```
-2026-04-09 17:51:46,401 - mcp-http-server - INFO - Starting MCP HTTP Server
+2026-04-09 17:51:46,400 - mcp-http-server - INFO - Starting MCP HTTP Server
 2026-04-09 17:51:46,401 - mcp-http-server - INFO - Available tools (6):
   - fetch_news
   - fetch_earnings
@@ -168,28 +168,79 @@ Expected output:
 2026-04-09 17:51:46,402 - mcp-http-server - INFO - Uvicorn running on http://127.0.0.1:3000
 ```
 
-### 5. Run the web interface
+The server exposes three endpoints:
 
-In another terminal, start the backend API:
+| Method | Endpoint | Purpose |
+|--------|----------|---------|
+| GET | `/health` | Health check |
+| GET | `/tools` | List available tools |
+| POST | `/call` | Invoke a tool — `{"name": "fetch_news", "arguments": {"tickers": ["AAPL"]}}` |
+
+Verify it is reachable before proceeding:
 
 ```bash
-# Terminal 2: Start backend
-uv run uvicorn backend.server:app --reload --port 8000
-
-# Open frontend in browser
-open frontend/index.html
+curl http://localhost:3000/health
 ```
 
-The frontend connects to `http://localhost:8000`. Enter a query like *"Should I invest in AAPL and NVDA?"* and watch the agents run in real time.
+> **Troubleshooting:** If the server does not start, ensure `FINNHUB_API_KEY` is set in `.env` and all dependencies are installed (`uv sync`).
 
-### 6. Run CLI mode
+### 5. Run the web interface
 
-In another terminal, run:
+Open a second terminal and start the FastAPI backend:
 
 ```bash
-# Terminal 2 or 3: Run workflow (with MCP server from step 4 still running)
+# Terminal 2 — streaming API + SSE
+uv run uvicorn backend.server:app --reload --port 8000
+```
+
+Then open `frontend/index.html` directly in your browser — **no build step is required**:
+
+- **macOS / Linux:** `open frontend/index.html`
+- **Windows:** `start frontend\index.html`
+- **Or:** drag the file into any browser window
+
+The page connects to `http://localhost:8000/api/analyze` and streams agent progress in real time via Server-Sent Events (SSE). Enter a query such as *"Should I invest in AAPL and NVDA?"* and watch each agent stage update live.
+
+> **Note:** Both the MCP server (port 3000) and the backend (port 8000) must be running before submitting a query from the UI.
+
+### 6. (Optional) Register the MCP server with Claude Desktop
+
+If you want to use the financial tools directly inside **Claude Desktop** (without the web UI), register the stdio MCP server:
+
+1. Find your Claude Desktop config file:
+   - **Windows:** `%APPDATA%\Claude\claude_desktop_config.json`
+   - **macOS:** `~/Library/Application Support/Claude/claude_desktop_config.json`
+
+2. Add the server entry (replace the path with your actual project path):
+
+```json
+{
+  "mcpServers": {
+    "wealth-manager": {
+      "command": "python",
+      "args": ["C:\\path\\to\\IS469_wealth_manager_project\\mcp_server.py"],
+      "env": {
+        "FINNHUB_API_KEY": "your_finnhub_api_key_here",
+        "PYTHONPATH": "C:\\path\\to\\IS469_wealth_manager_project"
+      }
+    }
+  }
+}
+```
+
+3. Restart Claude Desktop. Ask *"What tools do you have available?"* — Claude should list all six financial tools.
+
+See [docs/MCP_SERVER_SETUP.md](docs/MCP_SERVER_SETUP.md) and [docs/MCP_HTTP_SETUP.md](docs/MCP_HTTP_SETUP.md) for full configuration options and troubleshooting.
+
+### 7. Run CLI mode
+
+With the MCP server still running in Terminal 1:
+
+```bash
+# Terminal 2 or 3
 uv run python main.py
-# or against a running LangGraph dev server:
+
+# Or against a running LangGraph dev server:
 uv run python main.py remote
 ```
 
@@ -264,23 +315,33 @@ See [docs/RAG_AUDITOR_GUIDE.md](docs/RAG_AUDITOR_GUIDE.md) for details.
 
 ## MCP Tools (Market Context)
 
-The market context agent calls financial APIs via **Model Context Protocol**:
+The market context agent calls financial APIs via **Model Context Protocol (MCP)**. The project ships two MCP transports:
+
+| Transport | File | Use case |
+|---|---|---|
+| HTTP | `backend/mcp_http_server.py` | Web UI and CLI pipeline (port 3000) |
+| stdio | `mcp_server.py` | Claude Desktop integration |
+
+### Available tools
 
 | Tool | Source | Data |
 |---|---|---|
-| `fetch_news` | Finnhub | Company news |
-| `fetch_earnings` | Finnhub | Earnings dates & results |
-| `fetch_analyst_ratings` | Finnhub | Price targets & buy/sell ratings |
-| `fetch_sec_filings` | SEC Edgar | 10-K / 10-Q filings |
+| `fetch_news` | Finnhub | Recent company news & sentiment |
+| `fetch_earnings` | Finnhub | EPS, P/E ratio, profit margins |
+| `fetch_analyst_ratings` | Finnhub | Consensus ratings & price targets |
+| `fetch_10k_content` | SEC Edgar | Annual MD&A, risk factors, financials |
+| `fetch_10q_content` | SEC Edgar | Quarterly MD&A and financial updates |
+| `fetch_xbrl_financials` | SEC Edgar | Structured financial metrics (token-efficient) |
 
-To run the MCP tools as a standalone HTTP service:
+Call any tool directly against the running HTTP server:
 
 ```bash
-uv run uvicorn backend.mcp_http_server:app --port 8001
-# POST http://localhost:8001/call {"name": "fetch_news", "arguments": {"tickers": ["AAPL"]}}
+curl -X POST http://localhost:3000/call \
+  -H "Content-Type: application/json" \
+  -d '{"name": "fetch_news", "arguments": {"tickers": ["AAPL"], "days_back": 7}}'
 ```
 
-See [docs/MCP_SERVER_SETUP.md](docs/MCP_SERVER_SETUP.md) and [docs/MCP_HTTP_SETUP.md](docs/MCP_HTTP_SETUP.md).
+See [docs/MCP_SERVER_SETUP.md](docs/MCP_SERVER_SETUP.md) for Claude Desktop registration and [docs/MCP_HTTP_SETUP.md](docs/MCP_HTTP_SETUP.md) for HTTP transport details.
 
 ---
 
@@ -303,11 +364,21 @@ uv run python tests/test_mcp_server.py
 # Install / sync dependencies
 uv sync
 
-# Start web server
+# Start MCP HTTP server (port 3000) — required before running anything
+uv run python backend/mcp_http_server.py
+
+# Start web backend (port 8000)
 uv run uvicorn backend.server:app --reload --port 8000
 
-# CLI pipeline run
+# Open web UI (no build required)
+open frontend/index.html          # macOS / Linux
+start frontend\index.html         # Windows
+
+# CLI pipeline run (MCP server must be running first)
 uv run python main.py
+
+# Test MCP server connectivity
+uv run python tests/test_http_server.py
 
 # RAG evaluation
 uv run python rag/experiments/rag_compare.py --variants baseline,hyde,hybrid,finance

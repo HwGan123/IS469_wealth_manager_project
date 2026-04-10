@@ -12,7 +12,7 @@ from graph.state import WealthManagerState
 import warnings
 warnings.filterwarnings("ignore")
 
-        # Load environment variables
+# Load environment variables
 load_dotenv()
 
 # 1. Define the Structured Output Schema
@@ -199,42 +199,42 @@ class AuditorAgent:
                 correction=""
             ), strength
     
-    def calculate_ragas_metrics(self, draft: str, context: str, ground_truth: str = "") -> RAGASMetrics:
+    def calculate_ragas_metrics(self, draft: str, context: str, ground_truth: str = "", query: str = "") -> RAGASMetrics:
         """Calculate RAGAS metrics for the draft."""
         faithfulness = self.ragas_calc.calculate_faithfulness(draft, context)
-        answer_relevancy = self.ragas_calc.calculate_answer_relevancy(draft, "investment analysis")
+        answer_relevancy = self.ragas_calc.calculate_answer_relevancy(draft, query or "investment analysis")
         context_recall = self.ragas_calc.calculate_context_recall(context, ground_truth or draft)
-        
+
         return RAGASMetrics(
             faithfulness=round(faithfulness, 3),
             answer_relevancy=round(answer_relevancy, 3),
             context_recall=round(context_recall, 3)
         )
 
-    def audit_draft(self, draft: str, context: str, ground_truth: str = "") -> AuditReport:
+    def audit_draft(self, draft: str, context: str, ground_truth: str = "", query: str = "") -> AuditReport:
         """Comprehensive audit of investment draft against retrieved context."""
         # 1. Extract claims from draft
         claims = self.extract_claims(draft)
-        
+
         # 2. Verify each claim
         findings = []
         hallucination_count = 0
         verified_count = 0
         unsubstantiated_count = 0
-        
+
         for claim in claims:
             fact_check, _ = self.verify_claim_against_context(claim, context)
             findings.append(fact_check)
-            
+
             if fact_check.status == "HALLUCINATION":
                 hallucination_count += 1
             elif fact_check.status == "VERIFIED":
                 verified_count += 1
             else:
                 unsubstantiated_count += 1
-        
-        # 3. Calculate RAGAS metrics
-        ragas_metrics = self.calculate_ragas_metrics(draft, context, ground_truth)
+
+        # 3. Calculate RAGAS metrics (pass actual query for answer_relevancy)
+        ragas_metrics = self.calculate_ragas_metrics(draft, context, ground_truth, query)
         
         # 4. Determine overall status
         hallucination_rate = hallucination_count / len(findings) if findings else 0
@@ -279,8 +279,10 @@ def _fallback_audit(draft: str, context: str) -> dict:
     faithfulness = 0.35 if is_hallucinating else 0.85
     answer_relevancy = 0.6 if context_text else 0.3
     context_recall = 0.7 if has_context_overlap else 0.2
-    
-    score = 0.35 if is_hallucinating else 0.9
+
+    llm_base = 0.35 if is_hallucinating else 0.90
+    ragas_avg = (faithfulness + answer_relevancy + context_recall) / 3
+    score = round(0.7 * llm_base + 0.3 * ragas_avg, 2)
 
     notes = (
         "Draft includes unsupported certainty language or weak grounding. "
@@ -316,6 +318,8 @@ def auditor_node(state: WealthManagerState) -> dict:
     draft = state.get("draft_report", "")
     retrieved_context = state.get("retrieved_context", "")  # 10-K historical data
     live_data_context = state.get("live_data_context", "")  # Market context (news, earnings, ratings)
+    messages = state.get("messages") or []
+    query = str(messages[0]) if messages else ""
     
     # Combine both contexts for comprehensive validation
     # This allows RAGAS to verify both historical (10-K) and live market data claims
@@ -324,7 +328,7 @@ def auditor_node(state: WealthManagerState) -> dict:
     USE_LIVE_CONTEXT_ONLY = False  # Not recommended, as it may miss verifying historical claims
     if USE_COMBINED_CONTEXT:
         combined_context = f"{retrieved_context}\n\n--- LIVE MARKET DATA ---\n{live_data_context}"
-    elif USE_RETREIVED_CONTEXT_ONLY:
+    elif USE_RETRIEVED_CONTEXT_ONLY:
         combined_context = retrieved_context  # Only use 10-K for strict auditing
     elif USE_LIVE_CONTEXT_ONLY:
         combined_context = live_data_context  # Only use live market data for more lenient auditing
@@ -346,17 +350,28 @@ def auditor_node(state: WealthManagerState) -> dict:
 
     try:
         agent = AuditorAgent(api_key=api_key)
-        report = agent.audit_draft(draft=draft, context=combined_context, ground_truth=ground_truth)
+        report = agent.audit_draft(draft=draft, context=combined_context, ground_truth=ground_truth, query=query)
         
         # Force approval on final iteration to prevent infinite loops
         if iteration_count >= 2:
             is_hallucinating = False
-            score = 0.9
             status_msg = "APPROVED (forced - max iterations reached)"
         else:
-            is_hallucinating = report.status != "APPROVED"
-            score = 0.35 if is_hallucinating else 0.9
+            # Base re-analysis solely on actual hallucination count.
+            # Low faithfulness (common when retrieved_context is empty on
+            # market-only paths) must not trigger a spurious correction loop.
+            is_hallucinating = report.hallucination_count > 0
             status_msg = report.status
+
+        # Composite score: 60% LLM verdict + 40% mean RAGAS metrics.
+        # Avoids the paradox of a 0.90 score when faithfulness is near zero.
+        llm_base = 0.35 if is_hallucinating else 0.90
+        ragas_avg = (
+            report.ragas_metrics.faithfulness
+            + report.ragas_metrics.answer_relevancy
+            + report.ragas_metrics.context_recall
+        ) / 3
+        score = round(0.7 * llm_base + 0.3 * ragas_avg, 2)
 
         # Format findings for state
         findings_list = [

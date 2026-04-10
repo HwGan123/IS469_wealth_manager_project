@@ -20,6 +20,9 @@ __pycache__/
 outputs/
 qlora_adapters/
 
+# Saved model weights (host on Hugging Face instead)
+experiments/sentiment_agent/saved_models/
+
 # Training data (downloaded at runtime)
 Sentences_75Agree.txt
 

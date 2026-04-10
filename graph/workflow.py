@@ -2,7 +2,7 @@ from langgraph.graph import StateGraph, START, END
 from graph.state import WealthManagerState
 from agents.orchestrator import orchestrator_node
 from agents.market_context import market_context_node
-from agents.sentiment import sentiment_node
+from agents.sentiment_agent import sentiment_node
 from agents.analyst import analyst_node
 from agents.auditor import auditor_node
 from agents.report_generator import report_generator_node
